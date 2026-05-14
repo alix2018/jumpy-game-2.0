@@ -2,9 +2,6 @@ import type { Sprite } from 'pixi.js';
 import type { GameState } from './state';
 import type { CoinManager } from './CoinManager';
 import {
-  BASE_WIDTH,
-  PLATFORM_MIN_Y,
-  PLATFORM_MAX_Y,
   PLATFORM_GAP_MIN,
   PLATFORM_GAP_SPREAD,
   PLATFORM_RANDOM_Y_RANGE,
@@ -15,6 +12,10 @@ export class PlatformManager {
   constructor(
     private readonly state: GameState,
     private readonly coins: CoinManager,
+    private readonly width: number,
+    private readonly minY: number,
+    private readonly maxY: number,
+    private readonly maxYFallback: number,
   ) {}
 
   move(speed: number): void {
@@ -25,7 +26,7 @@ export class PlatformManager {
       p.position.x -= speed;
     }
 
-    if (last && last.x + last.width < BASE_WIDTH) {
+    if (last && last.x + last.width < this.width) {
       this.generate(last);
     }
 
@@ -45,8 +46,8 @@ export class PlatformManager {
     const posX = last.x + last.width + gap;
     let posY = last.y + (last.height - next.height) / 2 + this.randomY();
 
-    if (posY < PLATFORM_MIN_Y) posY = Math.floor(Math.random() * 50) + PLATFORM_MIN_Y;
-    if (posY > PLATFORM_MAX_Y) posY = Math.floor(Math.random() * 50) + 410;
+    if (posY < this.minY) posY = Math.floor(Math.random() * 50) + this.minY;
+    if (posY > this.maxY) posY = Math.floor(Math.random() * 50) + this.maxYFallback;
 
     next.position.set(posX, posY);
     stackOnScreen.push(next);
