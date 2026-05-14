@@ -40,6 +40,10 @@ export class Game {
   private textHighScore!: Text;
   private platformPool!: Sprite[];
 
+  private jumpSound!: HTMLAudioElement;
+  private fallSound!: HTMLAudioElement;
+  private fallSoundPlayed = false;
+
   async init(container: HTMLElement): Promise<void> {
     this.app = new Application();
     await this.app.init({
@@ -73,6 +77,8 @@ export class Game {
       '/assets/jumpy_run.json',
       '/assets/coins_anim.json',
     ]);
+    this.jumpSound = new Audio('/assets/jump_sound.mp3');
+    this.fallSound = new Audio('/assets/fall_sound.mp3');
   }
 
   private buildScene(): void {
@@ -172,6 +178,7 @@ export class Game {
     s.canBePressed = false;
     s.isPress = false;
     s.currentPlatform = null;
+    this.fallSoundPlayed = false;
 
     this.jumpSprite.position.set(80, 300);
     this.jumpSprite.visible = true;
@@ -203,6 +210,8 @@ export class Game {
         player.visible = false;
         this.jumpSprite.visible = true;
         s.air = true;
+        this.jumpSound.currentTime = 0;
+        this.jumpSound.play();
       } else {
         s.vy = 0;
         player.position.set(this.jumpSprite.x, this.jumpSprite.y);
@@ -241,6 +250,12 @@ export class Game {
 
     this.textScore.text = `Score: ${Math.round(s.score)}`;
     this.textHighScore.text = `High score: ${Math.round(s.highScore)}`;
+
+    if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > BASE_HEIGHT) {
+      this.fallSoundPlayed = true;
+      this.fallSound.currentTime = 0;
+      this.fallSound.play();
+    }
 
     if (player.y + player.height > BASE_HEIGHT + FALL_DEATH_Y) {
       if (s.score > s.highScore) {
