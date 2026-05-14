@@ -50,6 +50,19 @@ export class Game {
   private fallSound!: HTMLAudioElement;
   private fallSoundPlayed = false;
 
+  private soundEnabled!: boolean;
+  private soundToggleSprite!: Sprite;
+  private soundOffTexture!: Texture;
+  private soundOnTexture!: Texture;
+  private soundIconY!: number;
+
+  private isPaused = false;
+
+  private pauseToggleSprite!: Sprite;
+  private pauseTexture!: Texture;
+  private playTexture!: Texture;
+  private readonly pauseIconY = 20;
+
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
     this.gameWidth = this.isPortrait ? window.innerWidth : BASE_WIDTH;
@@ -63,6 +76,8 @@ export class Game {
       height: this.gameHeight,
       antialias: true,
       backgroundColor: 0x000000,
+      resolution: window.devicePixelRatio || 1,
+      autoDensity: true,
     });
 
     container.appendChild(this.app.canvas);
@@ -75,6 +90,7 @@ export class Game {
     this.watchResize();
 
     this.app.ticker.add(() => this.tick());
+    this.watchFocus();
   }
 
   private async loadAssets(): Promise<void> {
@@ -89,9 +105,15 @@ export class Game {
       '/assets/jumpy_jump.png',
       '/assets/jumpy_run.json',
       '/assets/coins_anim.json',
+      '/assets/sound_off.png',
+      '/assets/sound_on.png',
+      '/assets/pause.png',
+      '/assets/play.png',
     ]);
     this.jumpSound = new Audio('/assets/jump_sound.mp3');
+    this.jumpSound.volume = 0.02;
     this.fallSound = new Audio('/assets/fall_sound.mp3');
+    this.fallSound.volume = 0.02;
   }
 
   private buildScene(): void {
@@ -167,6 +189,31 @@ export class Game {
     this.textHighScore.anchor.set(1, 0);
     this.textHighScore.position.set(this.gameWidth - 20, 20 + fontSize + 10);
     stage.addChild(this.textHighScore);
+
+    this.pauseTexture = Texture.from('/assets/pause.png');
+    this.playTexture = Texture.from('/assets/play.png');
+    const pauseIconSize = 34;
+    this.pauseToggleSprite = new Sprite(this.pauseTexture);
+    this.pauseToggleSprite.width = pauseIconSize;
+    this.pauseToggleSprite.height = pauseIconSize;
+    this.pauseToggleSprite.position.set(68, this.pauseIconY);
+    this.pauseToggleSprite.eventMode = 'static';
+    this.pauseToggleSprite.cursor = 'pointer';
+    stage.addChild(this.pauseToggleSprite);
+
+    this.soundEnabled = localStorage.getItem('soundEnabled') === 'true';
+    this.soundOffTexture = Texture.from('/assets/sound_off.png');
+    this.soundOnTexture = Texture.from('/assets/sound_on.png');
+    this.soundIconY = 20;
+
+    const soundIconSize = 34;
+    this.soundToggleSprite = new Sprite(this.soundEnabled ? this.soundOnTexture : this.soundOffTexture);
+    this.soundToggleSprite.width = soundIconSize;
+    this.soundToggleSprite.height = soundIconSize;
+    this.soundToggleSprite.position.set(20, this.soundIconY);
+    this.soundToggleSprite.eventMode = 'static';
+    this.soundToggleSprite.cursor = 'pointer';
+    stage.addChild(this.soundToggleSprite);
 
     this.coins = new CoinManager(this.state);
     this.platforms = new PlatformManager(
@@ -248,6 +295,7 @@ export class Game {
   }
 
   private tick(): void {
+    if (this.isPaused) return;
     const s = this.state;
     const player = this.runAnim;
     const onGround = this.checkGround();
@@ -259,8 +307,10 @@ export class Game {
         player.visible = false;
         this.jumpSprite.visible = true;
         s.air = true;
-        this.jumpSound.currentTime = 0;
-        this.jumpSound.play();
+        if (this.soundEnabled) {
+          this.jumpSound.currentTime = 0;
+          this.jumpSound.play();
+        }
       } else {
         s.vy = 0;
         player.position.set(this.jumpSprite.x, this.jumpSprite.y);
@@ -302,8 +352,10 @@ export class Game {
 
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
       this.fallSoundPlayed = true;
-      this.fallSound.currentTime = 0;
-      this.fallSound.play();
+      if (this.soundEnabled) {
+        this.fallSound.currentTime = 0;
+        this.fallSound.play();
+      }
     }
 
     if (player.y + player.height > this.gameHeight + FALL_DEATH_Y) {
@@ -329,11 +381,57 @@ export class Game {
     return false;
   }
 
+  private toGameCoords(clientX: number, clientY: number): { x: number; y: number } {
+    const rect = this.app.canvas.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) * (this.gameWidth / rect.width),
+      y: (clientY - rect.top) * (this.gameHeight / rect.height),
+    };
+  }
+
+  private hitsSound(clientX: number, clientY: number): boolean {
+    const { x, y } = this.toGameCoords(clientX, clientY);
+    return x >= 20 && x <= 54 && y >= this.soundIconY && y <= this.soundIconY + 34;
+  }
+
+  private hitsPause(clientX: number, clientY: number): boolean {
+    const { x, y } = this.toGameCoords(clientX, clientY);
+    return x >= 68 && x <= 104 && y >= this.pauseIconY && y <= this.pauseIconY + 34;
+  }
+
+  private togglePause(): void {
+    this.isPaused = !this.isPaused;
+    this.pauseToggleSprite.texture = this.isPaused ? this.playTexture : this.pauseTexture;
+    if (this.isPaused) {
+      this.runAnim.stop();
+      for (const coin of this.state.coins) coin.stop();
+    } else {
+      this.runAnim.play();
+      for (const coin of this.state.coins) coin.play();
+    }
+  }
+
+  private toggleSound(): void {
+    this.soundEnabled = !this.soundEnabled;
+    this.soundToggleSprite.texture = this.soundEnabled ? this.soundOnTexture : this.soundOffTexture;
+    localStorage.setItem('soundEnabled', String(this.soundEnabled));
+  }
+
   private bindInput(): void {
     const canvas = this.app.canvas;
-    canvas.addEventListener('mousedown', () => this.pressDown());
+    canvas.addEventListener('mousedown', (e) => {
+      if (this.hitsPause(e.clientX, e.clientY)) { this.togglePause(); return; }
+      if (this.hitsSound(e.clientX, e.clientY)) { this.toggleSound(); return; }
+      if (!this.isPaused) this.pressDown();
+    });
     canvas.addEventListener('mouseup', () => this.pressUp());
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); this.pressDown(); }, { passive: false });
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      if (t && this.hitsPause(t.clientX, t.clientY)) { this.togglePause(); return; }
+      if (t && this.hitsSound(t.clientX, t.clientY)) { this.toggleSound(); return; }
+      if (!this.isPaused) this.pressDown();
+    }, { passive: false });
     canvas.addEventListener('touchend', () => this.pressUp());
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
@@ -352,6 +450,12 @@ export class Game {
 
   private pressDown(): void { this.state.isPress = true; }
   private pressUp(): void { this.state.isPress = false; }
+
+  private watchFocus(): void {
+    const pause = () => { if (!this.isPaused) this.togglePause(); };
+    document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+    window.addEventListener('blur', pause);
+  }
 
   private watchResize(): void {
     let timer: ReturnType<typeof setTimeout>;
