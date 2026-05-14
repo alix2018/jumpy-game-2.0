@@ -50,7 +50,7 @@ export class Game {
     });
 
     container.appendChild(this.app.canvas);
-    this.app.canvas.style.cssText = 'touch-action: none; width: 100%; cursor: inherit;';
+    this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${BASE_WIDTH} / ${BASE_HEIGHT})); height: auto;`;
 
     await this.loadAssets();
     this.buildScene();
