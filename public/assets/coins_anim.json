@@ -1,0 +1,352 @@
+{
+  "frames": {
+    "coins_anim_01.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_02.png": {
+      "frame": {
+        "x": 31,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_03.png": {
+      "frame": {
+        "x": 62,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_04.png": {
+      "frame": {
+        "x": 93,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_05.png": {
+      "frame": {
+        "x": 124,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_06.png": {
+      "frame": {
+        "x": 155,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_07.png": {
+      "frame": {
+        "x": 186,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_08.png": {
+      "frame": {
+        "x": 217,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_09.png": {
+      "frame": {
+        "x": 248,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_10.png": {
+      "frame": {
+        "x": 279,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_11.png": {
+      "frame": {
+        "x": 310,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_12.png": {
+      "frame": {
+        "x": 341,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_13.png": {
+      "frame": {
+        "x": 372,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_14.png": {
+      "frame": {
+        "x": 403,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_15.png": {
+      "frame": {
+        "x": 434,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    },
+    "coins_anim_16.png": {
+      "frame": {
+        "x": 465,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 31,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 31,
+        "h": 51
+      }
+    }
+  },
+  "animations": {
+    "coins_anim": [
+      "coins_anim_01.png",
+      "coins_anim_02.png",
+      "coins_anim_03.png",
+      "coins_anim_04.png",
+      "coins_anim_05.png",
+      "coins_anim_06.png",
+      "coins_anim_07.png",
+      "coins_anim_08.png",
+      "coins_anim_09.png",
+      "coins_anim_10.png",
+      "coins_anim_11.png",
+      "coins_anim_12.png",
+      "coins_anim_13.png",
+      "coins_anim_14.png",
+      "coins_anim_15.png",
+      "coins_anim_16.png"
+    ]
+  },
+  "meta": {
+    "image": "coins_anim.png",
+    "size": {
+      "w": 498,
+      "h": 51
+    },
+    "scale": "1"
+  }
+}
