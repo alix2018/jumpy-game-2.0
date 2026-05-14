@@ -50,8 +50,7 @@ export class Game {
     });
 
     container.appendChild(this.app.canvas);
-    this.resize();
-    window.addEventListener('resize', () => this.resize());
+    this.app.canvas.style.cssText = 'touch-action: none; width: 100%; cursor: inherit;';
 
     await this.loadAssets();
     this.buildScene();
@@ -59,16 +58,6 @@ export class Game {
     this.startGame();
 
     this.app.ticker.add(() => this.tick());
-  }
-
-  private resize(): void {
-    const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT);
-    this.app.renderer.resize(window.innerWidth, window.innerHeight);
-    this.app.stage.scale.set(scale);
-    this.app.stage.position.set(
-      (window.innerWidth - BASE_WIDTH * scale) / 2,
-      (window.innerHeight - BASE_HEIGHT * scale) / 2,
-    );
   }
 
   private async loadAssets(): Promise<void> {
