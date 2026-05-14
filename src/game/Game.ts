@@ -243,7 +243,10 @@ export class Game {
     this.textHighScore.text = `High score: ${Math.round(s.highScore)}`;
 
     if (player.y + player.height > BASE_HEIGHT + FALL_DEATH_Y) {
-      if (s.score > s.highScore) s.highScore = Math.round(s.score);
+      if (s.score > s.highScore) {
+        s.highScore = Math.round(s.score);
+        localStorage.setItem('highScore', String(s.highScore));
+      }
       s.score = 0;
       s.currentSpeed = s.baseSpeed;
       s.newMilestone = s.firstMilestone;
