@@ -1,364 +1,130 @@
 {
   "frames": {
     "jumpy_run_01.png": {
-      "frame": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":248,"y":80,"w":66,"h":72},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":72},
+      "sourceSize": {"w":66,"h":72}
     },
     "jumpy_run_02.png": {
-      "frame": {
-        "x": 79,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":316,"y":80,"w":66,"h":74},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":74},
+      "sourceSize": {"w":66,"h":74}
     },
     "jumpy_run_03.png": {
-      "frame": {
-        "x": 158,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":384,"y":79,"w":66,"h":75},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":75},
+      "sourceSize": {"w":66,"h":75}
     },
     "jumpy_run_04.png": {
-      "frame": {
-        "x": 237,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":99,"y":77,"w":66,"h":76},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":76},
+      "sourceSize": {"w":66,"h":76}
     },
     "jumpy_run_05.png": {
-      "frame": {
-        "x": 316,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":207,"y":155,"w":66,"h":77},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":77},
+      "sourceSize": {"w":66,"h":77}
     },
     "jumpy_run_06.png": {
-      "frame": {
-        "x": 395,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":70,"y":155,"w":66,"h":78},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":78},
+      "sourceSize": {"w":66,"h":78}
     },
     "jumpy_run_07.png": {
-      "frame": {
-        "x": 0,
-        "y": 78,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":138,"y":155,"w":67,"h":77},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":67,"h":77},
+      "sourceSize": {"w":67,"h":77}
     },
     "jumpy_run_08.png": {
-      "frame": {
-        "x": 79,
-        "y": 78,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":384,"y":1,"w":82,"h":76},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":82,"h":76},
+      "sourceSize": {"w":82,"h":76}
     },
     "jumpy_run_09.png": {
-      "frame": {
-        "x": 158,
-        "y": 78,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":202,"y":1,"w":89,"h":72},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":89,"h":72},
+      "sourceSize": {"w":89,"h":72}
     },
     "jumpy_run_10.png": {
-      "frame": {
-        "x": 237,
-        "y": 78,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":103,"y":1,"w":97,"h":72},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":97,"h":72},
+      "sourceSize": {"w":97,"h":72}
     },
     "jumpy_run_11.png": {
-      "frame": {
-        "x": 316,
-        "y": 78,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":1,"y":1,"w":100,"h":74},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":100,"h":74},
+      "sourceSize": {"w":100,"h":74}
     },
     "jumpy_run_12.png": {
-      "frame": {
-        "x": 395,
-        "y": 78,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":1,"y":77,"w":96,"h":76},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":96,"h":76},
+      "sourceSize": {"w":96,"h":76}
     },
     "jumpy_run_13.png": {
-      "frame": {
-        "x": 0,
-        "y": 156,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":293,"y":1,"w":89,"h":77},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":89,"h":77},
+      "sourceSize": {"w":89,"h":77}
     },
     "jumpy_run_14.png": {
-      "frame": {
-        "x": 79,
-        "y": 156,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":167,"y":75,"w":79,"h":78},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":79,"h":78},
+      "sourceSize": {"w":79,"h":78}
     },
     "jumpy_run_15.png": {
-      "frame": {
-        "x": 158,
-        "y": 156,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":1,"y":155,"w":67,"h":79},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":67,"h":79},
+      "sourceSize": {"w":67,"h":79}
     },
     "jumpy_run_16.png": {
-      "frame": {
-        "x": 237,
-        "y": 156,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":275,"y":156,"w":66,"h":78},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":78},
+      "sourceSize": {"w":66,"h":78}
     },
     "jumpy_run_17.png": {
-      "frame": {
-        "x": 316,
-        "y": 156,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":343,"y":156,"w":66,"h":76},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":76},
+      "sourceSize": {"w":66,"h":76}
     },
     "jumpy_run_18.png": {
-      "frame": {
-        "x": 395,
-        "y": 156,
-        "w": 79,
-        "h": 78
-      },
+      "frame": {"x":411,"y":156,"w":66,"h":71},
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 79,
-        "h": 78
-      },
-      "sourceSize": {
-        "w": 79,
-        "h": 78
-      }
+      "spriteSourceSize": {"x":0,"y":0,"w":66,"h":71},
+      "sourceSize": {"w":66,"h":71}
     }
   },
   "animations": {
@@ -384,11 +150,11 @@
     ]
   },
   "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
     "image": "jumpy_run.png",
-    "size": {
-      "w": 478,
-      "h": 235
-    },
+    "format": "RGBA8888",
+    "size": {"w":478,"h":235},
     "scale": "1"
   }
 }

@@ -104,7 +104,8 @@ export class Game {
     }
 
     // Coin pool
-    const coinFrames = this.buildFrames('coins_anim', 16);
+    const coinSheet = Assets.get('/assets/coins_anim.json');
+    const coinFrames = coinSheet.animations['coins_anim'];
     for (let i = 0; i < COIN_POOL_SIZE; i++) {
       const coin = new AnimatedSprite(coinFrames);
       coin.position.set(0, 2000);
@@ -118,7 +119,8 @@ export class Game {
     this.jumpSprite = new Sprite(Texture.from('/assets/jumpy_jump.png'));
     stage.addChild(this.jumpSprite);
 
-    this.runAnim = new AnimatedSprite(this.buildFrames('jumpy_run', 18));
+    const runSheet = Assets.get('/assets/jumpy_run.json');
+    this.runAnim = new AnimatedSprite(runSheet.animations['jumpy_run']);
     stage.addChild(this.runAnim);
 
     const style = new TextStyle({
@@ -137,13 +139,6 @@ export class Game {
 
     this.coins = new CoinManager(this.state);
     this.platforms = new PlatformManager(this.state, this.coins);
-  }
-
-  private buildFrames(name: string, count: number): Texture[] {
-    return Array.from({ length: count }, (_, i) => {
-      const n = String(i + 1).padStart(2, '0');
-      return Texture.from(`${name}_${n}.png`);
-    });
   }
 
   private startGame(): void {
