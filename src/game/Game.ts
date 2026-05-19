@@ -41,6 +41,8 @@ export class Game {
   private background!: TilingSprite;
   private water!: TilingSprite;
   private jumpSprite!: Sprite;
+  private fallSprite!: Sprite;
+  private jumpInitiated = false;
   private runAnim!: AnimatedSprite;
   private textScore!: Text;
   private textHighScore!: Text;
@@ -103,6 +105,7 @@ export class Game {
       '/assets/tilesx4.png',
       '/assets/tilesx5.png',
       '/assets/luc-jump.png',
+      '/assets/luc-fall.png',
       '/assets/luc_run.json',
       '/assets/coins_anim.json',
       '/assets/sound_off.png',
@@ -167,8 +170,12 @@ export class Game {
     }
 
     this.jumpSprite = new Sprite(Texture.from('/assets/luc-jump.png'));
-    this.jumpSprite.scale.set(0.09);
+    this.jumpSprite.scale.set(0.11);
     stage.addChild(this.jumpSprite);
+
+    this.fallSprite = new Sprite(Texture.from('/assets/luc-fall.png'));
+    this.fallSprite.scale.set(0.105);
+    stage.addChild(this.fallSprite);
 
     const runSheet = Assets.get('/assets/luc_run.json');
     this.runAnim = new AnimatedSprite(runSheet.animations['luc_run']);
@@ -278,7 +285,11 @@ export class Game {
     const playerY = platformY - 250;
 
     this.jumpSprite.position.set(playerX, playerY);
-    this.jumpSprite.visible = true;
+    this.jumpSprite.visible = false;
+
+    this.fallSprite.position.set(playerX, playerY);
+    this.fallSprite.visible = true;
+    this.jumpInitiated = false;
 
     this.runAnim.scale.set(0.48, 0.48);
     this.runAnim.position.set(playerX, playerY);
@@ -303,19 +314,24 @@ export class Game {
 
     if (onGround) {
       if (s.isPress) {
+        this.jumpInitiated = true;
         s.vy = JUMP_VELOCITY;
         this.jumpSprite.position.set(player.x, player.y + player.height - this.jumpSprite.height);
+        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y);
         player.visible = false;
         this.jumpSprite.visible = true;
+        this.fallSprite.visible = false;
         s.air = true;
         if (this.soundEnabled) {
           this.jumpSound.currentTime = 0;
           this.jumpSound.play();
         }
       } else {
+        this.jumpInitiated = false;
         s.vy = 0;
         player.position.set(this.jumpSprite.x, this.jumpSprite.y + this.jumpSprite.height - player.height);
         this.jumpSprite.visible = false;
+        this.fallSprite.visible = false;
         player.visible = true;
         player.y = s.currentPlatform!.y + 15 - player.height;
         s.air = false;
@@ -326,7 +342,14 @@ export class Game {
     } else {
       s.isPress = false;
       player.visible = false;
-      this.jumpSprite.visible = true;
+      if (this.jumpInitiated) {
+        this.jumpSprite.visible = true;
+        this.fallSprite.visible = false;
+      } else {
+        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y);
+        this.fallSprite.visible = true;
+        this.jumpSprite.visible = false;
+      }
       s.vy += s.gravity;
       s.canBePressed = false;
     }

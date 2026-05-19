@@ -1,116 +1,116 @@
 {
   "frames": {
     "luc_run_01.png": {
-      "frame": {"x":78,"y":85,"w":117,"h":314},
+      "frame": { "x": 75, "y": 83, "w": 145, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":117,"h":314},
-      "sourceSize": {"w":117,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 145, "h": 323 },
+      "sourceSize": { "w": 145, "h": 323 }
     },
     "luc_run_02.png": {
-      "frame": {"x":278,"y":85,"w":122,"h":314},
+      "frame": { "x": 227, "y": 81, "w": 201, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":122,"h":314},
-      "sourceSize": {"w":122,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 201, "h": 323 },
+      "sourceSize": { "w": 201, "h": 323 }
     },
     "luc_run_03.png": {
-      "frame": {"x":472,"y":85,"w":137,"h":314},
+      "frame": { "x": 451, "y": 81, "w": 180, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":137,"h":314},
-      "sourceSize": {"w":137,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 180, "h": 323 },
+      "sourceSize": { "w": 180, "h": 323 }
     },
     "luc_run_04.png": {
-      "frame": {"x":677,"y":85,"w":132,"h":314},
+      "frame": { "x": 668, "y": 80, "w": 181, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":132,"h":314},
-      "sourceSize": {"w":132,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 181, "h": 323 },
+      "sourceSize": { "w": 181, "h": 323 }
     },
     "luc_run_05.png": {
-      "frame": {"x":895,"y":85,"w":110,"h":314},
+      "frame": { "x": 880, "y": 81, "w": 174, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":110,"h":314},
-      "sourceSize": {"w":110,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 174, "h": 323 },
+      "sourceSize": { "w": 174, "h": 323 }
     },
     "luc_run_06.png": {
-      "frame": {"x":1083,"y":85,"w":130,"h":314},
+      "frame": { "x": 1073, "y": 82, "w": 172, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":130,"h":314},
-      "sourceSize": {"w":130,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 172, "h": 323 },
+      "sourceSize": { "w": 172, "h": 323 }
     },
     "luc_run_07.png": {
-      "frame": {"x":1298,"y":85,"w":150,"h":314},
+      "frame": { "x": 1259, "y": 81, "w": 227, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":150,"h":314},
-      "sourceSize": {"w":150,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 227, "h": 323 },
+      "sourceSize": { "w": 227, "h": 323 }
     },
     "luc_run_08.png": {
-      "frame": {"x":1534,"y":85,"w":120,"h":314},
+      "frame": { "x": 1551, "y": 81, "w": 125, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":120,"h":314},
-      "sourceSize": {"w":120,"h":314}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 125, "h": 323 },
+      "sourceSize": { "w": 125, "h": 323 }
     },
     "luc_run_09.png": {
-      "frame": {"x":78,"y":491,"w":117,"h":313},
+      "frame": { "x": 44, "y": 483, "w": 181, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":117,"h":313},
-      "sourceSize": {"w":117,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 181, "h": 323 },
+      "sourceSize": { "w": 181, "h": 323 }
     },
     "luc_run_10.png": {
-      "frame": {"x":278,"y":491,"w":122,"h":313},
+      "frame": { "x": 250, "y": 485, "w": 148, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":122,"h":313},
-      "sourceSize": {"w":122,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 148, "h": 323 },
+      "sourceSize": { "w": 148, "h": 323 }
     },
     "luc_run_11.png": {
-      "frame": {"x":472,"y":491,"w":137,"h":313},
+      "frame": { "x": 452, "y": 483, "w": 160, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":137,"h":313},
-      "sourceSize": {"w":137,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 160, "h": 323 },
+      "sourceSize": { "w": 160, "h": 323 }
     },
     "luc_run_12.png": {
-      "frame": {"x":677,"y":491,"w":132,"h":313},
+      "frame": { "x": 645, "y": 483, "w": 178, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":132,"h":313},
-      "sourceSize": {"w":132,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 178, "h": 323 },
+      "sourceSize": { "w": 178, "h": 323 }
     },
     "luc_run_13.png": {
-      "frame": {"x":895,"y":491,"w":110,"h":313},
+      "frame": { "x": 850, "y": 485, "w": 166, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":110,"h":313},
-      "sourceSize": {"w":110,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 166, "h": 323 },
+      "sourceSize": { "w": 166, "h": 323 }
     },
     "luc_run_14.png": {
-      "frame": {"x":1083,"y":491,"w":130,"h":313},
+      "frame": { "x": 1052, "y": 483, "w": 185, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":130,"h":313},
-      "sourceSize": {"w":130,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 185, "h": 323 },
+      "sourceSize": { "w": 185, "h": 323 }
     },
     "luc_run_15.png": {
-      "frame": {"x":1298,"y":491,"w":150,"h":313},
+      "frame": { "x": 1285, "y": 485, "w": 171, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":150,"h":313},
-      "sourceSize": {"w":150,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 171, "h": 323 },
+      "sourceSize": { "w": 171, "h": 323 }
     },
     "luc_run_16.png": {
-      "frame": {"x":1534,"y":491,"w":120,"h":313},
+      "frame": { "x": 1480, "y": 484, "w": 188, "h": 323 },
       "rotated": false,
       "trimmed": false,
-      "spriteSourceSize": {"x":0,"y":0,"w":120,"h":313},
-      "sourceSize": {"w":120,"h":313}
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 188, "h": 323 },
+      "sourceSize": { "w": 188, "h": 323 }
     }
   },
   "animations": {
@@ -134,11 +134,14 @@
     ]
   },
   "meta": {
-    "app": "manual",
-    "version": "1.0",
-    "image": "luc-running-animation-black-background.png",
-    "format": "RGB888",
-    "size": {"w":1790,"h":879},
+    "app": "auto-generated",
+    "version": "1.1",
+    "image": "luc-running-animation.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1790,
+      "h": 879
+    },
     "scale": "1"
   }
 }
