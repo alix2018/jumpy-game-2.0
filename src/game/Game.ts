@@ -102,8 +102,8 @@ export class Game {
       '/assets/tilesx3.png',
       '/assets/tilesx4.png',
       '/assets/tilesx5.png',
-      '/assets/jumpy_jump.png',
-      '/assets/jumpy_run.json',
+      '/assets/luc-jump.png',
+      '/assets/luc_run.json',
       '/assets/coins_anim.json',
       '/assets/sound_off.png',
       '/assets/sound_on.png',
@@ -166,11 +166,12 @@ export class Game {
       this.state.coins.push(coin);
     }
 
-    this.jumpSprite = new Sprite(Texture.from('/assets/jumpy_jump.png'));
+    this.jumpSprite = new Sprite(Texture.from('/assets/luc-jump.png'));
+    this.jumpSprite.scale.set(0.09);
     stage.addChild(this.jumpSprite);
 
-    const runSheet = Assets.get('/assets/jumpy_run.json');
-    this.runAnim = new AnimatedSprite(runSheet.animations['jumpy_run']);
+    const runSheet = Assets.get('/assets/luc_run.json');
+    this.runAnim = new AnimatedSprite(runSheet.animations['luc_run']);
     stage.addChild(this.runAnim);
 
     const fontSize = Math.max(14, Math.round(28 * this.scaleX));
@@ -274,14 +275,14 @@ export class Game {
     // Keep the same 190px vertical gap as landscape so landing vy stays below the 15px
     // collision window — scaling the gap by sy would cause the player to fall too fast.
     const playerX = this.isPortrait ? 30 : Math.round(80 * sx);
-    const playerY = platformY - 190;
+    const playerY = platformY - 250;
 
     this.jumpSprite.position.set(playerX, playerY);
     this.jumpSprite.visible = true;
 
-    this.runAnim.scale.set(0.8, 0.8);
+    this.runAnim.scale.set(0.48, 0.48);
     this.runAnim.position.set(playerX, playerY);
-    this.runAnim.animationSpeed = 0.35;
+    this.runAnim.animationSpeed = 0.14;
     this.runAnim.visible = true;
     this.runAnim.play();
 
@@ -303,7 +304,7 @@ export class Game {
     if (onGround) {
       if (s.isPress) {
         s.vy = JUMP_VELOCITY;
-        this.jumpSprite.position.set(player.x, player.y);
+        this.jumpSprite.position.set(player.x, player.y + player.height - this.jumpSprite.height);
         player.visible = false;
         this.jumpSprite.visible = true;
         s.air = true;
@@ -313,7 +314,7 @@ export class Game {
         }
       } else {
         s.vy = 0;
-        player.position.set(this.jumpSprite.x, this.jumpSprite.y);
+        player.position.set(this.jumpSprite.x, this.jumpSprite.y + this.jumpSprite.height - player.height);
         this.jumpSprite.visible = false;
         player.visible = true;
         player.y = s.currentPlatform!.y + 15 - player.height;

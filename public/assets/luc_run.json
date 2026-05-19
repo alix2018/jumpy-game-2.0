@@ -1,0 +1,144 @@
+{
+  "frames": {
+    "luc_run_01.png": {
+      "frame": {"x":78,"y":85,"w":117,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":117,"h":314},
+      "sourceSize": {"w":117,"h":314}
+    },
+    "luc_run_02.png": {
+      "frame": {"x":278,"y":85,"w":122,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":122,"h":314},
+      "sourceSize": {"w":122,"h":314}
+    },
+    "luc_run_03.png": {
+      "frame": {"x":472,"y":85,"w":137,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":137,"h":314},
+      "sourceSize": {"w":137,"h":314}
+    },
+    "luc_run_04.png": {
+      "frame": {"x":677,"y":85,"w":132,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":132,"h":314},
+      "sourceSize": {"w":132,"h":314}
+    },
+    "luc_run_05.png": {
+      "frame": {"x":895,"y":85,"w":110,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":110,"h":314},
+      "sourceSize": {"w":110,"h":314}
+    },
+    "luc_run_06.png": {
+      "frame": {"x":1083,"y":85,"w":130,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":130,"h":314},
+      "sourceSize": {"w":130,"h":314}
+    },
+    "luc_run_07.png": {
+      "frame": {"x":1298,"y":85,"w":150,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":150,"h":314},
+      "sourceSize": {"w":150,"h":314}
+    },
+    "luc_run_08.png": {
+      "frame": {"x":1534,"y":85,"w":120,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":120,"h":314},
+      "sourceSize": {"w":120,"h":314}
+    },
+    "luc_run_09.png": {
+      "frame": {"x":78,"y":491,"w":117,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":117,"h":313},
+      "sourceSize": {"w":117,"h":313}
+    },
+    "luc_run_10.png": {
+      "frame": {"x":278,"y":491,"w":122,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":122,"h":313},
+      "sourceSize": {"w":122,"h":313}
+    },
+    "luc_run_11.png": {
+      "frame": {"x":472,"y":491,"w":137,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":137,"h":313},
+      "sourceSize": {"w":137,"h":313}
+    },
+    "luc_run_12.png": {
+      "frame": {"x":677,"y":491,"w":132,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":132,"h":313},
+      "sourceSize": {"w":132,"h":313}
+    },
+    "luc_run_13.png": {
+      "frame": {"x":895,"y":491,"w":110,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":110,"h":313},
+      "sourceSize": {"w":110,"h":313}
+    },
+    "luc_run_14.png": {
+      "frame": {"x":1083,"y":491,"w":130,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":130,"h":313},
+      "sourceSize": {"w":130,"h":313}
+    },
+    "luc_run_15.png": {
+      "frame": {"x":1298,"y":491,"w":150,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":150,"h":313},
+      "sourceSize": {"w":150,"h":313}
+    },
+    "luc_run_16.png": {
+      "frame": {"x":1534,"y":491,"w":120,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":120,"h":313},
+      "sourceSize": {"w":120,"h":313}
+    }
+  },
+  "animations": {
+    "luc_run": [
+      "luc_run_01.png",
+      "luc_run_02.png",
+      "luc_run_03.png",
+      "luc_run_04.png",
+      "luc_run_05.png",
+      "luc_run_06.png",
+      "luc_run_07.png",
+      "luc_run_08.png",
+      "luc_run_09.png",
+      "luc_run_10.png",
+      "luc_run_11.png",
+      "luc_run_12.png",
+      "luc_run_13.png",
+      "luc_run_14.png",
+      "luc_run_15.png",
+      "luc_run_16.png"
+    ]
+  },
+  "meta": {
+    "app": "manual",
+    "version": "1.0",
+    "image": "luc-running-animation-black-background.png",
+    "format": "RGB888",
+    "size": {"w":1790,"h":879},
+    "scale": "1"
+  }
+}
