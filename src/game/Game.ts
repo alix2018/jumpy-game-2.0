@@ -20,7 +20,7 @@ import {
   MAX_JUMP_VELOCITY,
   JUMP_HOLD_ACCEL,
   BG_SCROLL_SPEED,
-  WATER_SCROLL_SPEED,
+  // WATER_SCROLL_SPEED,
   SCORE_PER_FRAME,
   SPEED_INCREMENT,
   FALL_DEATH_Y,
@@ -39,7 +39,7 @@ export class Game {
   private isPortrait!: boolean;
 
   private background!: TilingSprite;
-  private water!: TilingSprite;
+  // private water!: TilingSprite;
   private jumpSprite!: Sprite;
   private fallSprite!: Sprite;
   private jumpInitiated = false;
@@ -98,7 +98,7 @@ export class Game {
   private async loadAssets(): Promise<void> {
     await Assets.load([
       '/assets/background.png',
-      '/assets/water.png',
+      // '/assets/water.png',
       '/assets/tilex1.png',
       '/assets/tilesx2.png',
       '/assets/tilesx3.png',
@@ -131,14 +131,17 @@ export class Game {
       const tileScale = bgSpriteSize.height / bgTexture.height;
       this.background.tileScale.set(tileScale, tileScale);
     } else {
-      this.background = new TilingSprite({ texture: bgTexture, width: bgTexture.width, height: bgTexture.height });
+      const bgSpriteSize = { width: this.gameWidth / 0.95, height: this.gameHeight / 0.95 };
+      this.background = new TilingSprite({ texture: bgTexture, ...bgSpriteSize });
+      const tileScale = bgSpriteSize.height / bgTexture.height;
+      this.background.tileScale.set(tileScale, tileScale);
     }
     stage.addChild(this.background);
 
-    const waterTexture = Texture.from('/assets/water.png');
-    const waterWidth = this.isPortrait ? this.gameWidth : waterTexture.width;
-    this.water = new TilingSprite({ texture: waterTexture, width: waterWidth, height: waterTexture.height });
-    stage.addChild(this.water);
+    // const waterTexture = Texture.from('/assets/water.png');
+    // const waterWidth = this.isPortrait ? this.gameWidth : waterTexture.width;
+    // this.water = new TilingSprite({ texture: waterTexture, width: waterWidth, height: waterTexture.height });
+    // stage.addChild(this.water);
 
     const platformDefs: [string, number][] = [
       ['/assets/tilex1.png', 2],
@@ -245,10 +248,10 @@ export class Game {
 
     this.background.scale.set(0.95, 0.95);
     this.background.position.set(0, 0);
-    this.background.tilePosition.set(0, 0);
+    this.background.tilePosition.set(this.isPortrait ? -400 : 0, 0);
 
-    this.water.position.set(0, Math.round(545 * sy));
-    this.water.tilePosition.set(0, 0);
+    // this.water.position.set(0, Math.round(545 * sy));
+    // this.water.tilePosition.set(0, 0);
 
     // Destructure pool in definition order:
     // [tilex1×2, tilesx2×2, tilesx3×2, tilesx4×2, tilesx5×2]
@@ -355,7 +358,7 @@ export class Game {
     }
 
     this.background.tilePosition.x -= BG_SCROLL_SPEED;
-    this.water.tilePosition.x -= WATER_SCROLL_SPEED;
+    // this.water.tilePosition.x -= WATER_SCROLL_SPEED;
 
     this.jumpSprite.y += s.vy;
     player.y += s.vy;
