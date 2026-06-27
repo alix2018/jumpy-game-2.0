@@ -20,7 +20,7 @@ import {
   MAX_JUMP_VELOCITY,
   JUMP_HOLD_ACCEL,
   BG_SCROLL_SPEED,
-  WATER_SCROLL_SPEED,
+  // WATER_SCROLL_SPEED,
   SCORE_PER_FRAME,
   SPEED_INCREMENT,
   FALL_DEATH_Y,
@@ -39,8 +39,10 @@ export class Game {
   private isPortrait!: boolean;
 
   private background!: TilingSprite;
-  private water!: TilingSprite;
+  // private water!: TilingSprite;
   private jumpSprite!: Sprite;
+  private fallSprite!: Sprite;
+  private jumpInitiated = false;
   private runAnim!: AnimatedSprite;
   private textScore!: Text;
   private textHighScore!: Text;
@@ -96,14 +98,15 @@ export class Game {
   private async loadAssets(): Promise<void> {
     await Assets.load([
       '/assets/background.png',
-      '/assets/water.png',
+      // '/assets/water.png',
       '/assets/tilex1.png',
       '/assets/tilesx2.png',
       '/assets/tilesx3.png',
       '/assets/tilesx4.png',
       '/assets/tilesx5.png',
-      '/assets/jumpy_jump.png',
-      '/assets/jumpy_run.json',
+      '/assets/shannon-jump-resize.png',
+      '/assets/shannon-fall.png',
+      '/assets/shannon_run.json',
       '/assets/coins_anim.json',
       '/assets/sound_off.png',
       '/assets/sound_on.png',
@@ -128,14 +131,17 @@ export class Game {
       const tileScale = bgSpriteSize.height / bgTexture.height;
       this.background.tileScale.set(tileScale, tileScale);
     } else {
-      this.background = new TilingSprite({ texture: bgTexture, width: bgTexture.width, height: bgTexture.height });
+      const bgSpriteSize = { width: this.gameWidth / 0.95, height: this.gameHeight / 0.95 };
+      this.background = new TilingSprite({ texture: bgTexture, ...bgSpriteSize });
+      const tileScale = bgSpriteSize.height / bgTexture.height;
+      this.background.tileScale.set(tileScale, tileScale);
     }
     stage.addChild(this.background);
 
-    const waterTexture = Texture.from('/assets/water.png');
-    const waterWidth = this.isPortrait ? this.gameWidth : waterTexture.width;
-    this.water = new TilingSprite({ texture: waterTexture, width: waterWidth, height: waterTexture.height });
-    stage.addChild(this.water);
+    // const waterTexture = Texture.from('/assets/water.png');
+    // const waterWidth = this.isPortrait ? this.gameWidth : waterTexture.width;
+    // this.water = new TilingSprite({ texture: waterTexture, width: waterWidth, height: waterTexture.height });
+    // stage.addChild(this.water);
 
     const platformDefs: [string, number][] = [
       ['/assets/tilex1.png', 2],
@@ -166,11 +172,16 @@ export class Game {
       this.state.coins.push(coin);
     }
 
-    this.jumpSprite = new Sprite(Texture.from('/assets/jumpy_jump.png'));
+    this.jumpSprite = new Sprite(Texture.from('/assets/shannon-jump-resize.png'));
+    this.jumpSprite.scale.set(0.13);
     stage.addChild(this.jumpSprite);
 
-    const runSheet = Assets.get('/assets/jumpy_run.json');
-    this.runAnim = new AnimatedSprite(runSheet.animations['jumpy_run']);
+    this.fallSprite = new Sprite(Texture.from('/assets/shannon-fall.png'));
+    this.fallSprite.scale.set(0.11);
+    stage.addChild(this.fallSprite);
+
+    const runSheet = Assets.get('/assets/shannon_run.json');
+    this.runAnim = new AnimatedSprite(runSheet.animations['shannon_run']);
     stage.addChild(this.runAnim);
 
     const fontSize = Math.max(14, Math.round(28 * this.scaleX));
@@ -237,10 +248,10 @@ export class Game {
 
     this.background.scale.set(0.95, 0.95);
     this.background.position.set(0, 0);
-    this.background.tilePosition.set(0, 0);
+    this.background.tilePosition.set(this.isPortrait ? -400 : 0, 0);
 
-    this.water.position.set(0, Math.round(545 * sy));
-    this.water.tilePosition.set(0, 0);
+    // this.water.position.set(0, Math.round(545 * sy));
+    // this.water.tilePosition.set(0, 0);
 
     // Destructure pool in definition order:
     // [tilex1×2, tilesx2×2, tilesx3×2, tilesx4×2, tilesx5×2]
@@ -274,14 +285,18 @@ export class Game {
     // Keep the same 190px vertical gap as landscape so landing vy stays below the 15px
     // collision window — scaling the gap by sy would cause the player to fall too fast.
     const playerX = this.isPortrait ? 30 : Math.round(80 * sx);
-    const playerY = platformY - 190;
+    const playerY = platformY - 250;
 
     this.jumpSprite.position.set(playerX, playerY);
-    this.jumpSprite.visible = true;
+    this.jumpSprite.visible = false;
 
-    this.runAnim.scale.set(0.8, 0.8);
+    this.fallSprite.position.set(playerX, playerY);
+    this.fallSprite.visible = true;
+    this.jumpInitiated = false;
+
+    this.runAnim.scale.set(0.48, 0.48);
     this.runAnim.position.set(playerX, playerY);
-    this.runAnim.animationSpeed = 0.35;
+    this.runAnim.animationSpeed = 0.14;
     this.runAnim.visible = true;
     this.runAnim.play();
 
@@ -302,19 +317,24 @@ export class Game {
 
     if (onGround) {
       if (s.isPress) {
+        this.jumpInitiated = true;
         s.vy = JUMP_VELOCITY;
-        this.jumpSprite.position.set(player.x, player.y);
+        this.jumpSprite.position.set(player.x, player.y + player.height - this.jumpSprite.height);
+        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y);
         player.visible = false;
         this.jumpSprite.visible = true;
+        this.fallSprite.visible = false;
         s.air = true;
         if (this.soundEnabled) {
           this.jumpSound.currentTime = 0;
           this.jumpSound.play();
         }
       } else {
+        this.jumpInitiated = false;
         s.vy = 0;
-        player.position.set(this.jumpSprite.x, this.jumpSprite.y);
+        player.position.set(this.jumpSprite.x, this.jumpSprite.y + this.jumpSprite.height - player.height);
         this.jumpSprite.visible = false;
+        this.fallSprite.visible = false;
         player.visible = true;
         player.y = s.currentPlatform!.y + 15 - player.height;
         s.air = false;
@@ -325,13 +345,20 @@ export class Game {
     } else {
       s.isPress = false;
       player.visible = false;
-      this.jumpSprite.visible = true;
+      if (this.jumpInitiated) {
+        this.jumpSprite.visible = true;
+        this.fallSprite.visible = false;
+      } else {
+        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y);
+        this.fallSprite.visible = true;
+        this.jumpSprite.visible = false;
+      }
       s.vy += s.gravity;
       s.canBePressed = false;
     }
 
     this.background.tilePosition.x -= BG_SCROLL_SPEED;
-    this.water.tilePosition.x -= WATER_SCROLL_SPEED;
+    // this.water.tilePosition.x -= WATER_SCROLL_SPEED;
 
     this.jumpSprite.y += s.vy;
     player.y += s.vy;

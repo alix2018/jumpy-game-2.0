@@ -1,0 +1,147 @@
+{
+  "frames": {
+    "luc_run_01.png": {
+      "frame": { "x": 75, "y": 83, "w": 145, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 145, "h": 323 },
+      "sourceSize": { "w": 145, "h": 323 }
+    },
+    "luc_run_02.png": {
+      "frame": { "x": 227, "y": 81, "w": 201, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 201, "h": 323 },
+      "sourceSize": { "w": 201, "h": 323 }
+    },
+    "luc_run_03.png": {
+      "frame": { "x": 451, "y": 81, "w": 180, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 180, "h": 323 },
+      "sourceSize": { "w": 180, "h": 323 }
+    },
+    "luc_run_04.png": {
+      "frame": { "x": 668, "y": 80, "w": 181, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 181, "h": 323 },
+      "sourceSize": { "w": 181, "h": 323 }
+    },
+    "luc_run_05.png": {
+      "frame": { "x": 880, "y": 81, "w": 174, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 174, "h": 323 },
+      "sourceSize": { "w": 174, "h": 323 }
+    },
+    "luc_run_06.png": {
+      "frame": { "x": 1073, "y": 82, "w": 172, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 172, "h": 323 },
+      "sourceSize": { "w": 172, "h": 323 }
+    },
+    "luc_run_07.png": {
+      "frame": { "x": 1259, "y": 81, "w": 227, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 227, "h": 323 },
+      "sourceSize": { "w": 227, "h": 323 }
+    },
+    "luc_run_08.png": {
+      "frame": { "x": 1551, "y": 81, "w": 125, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 125, "h": 323 },
+      "sourceSize": { "w": 125, "h": 323 }
+    },
+    "luc_run_09.png": {
+      "frame": { "x": 44, "y": 483, "w": 181, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 181, "h": 323 },
+      "sourceSize": { "w": 181, "h": 323 }
+    },
+    "luc_run_10.png": {
+      "frame": { "x": 250, "y": 485, "w": 148, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 148, "h": 323 },
+      "sourceSize": { "w": 148, "h": 323 }
+    },
+    "luc_run_11.png": {
+      "frame": { "x": 452, "y": 483, "w": 160, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 160, "h": 323 },
+      "sourceSize": { "w": 160, "h": 323 }
+    },
+    "luc_run_12.png": {
+      "frame": { "x": 645, "y": 483, "w": 178, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 178, "h": 323 },
+      "sourceSize": { "w": 178, "h": 323 }
+    },
+    "luc_run_13.png": {
+      "frame": { "x": 850, "y": 485, "w": 166, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 166, "h": 323 },
+      "sourceSize": { "w": 166, "h": 323 }
+    },
+    "luc_run_14.png": {
+      "frame": { "x": 1052, "y": 483, "w": 185, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 185, "h": 323 },
+      "sourceSize": { "w": 185, "h": 323 }
+    },
+    "luc_run_15.png": {
+      "frame": { "x": 1285, "y": 485, "w": 171, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 171, "h": 323 },
+      "sourceSize": { "w": 171, "h": 323 }
+    },
+    "luc_run_16.png": {
+      "frame": { "x": 1480, "y": 484, "w": 188, "h": 323 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 188, "h": 323 },
+      "sourceSize": { "w": 188, "h": 323 }
+    }
+  },
+  "animations": {
+    "luc_run": [
+      "luc_run_01.png",
+      "luc_run_02.png",
+      "luc_run_03.png",
+      "luc_run_04.png",
+      "luc_run_05.png",
+      "luc_run_06.png",
+      "luc_run_07.png",
+      "luc_run_08.png",
+      "luc_run_09.png",
+      "luc_run_10.png",
+      "luc_run_11.png",
+      "luc_run_12.png",
+      "luc_run_13.png",
+      "luc_run_14.png",
+      "luc_run_15.png",
+      "luc_run_16.png"
+    ]
+  },
+  "meta": {
+    "app": "auto-generated",
+    "version": "1.1",
+    "image": "luc-running-animation.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1790,
+      "h": 879
+    },
+    "scale": "1"
+  }
+}
