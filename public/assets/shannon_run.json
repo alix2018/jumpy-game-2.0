@@ -1,0 +1,160 @@
+{
+  "frames": {
+    "shannon_run_01.png": {
+      "frame": {"x":14,"y":74,"w":197,"h":323},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":197,"h":323},
+      "sourceSize": {"w":197,"h":323}
+    },
+    "shannon_run_02.png": {
+      "frame": {"x":234,"y":70,"w":178,"h":332},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":178,"h":332},
+      "sourceSize": {"w":178,"h":332}
+    },
+    "shannon_run_03.png": {
+      "frame": {"x":450,"y":69,"w":157,"h":328},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":157,"h":328},
+      "sourceSize": {"w":157,"h":328}
+    },
+    "shannon_run_04.png": {
+      "frame": {"x":647,"y":69,"w":165,"h":327},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":165,"h":327},
+      "sourceSize": {"w":165,"h":327}
+    },
+    "shannon_run_05.png": {
+      "frame": {"x":845,"y":69,"w":165,"h":317},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":165,"h":317},
+      "sourceSize": {"w":165,"h":317}
+    },
+    "shannon_run_06.png": {
+      "frame": {"x":1050,"y":70,"w":169,"h":327},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":169,"h":327},
+      "sourceSize": {"w":169,"h":327}
+    },
+    "shannon_run_07.png": {
+      "frame": {"x":1256,"y":71,"w":154,"h":332},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":154,"h":332},
+      "sourceSize": {"w":154,"h":332}
+    },
+    "shannon_run_08.png": {
+      "frame": {"x":1445,"y":71,"w":160,"h":330},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":160,"h":330},
+      "sourceSize": {"w":160,"h":330}
+    },
+    "shannon_run_09.png": {
+      "frame": {"x":1628,"y":74,"w":152,"h":328},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":152,"h":328},
+      "sourceSize": {"w":152,"h":328}
+    },
+    "shannon_run_10.png": {
+      "frame": {"x":22,"y":480,"w":193,"h":313},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":193,"h":313},
+      "sourceSize": {"w":193,"h":313}
+    },
+    "shannon_run_11.png": {
+      "frame": {"x":248,"y":479,"w":167,"h":317},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":167,"h":317},
+      "sourceSize": {"w":167,"h":317}
+    },
+    "shannon_run_12.png": {
+      "frame": {"x":430,"y":480,"w":174,"h":297},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":174,"h":297},
+      "sourceSize": {"w":174,"h":297}
+    },
+    "shannon_run_13.png": {
+      "frame": {"x":625,"y":480,"w":180,"h":320},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":180,"h":320},
+      "sourceSize": {"w":180,"h":320}
+    },
+    "shannon_run_14.png": {
+      "frame": {"x":828,"y":478,"w":166,"h":310},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":166,"h":310},
+      "sourceSize": {"w":166,"h":310}
+    },
+    "shannon_run_15.png": {
+      "frame": {"x":1014,"y":478,"w":160,"h":314},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":160,"h":314},
+      "sourceSize": {"w":160,"h":314}
+    },
+    "shannon_run_16.png": {
+      "frame": {"x":1204,"y":476,"w":157,"h":308},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":157,"h":308},
+      "sourceSize": {"w":157,"h":308}
+    },
+    "shannon_run_17.png": {
+      "frame": {"x":1395,"y":478,"w":140,"h":330},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":140,"h":330},
+      "sourceSize": {"w":140,"h":330}
+    },
+    "shannon_run_18.png": {
+      "frame": {"x":1575,"y":481,"w":134,"h":327},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":0,"y":0,"w":134,"h":327},
+      "sourceSize": {"w":134,"h":327}
+    }
+  },
+  "animations": {
+    "shannon_run": [
+      "shannon_run_01.png",
+      "shannon_run_02.png",
+      "shannon_run_03.png",
+      "shannon_run_04.png",
+      "shannon_run_05.png",
+      "shannon_run_06.png",
+      "shannon_run_07.png",
+      "shannon_run_08.png",
+      "shannon_run_09.png",
+      "shannon_run_10.png",
+      "shannon_run_11.png",
+      "shannon_run_12.png",
+      "shannon_run_13.png",
+      "shannon_run_14.png",
+      "shannon_run_15.png",
+      "shannon_run_16.png",
+      "shannon_run_17.png",
+      "shannon_run_18.png"
+    ]
+  },
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
+    "image": "shannon-running-animation.png",
+    "format": "RGBA8888",
+    "size": {"w":1791,"h":878},
+    "scale": "1"
+  }
+}

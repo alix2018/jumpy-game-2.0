@@ -104,9 +104,9 @@ export class Game {
       '/assets/tilesx3.png',
       '/assets/tilesx4.png',
       '/assets/tilesx5.png',
-      '/assets/luc-jump.png',
-      '/assets/luc-fall.png',
-      '/assets/luc_run.json',
+      '/assets/shannon-jump-resize.png',
+      '/assets/shannon-fall.png',
+      '/assets/shannon_run.json',
       '/assets/coins_anim.json',
       '/assets/sound_off.png',
       '/assets/sound_on.png',
@@ -172,16 +172,16 @@ export class Game {
       this.state.coins.push(coin);
     }
 
-    this.jumpSprite = new Sprite(Texture.from('/assets/luc-jump.png'));
-    this.jumpSprite.scale.set(0.11);
+    this.jumpSprite = new Sprite(Texture.from('/assets/shannon-jump-resize.png'));
+    this.jumpSprite.scale.set(0.13);
     stage.addChild(this.jumpSprite);
 
-    this.fallSprite = new Sprite(Texture.from('/assets/luc-fall.png'));
-    this.fallSprite.scale.set(0.105);
+    this.fallSprite = new Sprite(Texture.from('/assets/shannon-fall.png'));
+    this.fallSprite.scale.set(0.11);
     stage.addChild(this.fallSprite);
 
-    const runSheet = Assets.get('/assets/luc_run.json');
-    this.runAnim = new AnimatedSprite(runSheet.animations['luc_run']);
+    const runSheet = Assets.get('/assets/shannon_run.json');
+    this.runAnim = new AnimatedSprite(runSheet.animations['shannon_run']);
     stage.addChild(this.runAnim);
 
     const fontSize = Math.max(14, Math.round(28 * this.scaleX));
