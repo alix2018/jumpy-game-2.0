@@ -148,6 +148,7 @@ export class SettingsScreen {
     const sc = Math.max(Math.min(W / 960, H / 600), 0.45);
     const xs = (v: number) => Math.round(v * sc);
     const isMobile = W < H;
+    const isTablet = isMobile && W >= 600;
 
     // ─── Background: cover-scale the settings image ───
     const bgImg = W < H ? '/assets/settings-background-mobile.png' : '/assets/settings-background.png';
@@ -190,7 +191,7 @@ export class SettingsScreen {
     const secStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
-      fontSize: xs(17),
+      fontSize: Math.max(isTablet ? 28 : 15, xs(17)),
       fontWeight: 'bold',
       letterSpacing: xs(2),
       dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
@@ -201,11 +202,11 @@ export class SettingsScreen {
     this.langLbl.position.set(W / 2, y + xs(9));
     c.addChild(this.langLbl);
 
-    y += xs(18) + (isMobile ? xs(24) : xs(14));
+    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? xs(24) : xs(14));
 
     // ── Language buttons ──
-    const lbH = Math.max(xs(44), 36);
-    const lbW = Math.max(xs(120), 70);
+    const lbH = Math.max(isTablet ? 58 : 44, xs(44));
+    const lbW = Math.max(isTablet ? 150 : 110, xs(120));
     const lbGap = xs(16);
     const lbY = y;
 
@@ -216,7 +217,7 @@ export class SettingsScreen {
     const btnTxtStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
-      fontSize: xs(15),
+      fontSize: Math.max(isTablet ? 22 : 14, xs(15)),
       fontWeight: 'bold',
     });
 
@@ -241,7 +242,7 @@ export class SettingsScreen {
     this.charLbl.position.set(W / 2, y + xs(9));
     c.addChild(this.charLbl);
 
-    y += xs(18) + (isMobile ? xs(24) : xs(14));
+    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? xs(24) : xs(14));
 
     // ── Character cards ──
     // Square-ish cards; cap size so two fit side-by-side with a gap
@@ -270,7 +271,7 @@ export class SettingsScreen {
     const charNameStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
-      fontSize: Math.max(xs(14), 8),
+      fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
       fontWeight: 'bold',
     });
 
@@ -300,8 +301,8 @@ export class SettingsScreen {
     y += cardH;
 
     // ── Hint text between cards and play button ──
-    const tipPadX = xs(12);
-    const tipPadY = xs(7);
+    const tipPadX = xs(12) + (isMobile ? 2 : 0);
+    const tipPadY = xs(7) + (isMobile ? 2 : 0);
     const tipR = xs(6);
     this._W = W;
     this._tipParams = { padX: tipPadX, padY: tipPadY, r: tipR };
@@ -322,7 +323,10 @@ export class SettingsScreen {
       style: new TextStyle({
         fill: '#5C3A1E',
         fontFamily: 'Courier New',
-        fontSize: Math.max(xs(13), 9),
+        fontSize: Math.max(isTablet ? 22 : 13, xs(13)),
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: isMobile ? W * 0.65 : W,
       }),
     });
     tooltipTxt.anchor.set(0.5, 0.5);
@@ -331,8 +335,8 @@ export class SettingsScreen {
     this.tooltip = { container: tooltipContainer, bg: tooltipBg, txt: tooltipTxt };
 
     // ── Play button below the hint ──
-    const playH = Math.max(xs(54), 44);
-    const playW = Math.min(Math.max(xs(200), 120), W - xs(60));
+    const playH = Math.max(isTablet ? 84 : 54, xs(54));
+    const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
     const playY = isMobile
       ? H - 60 - shadow - playH
@@ -346,7 +350,7 @@ export class SettingsScreen {
       style: new TextStyle({
         fill: '#ffffff',
         fontFamily: 'Courier New',
-        fontSize: Math.max(xs(22), 12),
+        fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
         fontWeight: 'bold',
         letterSpacing: xs(3),
       }),
