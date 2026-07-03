@@ -102,8 +102,7 @@ export class Game {
     this.showSettings();
     this.watchResize();
 
-    this.app.ticker.maxFPS = 60;
-    this.app.ticker.add(() => this.tick());
+    this.app.ticker.add((ticker) => this.tick(ticker.deltaTime));
   }
 
   private async loadAssets(): Promise<void> {
@@ -339,7 +338,7 @@ export class Game {
     s.coinsOnScreen.push(first);
   }
 
-  private tick(): void {
+  private tick(delta: number): void {
     if (!this.gameStarted || this.isPaused) return;
     const s = this.state;
     const player = this.runAnim;
@@ -371,7 +370,7 @@ export class Game {
         s.canBePressed = true;
       }
     } else if (s.isPress && s.canBePressed && s.vy >= MAX_JUMP_VELOCITY) {
-      s.vy += JUMP_HOLD_ACCEL;
+      s.vy += JUMP_HOLD_ACCEL * delta;
     } else {
       s.isPress = false;
       player.visible = false;
@@ -383,26 +382,26 @@ export class Game {
         this.fallSprite.visible = true;
         this.jumpSprite.visible = false;
       }
-      s.vy += s.gravity;
+      s.vy += s.gravity * delta;
       s.canBePressed = false;
     }
 
-    this.background.tilePosition.x -= BG_SCROLL_SPEED;
+    this.background.tilePosition.x -= BG_SCROLL_SPEED * delta;
     // this.water.tilePosition.x -= WATER_SCROLL_SPEED;
 
-    this.jumpSprite.y += s.vy;
-    player.y += s.vy;
+    this.jumpSprite.y += s.vy * delta;
+    player.y += s.vy * delta;
 
     if (s.score > s.newMilestone) {
       s.currentSpeed += SPEED_INCREMENT;
       s.newMilestone *= 2;
     }
 
-    this.platforms.move(s.currentSpeed);
-    this.coins.move(s.currentSpeed);
+    this.platforms.move(s.currentSpeed * delta);
+    this.coins.move(s.currentSpeed * delta);
 
     const coinScore = this.coins.pickCoins(player);
-    s.score += coinScore + SCORE_PER_FRAME;
+    s.score += coinScore + SCORE_PER_FRAME * delta;
 
     const roundedScore = Math.round(s.score);
     if (roundedScore !== this.lastDisplayedScore) {
