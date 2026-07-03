@@ -90,7 +90,7 @@ export class Game {
       height: this.gameHeight,
       antialias: true,
       backgroundColor: 0x000000,
-      resolution: window.devicePixelRatio || 1,
+      resolution: Math.min(window.devicePixelRatio || 1, 2),
       autoDensity: true,
     });
 
