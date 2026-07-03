@@ -435,6 +435,7 @@ export class Game {
   }
 
   private checkGround(): boolean {
+    if (this.state.vy < 0) return false;
     const { stackOnScreen } = this.state;
     for (let i = 0; i < Math.min(stackOnScreen.length, 2); i++) {
       if (hitPlatform(this.jumpSprite, stackOnScreen[i])) {
