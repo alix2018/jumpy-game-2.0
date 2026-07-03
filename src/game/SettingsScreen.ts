@@ -173,7 +173,7 @@ export class SettingsScreen {
       style: new TextStyle({
         fill: '#5C3A1E',
         fontFamily: 'Courier New',
-        fontSize: xs(36),
+        fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(36)),
         fontWeight: 'bold',
         letterSpacing: xs(1),
       }),
@@ -185,7 +185,7 @@ export class SettingsScreen {
     c.addChild(this.sign);       // sign drawn behind text
     c.addChild(this.titleTxt);   // text in front
 
-    y += signH + (isMobile ? xs(40) : xs(24));
+    y += signH + (isMobile ? (isTablet ? 60 : 28) : xs(24));
 
     // ── Language label ──
     const secStyle = new TextStyle({
@@ -202,7 +202,7 @@ export class SettingsScreen {
     this.langLbl.position.set(W / 2, y + xs(9));
     c.addChild(this.langLbl);
 
-    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? xs(24) : xs(14));
+    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? (isTablet ? 10 : 6) : xs(14));
 
     // ── Language buttons ──
     const lbH = Math.max(isTablet ? 58 : 44, xs(44));
@@ -218,7 +218,6 @@ export class SettingsScreen {
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
       fontSize: Math.max(isTablet ? 22 : 14, xs(15)),
-      fontWeight: 'bold',
     });
 
     this.frTxt = new Text({ text: '', style: btnTxtStyle });
@@ -234,7 +233,7 @@ export class SettingsScreen {
     this.frBtn.gfx.on('pointerdown', () => { this.lang = 'fr'; localStorage.setItem('language', 'fr'); this.refresh(); });
     this.enBtn.gfx.on('pointerdown', () => { this.lang = 'en'; localStorage.setItem('language', 'en'); this.refresh(); });
 
-    y += lbH + (isMobile ? xs(40) : xs(24));
+    y += lbH + (isMobile ? (isTablet ? 60 : 28) : xs(24));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -242,7 +241,7 @@ export class SettingsScreen {
     this.charLbl.position.set(W / 2, y + xs(9));
     c.addChild(this.charLbl);
 
-    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? xs(24) : xs(14));
+    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? (isTablet ? 10 : 6) : xs(14));
 
     // ── Character cards ──
     // Square-ish cards; cap size so two fit side-by-side with a gap
@@ -272,7 +271,6 @@ export class SettingsScreen {
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
       fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
-      fontWeight: 'bold',
     });
 
     const lucName = new Text({ text: 'Luc', style: charNameStyle });
