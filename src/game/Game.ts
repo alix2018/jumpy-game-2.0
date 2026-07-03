@@ -55,6 +55,8 @@ export class Game {
   private jumpSound!: HTMLAudioElement;
   private fallSound!: HTMLAudioElement;
   private fallSoundPlayed = false;
+  private lastDisplayedScore = -1;
+  private lastDisplayedHighScore = -1;
 
   private soundEnabled!: boolean;
   private soundToggleSprite!: Sprite;
@@ -88,7 +90,6 @@ export class Game {
     await this.app.init({
       width: this.gameWidth,
       height: this.gameHeight,
-      antialias: true,
       backgroundColor: 0x000000,
       resolution: Math.min(window.devicePixelRatio || 1, 2),
       autoDensity: true,
@@ -101,6 +102,7 @@ export class Game {
     this.showSettings();
     this.watchResize();
 
+    this.app.ticker.maxFPS = 60;
     this.app.ticker.add(() => this.tick());
   }
 
@@ -402,8 +404,16 @@ export class Game {
     const coinScore = this.coins.pickCoins(player);
     s.score += coinScore + SCORE_PER_FRAME;
 
-    this.textScore.text = `${this.t('score')}: ${Math.round(s.score)}`;
-    this.textHighScore.text = `${this.t('high_score')}: ${Math.round(s.highScore)}`;
+    const roundedScore = Math.round(s.score);
+    if (roundedScore !== this.lastDisplayedScore) {
+      this.lastDisplayedScore = roundedScore;
+      this.textScore.text = `${this.t('score')}: ${roundedScore}`;
+    }
+    const roundedHighScore = Math.round(s.highScore);
+    if (roundedHighScore !== this.lastDisplayedHighScore) {
+      this.lastDisplayedHighScore = roundedHighScore;
+      this.textHighScore.text = `${this.t('high_score')}: ${roundedHighScore}`;
+    }
 
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
       this.fallSoundPlayed = true;
