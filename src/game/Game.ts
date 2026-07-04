@@ -12,6 +12,10 @@ import { createState, type GameState } from './state';
 import { CoinManager } from './CoinManager';
 import { PlatformManager } from './PlatformManager';
 import { hitPlatform } from './Collisions';
+import { SettingsScreen } from './SettingsScreen';
+import type { Character, Language } from './SettingsScreen';
+import frTranslations from '../locales/fr.json';
+import enTranslations from '../locales/en.json';
 import {
   BASE_WIDTH,
   BASE_HEIGHT,
@@ -51,6 +55,8 @@ export class Game {
   private jumpSound!: HTMLAudioElement;
   private fallSound!: HTMLAudioElement;
   private fallSoundPlayed = false;
+  private lastDisplayedScore = -1;
+  private lastDisplayedHighScore = -1;
 
   private soundEnabled!: boolean;
   private soundToggleSprite!: Sprite;
@@ -65,6 +71,14 @@ export class Game {
   private playTexture!: Texture;
   private readonly pauseIconY = 20;
 
+  private settingsIconSprite!: Sprite;
+  private inputBound = false;
+
+  private selectedCharacter: Character = 'shannon';
+  private selectedLanguage: Language = 'fr';
+  private gameStarted = false;
+  private settingsScreen: SettingsScreen | null = null;
+
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
     this.gameWidth = this.isPortrait ? window.innerWidth : BASE_WIDTH;
@@ -76,9 +90,8 @@ export class Game {
     await this.app.init({
       width: this.gameWidth,
       height: this.gameHeight,
-      antialias: true,
       backgroundColor: 0x000000,
-      resolution: window.devicePixelRatio || 1,
+      resolution: Math.min(window.devicePixelRatio || 1, 2),
       autoDensity: true,
     });
 
@@ -86,17 +99,16 @@ export class Game {
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
     await this.loadAssets();
-    this.buildScene();
-    this.bindInput();
-    this.startGame();
+    this.showSettings();
     this.watchResize();
 
-    this.app.ticker.add(() => this.tick());
-    this.watchFocus();
+    this.app.ticker.add((ticker) => this.tick(ticker.deltaTime));
   }
 
   private async loadAssets(): Promise<void> {
     await Assets.load([
+      '/assets/settings-background.png',
+      '/assets/settings-background-mobile.png',
       '/assets/background.png',
       // '/assets/water.png',
       '/assets/tilex1.png',
@@ -107,11 +119,18 @@ export class Game {
       '/assets/shannon-jump-resize.png',
       '/assets/shannon-fall.png',
       '/assets/shannon_run.json',
+      '/assets/shannon-idle-resize.png',
+      '/assets/luc-jump-resize.png',
+      '/assets/luc-fall.png',
+      '/assets/luc_run.json',
+      '/assets/luc-idle-resize.png',
+      '/assets/luc-jump.png',
       '/assets/coins_anim.json',
       '/assets/sound_off.png',
       '/assets/sound_on.png',
       '/assets/pause.png',
       '/assets/play.png',
+      '/assets/settings-icon.png',
     ]);
     this.jumpSound = new Audio('/assets/jump_sound.mp3');
     this.jumpSound.volume = 0.02;
@@ -172,16 +191,17 @@ export class Game {
       this.state.coins.push(coin);
     }
 
-    this.jumpSprite = new Sprite(Texture.from('/assets/shannon-jump-resize.png'));
+    const ch = this.selectedCharacter;
+    this.jumpSprite = new Sprite(Texture.from(`/assets/${ch}-jump-resize.png`));
     this.jumpSprite.scale.set(0.13);
     stage.addChild(this.jumpSprite);
 
-    this.fallSprite = new Sprite(Texture.from('/assets/shannon-fall.png'));
+    this.fallSprite = new Sprite(Texture.from(`/assets/${ch}-fall.png`));
     this.fallSprite.scale.set(0.11);
     stage.addChild(this.fallSprite);
 
-    const runSheet = Assets.get('/assets/shannon_run.json');
-    this.runAnim = new AnimatedSprite(runSheet.animations['shannon_run']);
+    const runSheet = Assets.get(`/assets/${ch}_run.json`);
+    this.runAnim = new AnimatedSprite(runSheet.animations[`${ch}_run`]);
     stage.addChild(this.runAnim);
 
     const fontSize = Math.max(14, Math.round(28 * this.scaleX));
@@ -191,12 +211,12 @@ export class Game {
       fontFamily: 'Courier New',
       fontSize,
     });
-    this.textScore = new Text({ text: 'Score: 0', style });
+    this.textScore = new Text({ text: `${this.t('score')}: 0`, style });
     this.textScore.anchor.set(1, 0);
     this.textScore.position.set(this.gameWidth - 20, 20);
     stage.addChild(this.textScore);
 
-    this.textHighScore = new Text({ text: 'High score: 0', style });
+    this.textHighScore = new Text({ text: `${this.t('high_score')}: 0`, style });
     this.textHighScore.anchor.set(1, 0);
     this.textHighScore.position.set(this.gameWidth - 20, 20 + fontSize + 10);
     stage.addChild(this.textHighScore);
@@ -225,6 +245,15 @@ export class Game {
     this.soundToggleSprite.eventMode = 'static';
     this.soundToggleSprite.cursor = 'pointer';
     stage.addChild(this.soundToggleSprite);
+
+    const settingsIconSize = 34;
+    this.settingsIconSprite = new Sprite(Texture.from('/assets/settings-icon.png'));
+    this.settingsIconSprite.width = settingsIconSize;
+    this.settingsIconSprite.height = settingsIconSize;
+    this.settingsIconSprite.position.set(116, this.pauseIconY);
+    this.settingsIconSprite.eventMode = 'static';
+    this.settingsIconSprite.cursor = 'pointer';
+    stage.addChild(this.settingsIconSprite);
 
     this.coins = new CoinManager(this.state);
     this.platforms = new PlatformManager(
@@ -290,7 +319,7 @@ export class Game {
     this.jumpSprite.position.set(playerX, playerY);
     this.jumpSprite.visible = false;
 
-    this.fallSprite.position.set(playerX, playerY);
+    this.fallSprite.position.set(playerX, playerY + this.jumpSprite.height - this.fallSprite.height);
     this.fallSprite.visible = true;
     this.jumpInitiated = false;
 
@@ -309,8 +338,8 @@ export class Game {
     s.coinsOnScreen.push(first);
   }
 
-  private tick(): void {
-    if (this.isPaused) return;
+  private tick(delta: number): void {
+    if (!this.gameStarted || this.isPaused) return;
     const s = this.state;
     const player = this.runAnim;
     const onGround = this.checkGround();
@@ -320,7 +349,7 @@ export class Game {
         this.jumpInitiated = true;
         s.vy = JUMP_VELOCITY;
         this.jumpSprite.position.set(player.x, player.y + player.height - this.jumpSprite.height);
-        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y);
+        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y + this.jumpSprite.height - this.fallSprite.height);
         player.visible = false;
         this.jumpSprite.visible = true;
         this.fallSprite.visible = false;
@@ -341,7 +370,7 @@ export class Game {
         s.canBePressed = true;
       }
     } else if (s.isPress && s.canBePressed && s.vy >= MAX_JUMP_VELOCITY) {
-      s.vy += JUMP_HOLD_ACCEL;
+      s.vy += JUMP_HOLD_ACCEL * delta;
     } else {
       s.isPress = false;
       player.visible = false;
@@ -349,33 +378,41 @@ export class Game {
         this.jumpSprite.visible = true;
         this.fallSprite.visible = false;
       } else {
-        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y);
+        this.fallSprite.position.set(this.jumpSprite.x, this.jumpSprite.y + this.jumpSprite.height - this.fallSprite.height);
         this.fallSprite.visible = true;
         this.jumpSprite.visible = false;
       }
-      s.vy += s.gravity;
+      s.vy += s.gravity * delta;
       s.canBePressed = false;
     }
 
-    this.background.tilePosition.x -= BG_SCROLL_SPEED;
+    this.background.tilePosition.x -= BG_SCROLL_SPEED * delta;
     // this.water.tilePosition.x -= WATER_SCROLL_SPEED;
 
-    this.jumpSprite.y += s.vy;
-    player.y += s.vy;
+    this.jumpSprite.y += s.vy * delta;
+    player.y += s.vy * delta;
 
     if (s.score > s.newMilestone) {
       s.currentSpeed += SPEED_INCREMENT;
       s.newMilestone *= 2;
     }
 
-    this.platforms.move(s.currentSpeed);
-    this.coins.move(s.currentSpeed);
+    this.platforms.move(s.currentSpeed * delta);
+    this.coins.move(s.currentSpeed * delta);
 
     const coinScore = this.coins.pickCoins(player);
-    s.score += coinScore + SCORE_PER_FRAME;
+    s.score += coinScore + SCORE_PER_FRAME * delta;
 
-    this.textScore.text = `Score: ${Math.round(s.score)}`;
-    this.textHighScore.text = `High score: ${Math.round(s.highScore)}`;
+    const roundedScore = Math.round(s.score);
+    if (roundedScore !== this.lastDisplayedScore) {
+      this.lastDisplayedScore = roundedScore;
+      this.textScore.text = `${this.t('score')}: ${roundedScore}`;
+    }
+    const roundedHighScore = Math.round(s.highScore);
+    if (roundedHighScore !== this.lastDisplayedHighScore) {
+      this.lastDisplayedHighScore = roundedHighScore;
+      this.textHighScore.text = `${this.t('high_score')}: ${roundedHighScore}`;
+    }
 
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
       this.fallSoundPlayed = true;
@@ -398,6 +435,7 @@ export class Game {
   }
 
   private checkGround(): boolean {
+    if (this.state.vy < 0) return false;
     const { stackOnScreen } = this.state;
     for (let i = 0; i < Math.min(stackOnScreen.length, 2); i++) {
       if (hitPlatform(this.jumpSprite, stackOnScreen[i])) {
@@ -426,7 +464,13 @@ export class Game {
     return x >= 68 && x <= 104 && y >= this.pauseIconY && y <= this.pauseIconY + 34;
   }
 
+  private hitsSettings(clientX: number, clientY: number): boolean {
+    const { x, y } = this.toGameCoords(clientX, clientY);
+    return x >= 116 && x <= 150 && y >= this.pauseIconY && y <= this.pauseIconY + 34;
+  }
+
   private togglePause(): void {
+    if (!this.gameStarted) return;
     this.isPaused = !this.isPaused;
     this.pauseToggleSprite.texture = this.isPaused ? this.playTexture : this.pauseTexture;
     if (this.isPaused) {
@@ -445,8 +489,11 @@ export class Game {
   }
 
   private bindInput(): void {
+    if (this.inputBound) return;
+    this.inputBound = true;
     const canvas = this.app.canvas;
     canvas.addEventListener('mousedown', (e) => {
+      if (this.hitsSettings(e.clientX, e.clientY)) { this.goToSettings(); return; }
       if (this.hitsPause(e.clientX, e.clientY)) { this.togglePause(); return; }
       if (this.hitsSound(e.clientX, e.clientY)) { this.toggleSound(); return; }
       if (!this.isPaused) this.pressDown();
@@ -455,6 +502,7 @@ export class Game {
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       const t = e.touches[0];
+      if (t && this.hitsSettings(t.clientX, t.clientY)) { this.goToSettings(); return; }
       if (t && this.hitsPause(t.clientX, t.clientY)) { this.togglePause(); return; }
       if (t && this.hitsSound(t.clientX, t.clientY)) { this.toggleSound(); return; }
       if (!this.isPaused) this.pressDown();
@@ -477,6 +525,46 @@ export class Game {
 
   private pressDown(): void { this.state.isPress = true; }
   private pressUp(): void { this.state.isPress = false; }
+
+  private showSettings(defaultChar: Character | null = null): void {
+    this.settingsScreen = new SettingsScreen(
+      this.app,
+      {
+        fr: frTranslations as Record<string, string>,
+        en: enTranslations as Record<string, string>,
+      },
+      this.gameWidth,
+      this.gameHeight,
+      (char, lang) => this.launchGame(char, lang),
+      defaultChar,
+    );
+  }
+
+  private launchGame(char: Character, lang: Language): void {
+    this.settingsScreen?.destroy();
+    this.settingsScreen = null;
+    this.selectedCharacter = char;
+    this.selectedLanguage = lang;
+    this.buildScene();
+    this.startGame();
+    this.bindInput();
+    this.watchFocus();
+    this.gameStarted = true;
+  }
+
+  private goToSettings(): void {
+    this.gameStarted = false;
+    this.isPaused = false;
+    this.runAnim.stop();
+    for (const coin of this.state.coins) coin.stop();
+    this.app.stage.removeChildren();
+    this.showSettings(this.selectedCharacter);
+  }
+
+  private t(key: string): string {
+    const dict = (this.selectedLanguage === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
+    return dict[key] ?? key;
+  }
 
   private watchFocus(): void {
     const pause = () => { if (!this.isPaused) this.togglePause(); };
