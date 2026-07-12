@@ -14,6 +14,7 @@ import { PlatformManager } from './PlatformManager';
 import { hitPlatform } from './Collisions';
 import { SettingsScreen } from './SettingsScreen';
 import type { Character, Language } from './SettingsScreen';
+import { SaveTheDateScreen } from './SaveTheDateScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
 import {
@@ -78,6 +79,7 @@ export class Game {
   private selectedLanguage: Language = 'fr';
   private gameStarted = false;
   private settingsScreen: SettingsScreen | null = null;
+  private saveTheDateScreen: SaveTheDateScreen | null = null;
 
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
@@ -99,7 +101,11 @@ export class Game {
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
     await this.loadAssets();
-    this.showSettings();
+    if (localStorage.getItem('hasAccessSaveTheDate')) {
+      this.showSaveTheDate();
+    } else {
+      this.showSettings();
+    }
     this.watchResize();
 
     this.app.ticker.add((ticker) => this.tick(ticker.deltaTime));
@@ -107,9 +113,11 @@ export class Game {
 
   private async loadAssets(): Promise<void> {
     await Assets.load([
-      '/assets/settings-background.png',
-      '/assets/settings-background-mobile.png',
-      '/assets/background.png',
+      '/assets/background-settings.png',
+      '/assets/background-settings-mobile.png',
+      '/assets/background-save-the-date.png',
+      '/assets/background-save-the-date-mobile.png',
+      '/assets/background-game.png',
       // '/assets/water.png',
       '/assets/tilex1.png',
       '/assets/tilesx2.png',
@@ -142,7 +150,7 @@ export class Game {
     this.state = createState();
     const { stage } = this.app;
 
-    const bgTexture = Texture.from('/assets/background.png');
+    const bgTexture = Texture.from('/assets/background-game.png');
     if (this.isPortrait) {
       const bgSpriteSize = { width: this.gameWidth / 0.95, height: this.gameHeight / 0.95 };
       this.background = new TilingSprite({ texture: bgTexture, ...bgSpriteSize });
@@ -427,10 +435,20 @@ export class Game {
         s.highScore = Math.round(s.score);
         localStorage.setItem('highScore', String(s.highScore));
       }
-      s.score = 0;
-      s.currentSpeed = s.baseSpeed;
-      s.newMilestone = s.firstMilestone;
-      this.startGame();
+      if (!localStorage.getItem('hasAccessSaveTheDate')) {
+        localStorage.setItem('hasAccessSaveTheDate', 'true');
+        this.gameStarted = false;
+        this.isPaused = false;
+        this.runAnim.stop();
+        for (const coin of this.state.coins) coin.stop();
+        this.app.stage.removeChildren();
+        this.showSaveTheDate();
+      } else {
+        s.score = 0;
+        s.currentSpeed = s.baseSpeed;
+        s.newMilestone = s.firstMilestone;
+        this.startGame();
+      }
     }
   }
 
@@ -543,13 +561,41 @@ export class Game {
   private launchGame(char: Character, lang: Language): void {
     this.settingsScreen?.destroy();
     this.settingsScreen = null;
+    this.saveTheDateScreen?.destroy();
+    this.saveTheDateScreen = null;
     this.selectedCharacter = char;
     this.selectedLanguage = lang;
+    localStorage.setItem('selectedCharacter', char);
     this.buildScene();
     this.startGame();
     this.bindInput();
     this.watchFocus();
     this.gameStarted = true;
+  }
+
+  private showSaveTheDate(): void {
+    const lang = (localStorage.getItem('language') as Language) ?? this.selectedLanguage;
+    const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
+    this.saveTheDateScreen = new SaveTheDateScreen(
+      this.app,
+      this.gameWidth,
+      this.gameHeight,
+      tr['save_the_date'] ?? 'Save the date',
+      tr['play_again'] ?? 'Play again',
+      () => this.launchFromSaveTheDate(),
+    );
+  }
+
+  private launchFromSaveTheDate(): void {
+    const char = localStorage.getItem('selectedCharacter') as Character | null;
+    const lang = (localStorage.getItem('language') as Language) ?? 'fr';
+    if (char) {
+      this.launchGame(char, lang);
+    } else {
+      this.saveTheDateScreen?.destroy();
+      this.saveTheDateScreen = null;
+      this.showSettings();
+    }
   }
 
   private goToSettings(): void {

@@ -151,7 +151,7 @@ export class SettingsScreen {
     const isTablet = isMobile && W >= 600;
 
     // ─── Background: cover-scale the settings image ───
-    const bgImg = W < H ? '/assets/settings-background-mobile.png' : '/assets/settings-background.png';
+    const bgImg = W < H ? '/assets/background-settings-mobile.png' : '/assets/background-settings.png';
     const bgSpr = new Sprite(Texture.from(bgImg));
     bgSpr.width = W;
     bgSpr.height = H;

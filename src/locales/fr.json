@@ -7,5 +7,7 @@
   "lang_en": "English",
   "score": "Score",
   "high_score": "Meilleur score",
-  "select_character": "Tu dois sélectionner un personnage pour pouvoir jouer"
+  "select_character": "Tu dois sélectionner un personnage pour pouvoir jouer",
+  "save_the_date": "Réserve la date !",
+  "play_again": "Rejouer"
 }

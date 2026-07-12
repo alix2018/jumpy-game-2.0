@@ -7,5 +7,7 @@
   "lang_en": "English",
   "score": "Score",
   "high_score": "High score",
-  "select_character": "You have to select a character to be able to play"
+  "select_character": "You have to select a character to be able to play",
+  "save_the_date": "Save the date!",
+  "play_again": "Play again"
 }
