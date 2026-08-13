@@ -399,7 +399,7 @@ export class Game {
 
     if (s.score > s.newMilestone) {
       s.currentSpeed += SPEED_INCREMENT;
-      s.newMilestone *= 2;
+      s.newMilestone += 20 + Math.round(s.currentSpeed * 8);
     }
 
     this.platforms.move(s.currentSpeed * delta);
