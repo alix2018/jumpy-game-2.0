@@ -37,10 +37,15 @@ export class SaveTheDateScreen {
     const sc = Math.max(Math.min(W / 960, H / 600), 0.45);
     const xs = (v: number) => Math.round(v * sc);
 
+    // Dark overlay between game and save-the-date image
+    const darkOverlay = new Graphics();
+    darkOverlay.rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.45 });
+    c.addChild(darkOverlay);
+
     // Background
     const bgImg = isMobile
       ? '/assets/background-save-the-date-mobile.png'
-      : '/assets/background-save-the-date.png';
+      : '/assets/background-save-the-date-overlay.png';
     const bgSpr = new Sprite(Texture.from(bgImg));
     bgSpr.width = W;
     bgSpr.height = H;

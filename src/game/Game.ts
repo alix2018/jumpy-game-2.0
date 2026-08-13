@@ -78,6 +78,7 @@ export class Game {
   private selectedCharacter: Character = 'shannon';
   private selectedLanguage: Language = 'fr';
   private gameStarted = false;
+  private saveTheDateShown = false;
   private settingsScreen: SettingsScreen | null = null;
   private saveTheDateScreen: SaveTheDateScreen | null = null;
 
@@ -101,11 +102,7 @@ export class Game {
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
     await this.loadAssets();
-    if (localStorage.getItem('hasAccessSaveTheDate')) {
-      this.showSaveTheDate();
-    } else {
-      this.showSettings();
-    }
+    this.showSettings();
     this.watchResize();
 
     this.app.ticker.add((ticker) => this.tick(ticker.deltaTime));
@@ -115,7 +112,7 @@ export class Game {
     await Assets.load([
       '/assets/background-settings.png',
       '/assets/background-settings-mobile.png',
-      '/assets/background-save-the-date.png',
+      '/assets/background-save-the-date-overlay.png',
       '/assets/background-save-the-date-mobile.png',
       '/assets/background-game.png',
       // '/assets/water.png',
@@ -435,13 +432,11 @@ export class Game {
         s.highScore = Math.round(s.score);
         localStorage.setItem('highScore', String(s.highScore));
       }
-      if (!localStorage.getItem('hasAccessSaveTheDate')) {
-        localStorage.setItem('hasAccessSaveTheDate', 'true');
+      if (!this.saveTheDateShown) {
+        this.saveTheDateShown = true;
         this.gameStarted = false;
-        this.isPaused = false;
         this.runAnim.stop();
         for (const coin of this.state.coins) coin.stop();
-        this.app.stage.removeChildren();
         this.showSaveTheDate();
       } else {
         s.score = 0;
@@ -566,6 +561,7 @@ export class Game {
     this.selectedCharacter = char;
     this.selectedLanguage = lang;
     localStorage.setItem('selectedCharacter', char);
+    this.app.stage.removeChildren();
     this.buildScene();
     this.startGame();
     this.bindInput();
