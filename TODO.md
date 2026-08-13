@@ -2,23 +2,27 @@
 
 ## SETTINGS PAGE
 - Improve layout on mobile/tablet
-- Make gradient animation border fade in/out to highlight selection
 - Choose another font
 
 ## GAME
 - Fix the first platforms spacing: Make 2 long platforms so the user has time to jump once and figure things out (so removing the tilex1 platform in between). Make sure the platform are spaced enough so the user has to jump
-- Long click on mobile (iphone) selects or do other actions (e.g. screenshot)
-- Make the game more faster over time
-- Press play again only for local development
-- Add overlay to display the rules (logique: display the rules only once for each device, save the data in the local storage to know if the user already had read the rule. Display the rules with a black transparent overlay with rounded corners on top of the game after clicking "play", the game should not start it should be paused at the beginning by default. On the overlay use the title "rules", the text should be: "TODO: Add the rules here". And add a button at the bottom of the overlay saying "I understand, play now" in green like the other buttons. On the left of this button add a "Back" button that redirects to the settings page. Once the user clicks on this button the game starts from the beginning)
+- Fix: long click on mobile (iphone) selects or do other actions (e.g. screenshot)
+- Make the game faster over time (more exponential)
+- Press play again feature only for local development
 
-## END PAGE
+## SAVE THE DATE PAGE
 - Save the date page
-- Show the page if it matches a set of rules
+- Show the page if it matches a set of rules: should be displayed only if the player reaches a specific score (e.g. 50 points)
+  - If not matched the game continue
+  - If matched, the game freezes with an effect and the save the date page comes as an overlay on top
+  - Button displays "Continue playing"
+  - Save the date button on the top right
+  - When the person looses, the game starts directly
 
 ## OTHERS
-- Add metadata + favicon
-
+- [x] Add metadata + favicon
+- Créer nom de domaine + lier à github pages
+- PWA?
 
 ## Notes
 
@@ -49,3 +53,16 @@ Text Screen Un Mariage Baxcus
 - ⁠Les détails de notre mariage vous attendent… Atteignez XX points pour découvrir pù et quand l’aventure commence!
 - ⁠Choisissez votre personnage: Luc - Sha
 - ⁠Comment jouer: Touchez votre écran ou appuyez sur la barre espace… et surtout, ne tombez pas !
+
+## Alignments
+- [ ] Arrive sur la page perso: ajouter le texte des règles du jeu entre languages et character
+- [ ] minimum 50 points pour accéder au save the date > jeu pause > confetti > overlay plus petit pour qu'on voit le jeu derrière
+- [ ] Page de base par défaut: choix du perso, le classement + titre avec lieu et date
+et rejoue
+- [x] Augmenter vitesse plus rapidement
+- [ ] Audios custom pour chaque perso
+- [ ] baxcus.com avec blason familial: Baxcus wedding - Save the date
+- [ ] Fixer les animations des personnages
+- [ ] Demander pseudo si pas encore sauvegardé après save the date et si la personne rafraîchit
+- [ ] Afficher top 5: nom des joueurs et leurs points
+- [ ] Ajouter ligne high score
