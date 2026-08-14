@@ -1,3 +1,4 @@
+import confetti from 'canvas-confetti';
 import {
   Application,
   Assets,
@@ -29,6 +30,7 @@ import {
   SCORE_PER_FRAME,
   SPEED_INCREMENT,
   FALL_DEATH_Y,
+  SAVE_THE_DATE_SCORE_THRESHOLD,
 } from './constants';
 
 export class Game {
@@ -78,7 +80,8 @@ export class Game {
   private selectedCharacter: Character = 'shannon';
   private selectedLanguage: Language = 'fr';
   private gameStarted = false;
-  private saveTheDateShown = false;
+  private saveTheDateShown = localStorage.getItem('saveTheDateShown') === 'true';
+  private confettiTriggered = false;
   private settingsScreen: SettingsScreen | null = null;
   private saveTheDateScreen: SaveTheDateScreen | null = null;
 
@@ -427,24 +430,53 @@ export class Game {
       }
     }
 
+    if (!this.saveTheDateShown && !this.confettiTriggered && Math.round(s.score) >= SAVE_THE_DATE_SCORE_THRESHOLD) {
+      this.triggerConfettiAndSaveTheDate();
+    }
+
     if (player.y + player.height > this.gameHeight + FALL_DEATH_Y) {
       if (s.score > s.highScore) {
         s.highScore = Math.round(s.score);
         localStorage.setItem('highScore', String(s.highScore));
       }
-      if (!this.saveTheDateShown) {
-        this.saveTheDateShown = true;
-        this.gameStarted = false;
-        this.runAnim.stop();
-        for (const coin of this.state.coins) coin.stop();
-        this.showSaveTheDate();
-      } else {
-        s.score = 0;
-        s.currentSpeed = s.baseSpeed;
-        s.newMilestone = s.firstMilestone;
-        this.startGame();
-      }
+      s.score = 0;
+      s.currentSpeed = s.baseSpeed;
+      s.newMilestone = s.firstMilestone;
+      this.startGame();
     }
+  }
+
+  private triggerConfettiAndSaveTheDate(): void {
+    this.confettiTriggered = true;
+    this.isPaused = true;
+    this.pauseToggleSprite.texture = this.playTexture;
+    this.runAnim.stop();
+    for (const coin of this.state.coins) coin.stop();
+
+    const duration = 15 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        return;
+      }
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      confetti.reset();
+      this.saveTheDateShown = true;
+      localStorage.setItem('saveTheDateShown', 'true');
+      this.gameStarted = false;
+      this.showSaveTheDate();
+    }, 3000);
   }
 
   private checkGround(): boolean {

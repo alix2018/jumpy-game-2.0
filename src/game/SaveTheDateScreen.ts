@@ -5,6 +5,7 @@ import {
   Text,
   TextStyle,
   Texture,
+  type Ticker,
 } from 'pixi.js';
 import type { Application } from 'pixi.js';
 
@@ -22,6 +23,28 @@ export class SaveTheDateScreen {
     this.container = new Container();
     app.stage.addChild(this.container);
     this.buildUI(W, H, titleText, playAgainText, onPlayAgain);
+    this.animateIn(app, W, H);
+  }
+
+  private animateIn(app: Application, W: number, H: number): void {
+    // Scale from center using pivot at canvas midpoint
+    this.container.pivot.set(W / 2, H / 2);
+    this.container.position.set(W / 2, H / 2);
+    this.container.scale.set(0);
+
+    const DURATION = 550; // ms
+    let elapsed = 0;
+
+    const onTick = (ticker: Ticker) => {
+      elapsed += ticker.deltaMS;
+      const t = Math.min(elapsed / DURATION, 1);
+      // Cubic ease-in-out — gaussian-shaped speed profile (slow → fast → slow)
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      this.container.scale.set(eased);
+      if (t >= 1) app.ticker.remove(onTick);
+    };
+
+    app.ticker.add(onTick);
   }
 
   private buildUI(
