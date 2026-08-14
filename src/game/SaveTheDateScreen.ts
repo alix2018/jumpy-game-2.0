@@ -44,7 +44,7 @@ export class SaveTheDateScreen {
 
     // Background
     const bgImg = isMobile
-      ? '/assets/background-save-the-date-mobile.png'
+      ? '/assets/background-save-the-date-mobile-overlay.png'
       : '/assets/background-save-the-date-overlay.png';
     const bgSpr = new Sprite(Texture.from(bgImg));
     bgSpr.width = W;

@@ -113,7 +113,7 @@ export class Game {
       '/assets/background-settings.png',
       '/assets/background-settings-mobile.png',
       '/assets/background-save-the-date-overlay.png',
-      '/assets/background-save-the-date-mobile.png',
+      '/assets/background-save-the-date-mobile-overlay.png',
       '/assets/background-game.png',
       // '/assets/water.png',
       '/assets/tilex1.png',
