@@ -21,7 +21,7 @@
 
 ## OTHERS
 - [x] Add metadata + favicon
-- Créer nom de domaine + lier à github pages
+- [x] Créer nom de domaine + lier à github pages
 - PWA?
 
 ## Notes
@@ -56,7 +56,7 @@ Text Screen Un Mariage Baxcus
 
 ## Alignments
 - [ ] Arrive sur la page perso: ajouter le texte des règles du jeu entre languages et character
-- [ ] minimum 50 points pour accéder au save the date > jeu pause > confetti > overlay plus petit pour qu'on voit le jeu derrière
+- [x] minimum 40 points pour accéder au save the date > jeu pause > confetti > overlay plus petit pour qu'on voit le jeu derrière
 - [ ] Page de base par défaut: choix du perso, le classement + titre avec lieu et date
 et rejoue
 - [x] Augmenter vitesse plus rapidement
