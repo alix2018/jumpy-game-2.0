@@ -129,7 +129,7 @@ export class SaveTheDateScreen {
       letterSpacing: 0,
       wordWrap: true,
       wordWrapWidth: bodyW,
-      align: 'left',
+      align: 'center',
       lineHeight: Math.round(paraFontSize * 1.6),
       dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
     });
@@ -138,34 +138,37 @@ export class SaveTheDateScreen {
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
       fontSize: bulletFontSize,
-      fontWeight: 'bold',
+      fontWeight: '900',
       letterSpacing: xs(1),
       wordWrap: true,
       wordWrapWidth: bodyW,
-      align: 'left',
+      align: 'center',
       dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
     });
 
     for (const line of bodyLines) {
       const hasIcon = Boolean(line.icon);
       const txt = new Text({ text: line.text, style: hasIcon ? bulletStyle : paraStyle });
-      txt.anchor.set(0, 0);
 
       if (hasIcon) {
         const iconSize = bulletFontSize + 4;
         const gap = xs(16);
+        const groupW = iconSize + gap + txt.width;
+        const groupX = Math.round(W / 2 - groupW / 2);
+        txt.anchor.set(0, 0);
         const iconSpr = new Sprite(Texture.from(line.icon!));
         iconSpr.width = iconSize;
         iconSpr.height = iconSize;
-        iconSpr.position.set(leftX, y + Math.round((txt.height - iconSize) / 2));
-        txt.position.set(leftX + iconSize + gap, y);
+        iconSpr.position.set(groupX, y + Math.round((txt.height - iconSize) / 2));
+        txt.position.set(groupX + iconSize + gap, y);
         c.addChild(iconSpr);
         c.addChild(txt);
         y += txt.height + bulletGap;
         if (isMobile && line.extraSpacingAfter) y += Math.round(H * 0.04);
         if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
       } else {
-        txt.position.set(leftX, y);
+        txt.anchor.set(0.5, 0);
+        txt.position.set(W / 2, y);
         c.addChild(txt);
         y += txt.height + paraGap;
         if (isMobile && line.extraSpacingAfter) y += Math.round(H * 0.04);
