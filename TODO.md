@@ -55,13 +55,13 @@ Text Screen Un Mariage Baxcus
 - ⁠Comment jouer: Touchez votre écran ou appuyez sur la barre espace… et surtout, ne tombez pas !
 
 ## Alignments
-- [ ] Arrive sur la page perso: ajouter le texte des règles du jeu entre languages et character
-- [x] minimum 40 points pour accéder au save the date > jeu pause > confetti > overlay plus petit pour qu'on voit le jeu derrière
-- [ ] Page de base par défaut: choix du perso, le classement + titre avec lieu et date
+- [ ] Arrive sur la page perso: ajouter le texte des règles du jeu
+- [x] minimum 75 points pour accéder au save the date > jeu pause > confetti > overlay plus petit pour qu'on voit le jeu derrière
+- [ ] Page de base par défaut après save the date: choix du perso, le classement + titre avec lieu et date
 et rejoue
 - [x] Augmenter vitesse plus rapidement
 - [ ] Audios custom pour chaque perso
-- [ ] baxcus.com avec blason familial: Baxcus wedding - Save the date
+- [x] baxcus.com avec blason familial: Baxcus wedding - Save the date
 - [ ] Fixer les animations des personnages
 - [ ] Demander pseudo si pas encore sauvegardé après save the date et si la personne rafraîchit
 - [ ] Afficher top 5: nom des joueurs et leurs points

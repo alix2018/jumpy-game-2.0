@@ -140,6 +140,8 @@ export class Game {
       '/assets/pause.png',
       '/assets/play.png',
       '/assets/settings-icon.png',
+      '/assets/calendar-icon.png',
+      '/assets/location-icon.png',
     ]);
     this.jumpSound = new Audio('/assets/jump_sound.mp3');
     this.jumpSound.volume = 0.02;
@@ -478,6 +480,7 @@ export class Game {
     setTimeout(() => {
       myConfetti.reset();
       confettiCanvas.remove();
+      // COMMENT FOR TESTING PURPOSES
       this.saveTheDateShown = true;
       localStorage.setItem('saveTheDateShown', 'true');
       this.gameStarted = false;
@@ -611,12 +614,19 @@ export class Game {
   private showSaveTheDate(): void {
     const lang = (localStorage.getItem('language') as Language) ?? this.selectedLanguage;
     const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
+    const bodyLines = [
+      { text: tr['save_the_date_body_1'] ?? '', extraSpacingAfter: true },
+      { text: tr['save_the_date_body_2'] ?? '', icon: '/assets/calendar-icon.png', fixedSpacingAfter: 16 },
+      { text: tr['save_the_date_body_3'] ?? '', icon: '/assets/location-icon.png', extraSpacingAfter: true },
+      { text: tr['save_the_date_body_4'] ?? '' },
+    ].filter(item => Boolean(item.text));
     this.saveTheDateScreen = new SaveTheDateScreen(
       this.app,
       this.gameWidth,
       this.gameHeight,
       tr['save_the_date'] ?? 'Save the date',
       tr['play_again'] ?? 'Play again',
+      bodyLines,
       () => this.launchFromSaveTheDate(),
     );
   }

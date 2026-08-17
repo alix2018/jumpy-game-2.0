@@ -18,11 +18,12 @@ export class SaveTheDateScreen {
     H: number,
     titleText: string,
     playAgainText: string,
+    bodyLines: Array<{ text: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number }>,
     onPlayAgain: () => void,
   ) {
     this.container = new Container();
     app.stage.addChild(this.container);
-    this.buildUI(W, H, titleText, playAgainText, onPlayAgain);
+    this.buildUI(W, H, titleText, playAgainText, bodyLines, onPlayAgain);
     this.animateIn(app, W, H);
   }
 
@@ -52,6 +53,7 @@ export class SaveTheDateScreen {
     H: number,
     titleText: string,
     playAgainText: string,
+    bodyLines: Array<{ text: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number }>,
     onPlayAgain: () => void,
   ): void {
     const c = this.container;
@@ -74,13 +76,14 @@ export class SaveTheDateScreen {
     bgSpr.height = H;
     c.addChild(bgSpr);
 
-    let y = isMobile ? Math.round(H * 0.04) : Math.round(H * 0.09);
+    // Title
+    let y = isMobile ? Math.round(H * 0.10) : Math.round(H * 0.14);
 
     // Title sign — same style as SettingsScreen
-    const signH = xs(76);
     const signR = xs(10);
     const signBorderW = xs(4);
     const signPadX = xs(36);
+    const signPadY = xs(18);
 
     const titleTxt = new Text({
       text: titleText,
@@ -94,7 +97,10 @@ export class SaveTheDateScreen {
     });
     titleTxt.anchor.set(0.5);
 
-    const signW = Math.min(titleTxt.width + signPadX * 2, W - signBorderW * 2);
+    const bodyW = Math.min(isMobile ? W * 0.70 : W, W * 0.80, W - xs(40));
+
+    const signH = Math.max(xs(76), titleTxt.height + signPadY * 2);
+    const signW = Math.min(titleTxt.width + signPadX * 2, bodyW);
     const signX = Math.round((W - signW) / 2);
     const sign = new Graphics();
     sign.roundRect(signBorderW, signBorderW, signW, signH, signR).fill({ color: 0xBCA882, alpha: 0.5 });
@@ -105,35 +111,75 @@ export class SaveTheDateScreen {
     c.addChild(sign);
     c.addChild(titleTxt);
 
-    y += signH + (isMobile ? (isTablet ? 60 : 28) : xs(40));
+    y += signH + (isMobile ? (isTablet ? 50 : 24) : xs(36));
 
-    // 3 bullet points centered
-    const bulletStyle = new TextStyle({
+    // Body text
+    const paraFontSize = Math.max(isTablet ? 28 : isMobile ? 15 : 0, xs(14));
+    const bulletFontSize = paraFontSize;
+    const paraGap = isMobile ? xs(26) : xs(20);
+    const bulletGap = isMobile ? xs(14) : xs(10);
+
+    const leftX = Math.round((W - bodyW) / 2);
+
+    const paraStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
-      fontSize: Math.max(isTablet ? 26 : isMobile ? 17 : 0, xs(22)),
+      fontSize: paraFontSize,
       fontWeight: 'bold',
-      letterSpacing: xs(1),
+      letterSpacing: 0,
+      wordWrap: true,
+      wordWrapWidth: bodyW,
+      align: 'left',
+      lineHeight: Math.round(paraFontSize * 1.6),
       dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
     });
 
-    const bulletGap = isMobile ? xs(28) : xs(22);
-    const bullets = ['• ...', '• ...', '• ...'];
-    for (const bullet of bullets) {
-      const txt = new Text({ text: bullet, style: bulletStyle });
-      txt.anchor.set(0.5);
-      txt.position.set(W / 2, y + txt.height / 2);
-      c.addChild(txt);
-      y += txt.height + bulletGap;
+    const bulletStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'Courier New',
+      fontSize: bulletFontSize,
+      fontWeight: 'bold',
+      letterSpacing: xs(1),
+      wordWrap: true,
+      wordWrapWidth: bodyW,
+      align: 'left',
+      dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
+    });
+
+    for (const line of bodyLines) {
+      const hasIcon = Boolean(line.icon);
+      const txt = new Text({ text: line.text, style: hasIcon ? bulletStyle : paraStyle });
+      txt.anchor.set(0, 0);
+
+      if (hasIcon) {
+        const iconSize = bulletFontSize + 4;
+        const gap = xs(16);
+        const iconSpr = new Sprite(Texture.from(line.icon!));
+        iconSpr.width = iconSize;
+        iconSpr.height = iconSize;
+        iconSpr.position.set(leftX, y + Math.round((txt.height - iconSize) / 2));
+        txt.position.set(leftX + iconSize + gap, y);
+        c.addChild(iconSpr);
+        c.addChild(txt);
+        y += txt.height + bulletGap;
+        if (isMobile && line.extraSpacingAfter) y += Math.round(H * 0.04);
+        if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+      } else {
+        txt.position.set(leftX, y);
+        c.addChild(txt);
+        y += txt.height + paraGap;
+        if (isMobile && line.extraSpacingAfter) y += Math.round(H * 0.04);
+        if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+      }
     }
 
-    // Play again button — same style as SettingsScreen play button (always enabled)
+    // Play again button
     const playH = Math.max(isTablet ? 84 : 54, xs(54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
     const playY = isMobile
-      ? H - 22 - shadow - playH
-      : H - 40 - shadow - playH;
+      ? H - 70 - shadow - playH
+      : H - 85 - shadow - playH;
     const playX = Math.round(W / 2 - playW / 2);
     const btnR = Math.round(playH * 0.22);
 

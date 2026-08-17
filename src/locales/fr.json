@@ -9,5 +9,9 @@
   "high_score": "Meilleur score",
   "select_character": "Tu dois sélectionner un personnage pour pouvoir jouer",
   "save_the_date": "Réserve la date !",
-  "play_again": "Rejouer"
+  "play_again": "Rejouer",
+  "save_the_date_body_1": "Préparez vos valises pour un week-end rempli d'amour, de rires et de célébration!",
+  "save_the_date_body_2": "Date: 1 au 3 octobre 2027",
+  "save_the_date_body_3": "Lieu: B&B Domaine 't Eikennest Beerst, Diksmuide",
+  "save_the_date_body_4": "Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées!"
 }
