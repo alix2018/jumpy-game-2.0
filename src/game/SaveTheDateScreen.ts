@@ -59,7 +59,7 @@ export class SaveTheDateScreen {
     const c = this.container;
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
-    const isSmallScreen = isMobile && W < 665;
+    const isSmallScreen = isMobile && H < 665;
     const sc = Math.max(Math.min(W / 960, H / 600), 0.45);
     const xs = (v: number) => Math.round(v * sc);
 
@@ -128,7 +128,7 @@ export class SaveTheDateScreen {
       wordWrap: true,
       wordWrapWidth: bodyW,
       align: 'center',
-      lineHeight: Math.round(paraFontSize * 1.6),
+      lineHeight: Math.round(paraFontSize * (isSmallScreen ? 1.3 : 1.5)),
     });
 
     const bulletStyle = new TextStyle({

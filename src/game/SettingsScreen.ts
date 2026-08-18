@@ -153,7 +153,7 @@ export class SettingsScreen {
     const xs = (v: number) => Math.round(v * sc);
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
-    const isSmallScreen = isMobile && W < 665;
+    const isSmallScreen = isMobile && H < 665;
 
     // ─── Background: cover-scale the settings image ───
     const bgImg = W < H ? '/assets/background-settings-mobile.png' : '/assets/background-settings.png';
