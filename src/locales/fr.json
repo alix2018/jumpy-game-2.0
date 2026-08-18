@@ -1,17 +1,19 @@
 {
   "title": "💍 Mariage de Luc & Shannon",
   "language": "Choisis ta langue",
+  "rules": "Les détails de notre mariage t'attendent… Atteins 75 points pour découvrir où et quand l'aventure commence !",
   "character": "Choisis un personnage",
+  "how_to_play": "Comment jouer: Touche ton écran ou appuie sur la barre espace… et surtout, ne tombe pas !",
   "play": "Jouer",
+  "select_character": "Tu dois sélectionner un personnage pour pouvoir jouer",
   "lang_fr": "Français",
   "lang_en": "English",
   "score": "Score",
   "high_score": "Meilleur score",
-  "select_character": "Tu dois sélectionner un personnage pour pouvoir jouer",
   "save_the_date": "Réserve la date !",
   "play_again": "Rejouer",
-  "save_the_date_body_1": "Préparez vos valises pour un week-end rempli d'amour, de rires et de célébration!",
+  "save_the_date_body_1": "Prépare tes valises pour un week-end rempli d'amour, de rires et de célébration !",
   "save_the_date_body_2": "Date: 01/01/2001",
   "save_the_date_body_3": "Lieu: texte plus long pour montrer un example",
-  "save_the_date_body_4": "Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées!"
+  "save_the_date_body_4": "Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées !"
 }
