@@ -59,6 +59,7 @@ export class SaveTheDateScreen {
     const c = this.container;
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
+    const isSmallScreen = isMobile && W < 665;
     const sc = Math.max(Math.min(W / 960, H / 600), 0.45);
     const xs = (v: number) => Math.round(v * sc);
 
@@ -110,13 +111,13 @@ export class SaveTheDateScreen {
     c.addChild(sign);
     c.addChild(titleTxt);
 
-    y += signH + (isMobile ? (isTablet ? 50 : 24) : xs(36));
+    y += signH + (isMobile ? (isSmallScreen ? 12 : isTablet ? 50 : 24) : xs(36));
 
     // Body text
     const paraFontSize = Math.max(isTablet ? 28 : isMobile ? 15 : 0, xs(14));
     const bulletFontSize = paraFontSize;
-    const paraGap = isMobile ? xs(26) : xs(20);
-    const bulletGap = isMobile ? xs(14) : xs(10);
+    const paraGap = isMobile ? (isSmallScreen ? xs(14) : xs(26)) : xs(20);
+    const bulletGap = isMobile ? (isSmallScreen ? xs(7) : xs(14)) : xs(10);
 
     const paraStyle = new TextStyle({
       fill: '#5C3A1E',
@@ -159,14 +160,14 @@ export class SaveTheDateScreen {
         c.addChild(iconSpr);
         c.addChild(txt);
         y += txt.height + bulletGap;
-        if (isMobile && line.extraSpacingAfter) y += Math.round(H * 0.04);
+        if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
         if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
       } else {
         txt.anchor.set(0.5, 0);
         txt.position.set(W / 2, y);
         c.addChild(txt);
         y += txt.height + paraGap;
-        if (isMobile && line.extraSpacingAfter) y += Math.round(H * 0.04);
+        if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
         if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
       }
     }

@@ -153,6 +153,7 @@ export class SettingsScreen {
     const xs = (v: number) => Math.round(v * sc);
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
+    const isSmallScreen = isMobile && W < 665;
 
     // ─── Background: cover-scale the settings image ───
     const bgImg = W < H ? '/assets/background-settings-mobile.png' : '/assets/background-settings.png';
@@ -236,7 +237,7 @@ export class SettingsScreen {
     this.frBtn.gfx.on('pointerdown', () => { this.lang = 'fr'; localStorage.setItem('language', 'fr'); this.refresh(); });
     this.enBtn.gfx.on('pointerdown', () => { this.lang = 'en'; localStorage.setItem('language', 'en'); this.refresh(); });
 
-    y += lbH + (isMobile ? (isTablet ? 50 : 28) : xs(16));
+    y += lbH + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
 
     // ── Rules text ──
     const rulesWrapW = isMobile ? W * 0.82 : W * 0.90;
@@ -259,7 +260,7 @@ export class SettingsScreen {
     this.rulesTxt.position.set(W / 2, y);
     c.addChild(this.rulesTxt);
 
-    y += this.rulesTxt.height + (isMobile ? (isTablet ? 50 : 28) : xs(16));
+    y += this.rulesTxt.height + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -273,7 +274,7 @@ export class SettingsScreen {
     // Square-ish cards; cap size so two fit side-by-side with a gap
     const maxCardW = Math.floor((W - xs(60)) / 2);  // half width minus gap
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? Math.min(Math.floor((W - (isSmallScreen ? xs(280) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
@@ -386,7 +387,7 @@ export class SettingsScreen {
     const shadow = Math.max(xs(5), 3);
 
     const playY = isMobile
-      ? Math.round(H * 0.88) - shadow - playH
+      ? Math.round(H * (isSmallScreen ? 0.91 : 0.88)) - shadow - playH
       : y + hintGapBefore;
 
     if (isMobile) {
