@@ -163,7 +163,7 @@ export class SettingsScreen {
 
     // ─── Flow layout — each element pushed below the previous ───
     // Top padding scales with H so portrait screens use proportional space.
-    let y = isMobile ? Math.round(H * 0.09) : Math.round(H * 0.05);
+    let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.05);
 
     // ── Title sign — width fits the text ──
     const signH = isMobile ? xs(76) : xs(58);
@@ -198,7 +198,6 @@ export class SettingsScreen {
       fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
       fontWeight: 'bold',
       letterSpacing: xs(1),
-      dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
     });
 
     this.langLbl = new Text({ text: '', style: secStyle });
@@ -237,11 +236,11 @@ export class SettingsScreen {
     this.frBtn.gfx.on('pointerdown', () => { this.lang = 'fr'; localStorage.setItem('language', 'fr'); this.refresh(); });
     this.enBtn.gfx.on('pointerdown', () => { this.lang = 'en'; localStorage.setItem('language', 'en'); this.refresh(); });
 
-    y += lbH + (isMobile ? (isTablet ? 30 : 14) : xs(16));
+    y += lbH + (isMobile ? (isTablet ? 50 : 28) : xs(16));
 
     // ── Rules text ──
     const rulesWrapW = isMobile ? W * 0.82 : W * 0.90;
-    const rulesFontSize = Math.max(isTablet ? 16 : 11, xs(12));
+    const rulesFontSize = Math.max(isTablet ? 16 : 13, xs(13));
     this.rulesTxt = new HTMLText({
       text: this.t('rules'),
       style: new HTMLTextStyle({
@@ -251,7 +250,6 @@ export class SettingsScreen {
         align: 'center',
         wordWrap: true,
         wordWrapWidth: rulesWrapW,
-        dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.5 },
         tagStyles: {
           b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
         },
@@ -261,7 +259,7 @@ export class SettingsScreen {
     this.rulesTxt.position.set(W / 2, y);
     c.addChild(this.rulesTxt);
 
-    y += this.rulesTxt.height + (isMobile ? (isTablet ? 30 : 14) : xs(16));
+    y += this.rulesTxt.height + (isMobile ? (isTablet ? 50 : 28) : xs(16));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -328,7 +326,7 @@ export class SettingsScreen {
 
     // ── How to play text (between cards and select_character) ──
     const howWrapW = isMobile ? W * 0.82 : W * 0.90;
-    const howFontSize = Math.max(isTablet ? 16 : 11, xs(12));
+    const howFontSize = Math.max(isTablet ? 16 : 13, xs(13));
     this.howToPlayTxt = new HTMLText({
       text: this.t('how_to_play'),
       style: new HTMLTextStyle({
@@ -338,7 +336,6 @@ export class SettingsScreen {
         align: 'center',
         wordWrap: true,
         wordWrapWidth: howWrapW,
-        dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.5 },
         tagStyles: {
           b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
         },

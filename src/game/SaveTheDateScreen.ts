@@ -77,29 +77,28 @@ export class SaveTheDateScreen {
     c.addChild(bgSpr);
 
     // Title
-    let y = isMobile ? Math.round(H * 0.10) : Math.round(H * 0.14);
+    let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.14);
 
     // Title sign — same style as SettingsScreen
     const signR = xs(10);
     const signBorderW = xs(4);
-    const signPadX = xs(36);
-    const signPadY = xs(18);
+    const signPadX = isMobile ? xs(36) : xs(24);
+    const signH = isMobile ? xs(76) : xs(58);
 
     const titleTxt = new Text({
       text: titleText,
       style: new TextStyle({
         fill: '#5C3A1E',
         fontFamily: 'Courier New',
-        fontSize: Math.max(isTablet ? 32 : isMobile ? 28 : 0, xs(36)),
+        fontSize: Math.max(isTablet ? 36 : isMobile ? 22 : 0, xs(30)),
         fontWeight: 'bold',
-        letterSpacing: xs(1),
+        letterSpacing: xs(0),
       }),
     });
     titleTxt.anchor.set(0.5);
 
     const bodyW = Math.min(isMobile ? W * 0.70 : W, W * 0.80, W - xs(40));
 
-    const signH = Math.max(xs(76), titleTxt.height + signPadY * 2);
     const signW = Math.min(titleTxt.width + signPadX * 2, bodyW);
     const signX = Math.round((W - signW) / 2);
     const sign = new Graphics();
@@ -119,8 +118,6 @@ export class SaveTheDateScreen {
     const paraGap = isMobile ? xs(26) : xs(20);
     const bulletGap = isMobile ? xs(14) : xs(10);
 
-    const leftX = Math.round((W - bodyW) / 2);
-
     const paraStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
@@ -131,7 +128,6 @@ export class SaveTheDateScreen {
       wordWrapWidth: bodyW,
       align: 'center',
       lineHeight: Math.round(paraFontSize * 1.6),
-      dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
     });
 
     const bulletStyle = new TextStyle({
@@ -143,7 +139,6 @@ export class SaveTheDateScreen {
       wordWrap: true,
       wordWrapWidth: bodyW,
       align: 'center',
-      dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
     });
 
     for (const line of bodyLines) {
