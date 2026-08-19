@@ -13,7 +13,9 @@
   "save_the_date": "Réserve la date !",
   "play_again": "Rejouer",
   "save_the_date_body_1": "Prépare tes valises pour un week-end rempli d'amour, de rires et de célébration !",
-  "save_the_date_body_2": "Date: 01/01/2001",
-  "save_the_date_body_3": "Lieu: texte plus long pour montrer un example",
+  "date": "Date",
+  "save_the_date_body_2": "1 au 31 janvier 2000",
+  "location": "Lieu",
+  "save_the_date_body_3": "texte plus long pour montrer un example",
   "save_the_date_body_4": "Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées !"
 }

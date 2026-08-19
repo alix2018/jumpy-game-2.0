@@ -18,7 +18,7 @@ export class SaveTheDateScreen {
     H: number,
     titleText: string,
     playAgainText: string,
-    bodyLines: Array<{ text: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number }>,
+    bodyLines: Array<{ text?: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number; cards?: Array<{ icon: string; label: string; value: string }> }>,
     onPlayAgain: () => void,
   ) {
     this.container = new Container();
@@ -53,7 +53,7 @@ export class SaveTheDateScreen {
     H: number,
     titleText: string,
     playAgainText: string,
-    bodyLines: Array<{ text: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number }>,
+    bodyLines: Array<{ text?: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number; cards?: Array<{ icon: string; label: string; value: string }> }>,
     onPlayAgain: () => void,
   ): void {
     const c = this.container;
@@ -111,7 +111,7 @@ export class SaveTheDateScreen {
     c.addChild(sign);
     c.addChild(titleTxt);
 
-    y += signH + (isMobile ? (isSmallScreen ? 12 : isTablet ? 50 : 24) : xs(36));
+    y += signH + (isMobile ? (isSmallScreen ? 6 : isTablet ? 28 : 12) : xs(20));
 
     // Body text
     const paraFontSize = Math.max(isTablet ? 28 : isMobile ? 15 : 0, xs(14));
@@ -143,32 +143,107 @@ export class SaveTheDateScreen {
     });
 
     for (const line of bodyLines) {
-      const hasIcon = Boolean(line.icon);
-      const txt = new Text({ text: line.text, style: hasIcon ? bulletStyle : paraStyle });
+      if (line.cards) {
+        const cardsW = Math.min(isMobile ? W * 0.74 : W * 0.68, W - xs(24));
+        const cardGap = xs(8);
+        const cardW = Math.floor((cardsW - cardGap) / 2);
+        const cardPadX = xs(16);
+        const cardPadY = xs(8);
+        const labelFontSize = Math.max(isTablet ? 23 : isMobile ? 15 : 0, xs(16));
+        const valueFontSize = Math.max(isTablet ? 21 : isMobile ? 15 : 0, xs(16));
+        const iconSizeInCard = Math.round(labelFontSize * 1.6);
+        const iconLabelGap = xs(6);
+        const labelValueGap = xs(5);
+        const cardBorderW = xs(2);
+        const cardR = xs(8);
+        const cardX0 = Math.round((W - cardsW) / 2);
 
-      if (hasIcon) {
-        const iconSize = bulletFontSize + 4;
-        const gap = xs(16);
-        const groupW = iconSize + gap + txt.width;
-        const groupX = Math.round(W / 2 - groupW / 2);
-        txt.anchor.set(0, 0);
-        const iconSpr = new Sprite(Texture.from(line.icon!));
-        iconSpr.width = iconSize;
-        iconSpr.height = iconSize;
-        iconSpr.position.set(groupX, y + Math.round((txt.height - iconSize) / 2));
-        txt.position.set(groupX + iconSize + gap, y);
-        c.addChild(iconSpr);
-        c.addChild(txt);
-        y += txt.height + bulletGap;
+        const labelStyle = new TextStyle({
+          fill: '#5C3A1E',
+          fontFamily: 'Courier New',
+          fontSize: labelFontSize,
+          fontWeight: 'bold',
+          letterSpacing: xs(1),
+        });
+        const valueStyle = new TextStyle({
+          fill: '#7A5C3A',
+          fontFamily: 'Courier New',
+          fontSize: valueFontSize,
+          fontWeight: 'bold',
+          wordWrap: true,
+          wordWrapWidth: cardW - cardPadX * 2,
+          align: 'left',
+        });
+
+        const cardTexts = line.cards.map(cardData => ({
+          label: new Text({ text: cardData.label.toUpperCase(), style: labelStyle }),
+          value: new Text({ text: cardData.value, style: valueStyle }),
+        }));
+
+        const rowH = Math.max(...cardTexts.map(t => Math.max(iconSizeInCard, t.label.height)));
+        const maxCardH = Math.max(...cardTexts.map(t =>
+          cardPadY + rowH + labelValueGap + t.value.height + cardPadY,
+        ));
+
+        for (let i = 0; i < line.cards.length; i++) {
+          const cardData = line.cards[i];
+          const cardX = cardX0 + i * (cardW + cardGap);
+          const { label: labelTxt, value: valueTxt } = cardTexts[i];
+
+          const card = new Graphics();
+          card.roundRect(cardBorderW, cardBorderW, cardW, maxCardH, cardR).fill({ color: 0x7A4F2E, alpha: 0.25 });
+          card.roundRect(0, 0, cardW, maxCardH, cardR).fill({ color: 0xFFFBF2, alpha: 0.85 });
+          card.roundRect(0, 0, cardW, maxCardH, cardR).stroke({ color: 0x7A4F2E, width: cardBorderW });
+          card.position.set(cardX, y);
+          c.addChild(card);
+
+          const iconSpr = new Sprite(Texture.from(cardData.icon));
+          iconSpr.width = iconSizeInCard;
+          iconSpr.height = iconSizeInCard;
+          iconSpr.position.set(cardX + cardPadX, y + cardPadY + Math.round((rowH - iconSizeInCard) / 2));
+          c.addChild(iconSpr);
+
+          labelTxt.position.set(
+            cardX + cardPadX + iconSizeInCard + iconLabelGap,
+            y + cardPadY + Math.round((rowH - labelTxt.height) / 2),
+          );
+          c.addChild(labelTxt);
+
+          valueTxt.position.set(cardX + cardPadX, y + cardPadY + rowH + labelValueGap);
+          c.addChild(valueTxt);
+        }
+
+        y += maxCardH + paraGap;
         if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
         if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
       } else {
-        txt.anchor.set(0.5, 0);
-        txt.position.set(W / 2, y);
-        c.addChild(txt);
-        y += txt.height + paraGap;
-        if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
-        if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+        const hasIcon = Boolean(line.icon);
+        const txt = new Text({ text: line.text ?? '', style: hasIcon ? bulletStyle : paraStyle });
+
+        if (hasIcon) {
+          const iconSize = bulletFontSize + 4;
+          const gap = xs(16);
+          const groupW = iconSize + gap + txt.width;
+          const groupX = Math.round(W / 2 - groupW / 2);
+          txt.anchor.set(0, 0);
+          const iconSpr = new Sprite(Texture.from(line.icon!));
+          iconSpr.width = iconSize;
+          iconSpr.height = iconSize;
+          iconSpr.position.set(groupX, y + Math.round((txt.height - iconSize) / 2));
+          txt.position.set(groupX + iconSize + gap, y);
+          c.addChild(iconSpr);
+          c.addChild(txt);
+          y += txt.height + bulletGap;
+          if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+          if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+        } else {
+          txt.anchor.set(0.5, 0);
+          txt.position.set(W / 2, y);
+          c.addChild(txt);
+          y += txt.height + paraGap;
+          if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+          if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+        }
       }
     }
 
