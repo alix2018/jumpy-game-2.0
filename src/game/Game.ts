@@ -442,6 +442,9 @@ export class Game {
         s.highScore = Math.round(s.score);
         localStorage.setItem('highScore', String(s.highScore));
       }
+      if (this.saveTheDateShown && Math.round(s.score) > 0) {
+        this.saveToLeaderboard(Math.round(s.score));
+      }
       s.score = 0;
       s.currentSpeed = s.baseSpeed;
       s.newMilestone = s.firstMilestone;
@@ -486,6 +489,13 @@ export class Game {
       this.gameStarted = false;
       this.showSaveTheDate();
     }, 2000);
+  }
+
+  private saveToLeaderboard(score: number): void {
+    const entries: Array<{ name: string; score: number }> = JSON.parse(localStorage.getItem('topScores') ?? '[]');
+    entries.push({ name: this.selectedCharacter, score });
+    entries.sort((a, b) => b.score - a.score);
+    localStorage.setItem('topScores', JSON.stringify(entries.slice(0, 6)));
   }
 
   private checkGround(): boolean {
@@ -590,6 +600,7 @@ export class Game {
       this.gameWidth,
       this.gameHeight,
       (char, lang) => this.launchGame(char, lang),
+      this.saveTheDateShown,
       defaultChar,
     );
   }
@@ -616,10 +627,15 @@ export class Game {
     const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
     const bodyLines = [
       { text: tr['save_the_date_body_1'] ?? '', extraSpacingAfter: true },
-      { text: tr['save_the_date_body_2'] ?? '', icon: '/assets/calendar-icon.png', fixedSpacingAfter: 16 },
-      { text: tr['save_the_date_body_3'] ?? '', icon: '/assets/location-icon.png', extraSpacingAfter: true },
+      {
+        cards: [
+          { icon: '/assets/calendar-icon.png', label: tr['date'] ?? 'Date', value: tr['save_the_date_body_2'] ?? '' },
+          { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '' },
+        ],
+        extraSpacingAfter: true,
+      },
       { text: tr['save_the_date_body_4'] ?? '' },
-    ].filter(item => Boolean(item.text));
+    ].filter(item => Boolean(item.text) || Boolean(item.cards));
     this.saveTheDateScreen = new SaveTheDateScreen(
       this.app,
       this.gameWidth,

@@ -9,6 +9,7 @@ import {
   Texture,
 } from 'pixi.js';
 import type { Application } from 'pixi.js';
+import { renderInfoCards } from './renderInfoCards';
 
 export type Language = 'fr' | 'en';
 export type Character = 'luc' | 'shannon';
@@ -88,7 +89,6 @@ class PlayBtn {
     const r = Math.round(this.h * 0.22);
     const fill = this._enabled ? 0x4A7C3F : 0xBECA7A;
     const shade = this._enabled ? 0x2D5224 : 0xAAB462;
-    // const alpha = this._enabled ? 1 : 0.7;
     this.gfx.clear();
     this.gfx.roundRect(0, this.shadow, this.w, this.h, r).fill({ color: shade });
     this.gfx.roundRect(0, 0, this.w, this.h, r).fill({ color: fill });
@@ -105,14 +105,14 @@ export class SettingsScreen {
   private titleTxt!: Text;
   private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number };
 
-  private langLbl!: Text;
-  private rulesTxt!: HTMLText;
-  private charLbl!: Text;
-  private howToPlayTxt!: HTMLText;
-  private frBtn!: OptionBtn;
-  private enBtn!: OptionBtn;
-  private frTxt!: Text;
-  private enTxt!: Text;
+  private langLbl: Text | null = null;
+  private rulesTxt: HTMLText | null = null;
+  private charLbl: Text | null = null;
+  private howToPlayTxt: HTMLText | null = null;
+  private frBtn: OptionBtn | null = null;
+  private enBtn: OptionBtn | null = null;
+  private frTxt: Text | null = null;
+  private enTxt: Text | null = null;
   private lucCard!: OptionBtn;
   private shanCard!: OptionBtn;
   private playBtn!: PlayBtn;
@@ -128,6 +128,7 @@ export class SettingsScreen {
     W: number,
     H: number,
     onPlay: (char: Character, lang: Language) => void,
+    private readonly saveTheDateShown: boolean = false,
     defaultChar: Character | null = null,
   ) {
     this.container = new Container();
@@ -147,32 +148,27 @@ export class SettingsScreen {
   private buildUI(W: number, H: number, onPlay: (char: Character, lang: Language) => void): void {
     const c = this.container;
 
-    // Uniform scale so the base design (960 wide) shrinks to fit smaller screens.
-    // We clamp to 0.45 so portrait mobile never becomes unreadably tiny.
     const sc = Math.max(Math.min(W / 960, H / 600), 0.45);
     const xs = (v: number) => Math.round(v * sc);
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
     const isSmallScreen = isMobile && H < 665;
 
-    // ─── Background: cover-scale the settings image ───
+    // ─── Background ───
     const bgImg = W < H ? '/assets/background-settings-mobile.png' : '/assets/background-settings.png';
     const bgSpr = new Sprite(Texture.from(bgImg));
     bgSpr.width = W;
     bgSpr.height = H;
     c.addChild(bgSpr);
 
-    // ─── Flow layout — each element pushed below the previous ───
-    // Top padding scales with H so portrait screens use proportional space.
     let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.05);
 
-    // ── Title sign — width fits the text ──
+    // ── Title sign ──
     const signH = isMobile ? xs(76) : xs(58);
     const signR = xs(10);
     const signBorderW = xs(4);
     const signPadX = isMobile ? xs(36) : xs(24);
 
-    // Create text first so we can measure its width
     this.titleTxt = new Text({
       text: '',
       style: new TextStyle({
@@ -187,10 +183,19 @@ export class SettingsScreen {
 
     this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W };
     this.sign = new Graphics();
-    c.addChild(this.sign);       // sign drawn behind text
-    c.addChild(this.titleTxt);   // text in front
+    c.addChild(this.sign);
+    c.addChild(this.titleTxt);
 
-    y += signH + (isMobile ? (isTablet ? 60 : 28) : xs(30));
+    y += signH + (isMobile ? (isTablet ? 20 : 14) : xs(20));
+
+    if (this.saveTheDateShown) {
+      this.buildRevealedSection(c, W, H, y, xs, isMobile, isTablet, isSmallScreen, onPlay);
+      return;
+    }
+
+    // ─── Standard layout ───
+
+    y += isMobile ? (isTablet ? 40 : 14) : xs(10);
 
     // ── Language label ──
     const secStyle = new TextStyle({
@@ -271,8 +276,7 @@ export class SettingsScreen {
     y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
 
     // ── Character cards ──
-    // Square-ish cards; cap size so two fit side-by-side with a gap
-    const maxCardW = Math.floor((W - xs(60)) / 2);  // half width minus gap
+    const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
       ? Math.min(Math.floor((W - (isSmallScreen ? xs(280) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
@@ -286,7 +290,6 @@ export class SettingsScreen {
     this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH);
     c.addChild(this.lucCard.gfx, this.shanCard.gfx);
 
-    // Luc sprite (luc-idle.png not in assets; using luc-idle.png as preview)
     const lucSpr = new Sprite(Texture.from('/assets/luc-idle-resize.png'));
     lucSpr.anchor.set(0.5, 1);
     const lucFit = Math.min((cardW * 0.80) / lucSpr.texture.width, (cardH * 0.72) / lucSpr.texture.height);
@@ -305,7 +308,6 @@ export class SettingsScreen {
     lucName.position.set(lucLeft + Math.round(cardW / 2), cardTop + cardH - Math.max(xs(18), 12));
     c.addChild(lucName);
 
-    // Shannon sprite
     const shanTex = Texture.from('/assets/shannon-idle-resize.png');
     shanTex.source.scaleMode = 'linear';
     const shanSpr = new Sprite(shanTex);
@@ -325,7 +327,7 @@ export class SettingsScreen {
 
     y += cardH;
 
-    // ── How to play text (between cards and select_character) ──
+    // ── How to play text ──
     const howWrapW = isMobile ? W * 0.82 : W * 0.90;
     const howFontSize = Math.max(isTablet ? 16 : 13, xs(13));
     this.howToPlayTxt = new HTMLText({
@@ -351,7 +353,7 @@ export class SettingsScreen {
     const howToPlayFlowY = y;
     y += this.howToPlayTxt.height + howToPlayGapBelow;
 
-    // ── Tooltip params (select_character) ──
+    // ── Tooltip (select_character) ──
     const tipPadX = xs(12) + (isMobile ? 2 : 0);
     const tipPadY = xs(7) + (isMobile ? 2 : 0);
     const tipR = xs(6);
@@ -378,10 +380,9 @@ export class SettingsScreen {
     });
     tooltipTxt.anchor.set(0.5, 0.5);
     tooltipContainer.addChild(tooltipBg, tooltipTxt);
-
     this.tooltip = { container: tooltipContainer, bg: tooltipBg, txt: tooltipTxt };
 
-    // ── Play button (above select_character on desktop) ──
+    // ── Play button ──
     const playH = Math.max(isTablet ? 84 : 54, xs(54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
@@ -391,7 +392,6 @@ export class SettingsScreen {
       : y + hintGapBefore;
 
     if (isMobile) {
-      // Anchor from bottom: howToPlayTxt → play button → tooltip
       this.howToPlayTxt.position.set(W / 2, playY - hintGapBefore - this.howToPlayTxt.height);
       this._hintY = playY + playH + shadow + hintGapAfter;
     } else {
@@ -421,6 +421,245 @@ export class SettingsScreen {
     });
   }
 
+  private buildRevealedSection(
+    c: Container,
+    W: number,
+    H: number,
+    y: number,
+    xs: (v: number) => number,
+    isMobile: boolean,
+    isTablet: boolean,
+    isSmallScreen: boolean,
+    onPlay: (char: Character, lang: Language) => void,
+  ): void {
+    const tr = this.tr[this.lang] as Record<string, string>;
+
+    // ── Date/location cards ──
+    const infoCards = [
+      { icon: '/assets/calendar-icon.png', label: tr['date'] ?? 'Date', value: tr['save_the_date_body_2'] ?? '' },
+      { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '' },
+    ];
+    const cardBlockH = renderInfoCards(c, infoCards, W, y, isMobile, isTablet, xs);
+    y += cardBlockH + xs(12);
+
+    // ── Leaderboard ──
+    const topScores: Array<{ pseudo: string; highScore: number }> = [
+      { pseudo: 'Shannon', highScore: 4200 },
+      { pseudo: 'Luc',     highScore: 4200 },
+      { pseudo: 'Stephanie', highScore: 3800 },
+      { pseudo: 'Evan',    highScore: 1000 },
+      { pseudo: 'Ana',     highScore: 550 },
+      { pseudo: 'Laure',   highScore: 390 },
+    ];
+    const boardW = Math.min(isMobile ? W * 0.86 : W * 0.68, W - xs(24));
+    const boardX = Math.round((W - boardW) / 2);
+    const frameW = xs(2);
+    const boardPadX = xs(10);
+    const boardPadY = xs(8);
+    const rowH = Math.max(isTablet ? 36 : 24, xs(22));
+    const rowGap = xs(5);
+    const badgeSize = rowH;
+    const badgeGap = xs(5);
+    const scoreColW = Math.max(isTablet ? 52 : 36, xs(34));
+    const colGap = xs(22);
+    const innerW = boardW - frameW * 2;
+    const colW = Math.floor((innerW - boardPadX * 2 - colGap) / 2);
+    const boardInnerH = 3 * rowH + 2 * rowGap;
+    const boardH = boardInnerH + boardPadY * 2 + frameW * 2;
+    const boardR = xs(10);
+
+    const boardGfx = new Graphics();
+    boardGfx.roundRect(frameW, frameW, boardW, boardH, boardR).fill({ color: 0x7A4F2E, alpha: 0.25 });
+    boardGfx.roundRect(0, 0, boardW, boardH, boardR).fill({ color: 0xF5DC8A });
+    boardGfx.roundRect(0, 0, boardW, boardH, boardR).stroke({ color: 0x7A4F2E, width: frameW });
+    boardGfx.position.set(boardX, y);
+    c.addChild(boardGfx);
+
+    const divLine = new Graphics();
+    const divX = boardX + frameW + boardPadX + colW + Math.floor(colGap / 2);
+    divLine.rect(divX, y + frameW + boardPadY, 1, boardInnerH).fill({ color: 0xBCA882, alpha: 0.7 });
+    c.addChild(divLine);
+
+    const rankStyle = new TextStyle({
+      fill: '#ffffff',
+      fontFamily: 'Courier New',
+      fontSize: Math.max(isTablet ? 16 : 11, xs(10)),
+      fontWeight: 'bold',
+    });
+    const nameStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'Courier New',
+      fontSize: Math.max(isTablet ? 22 : 15, xs(14)),
+      fontWeight: 'bold',
+    });
+    const scoreStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'Courier New',
+      fontSize: Math.max(isTablet ? 20 : 14, xs(13)),
+    });
+
+    for (let col = 0; col < 2; col++) {
+      const colInnerX = boardX + frameW + boardPadX + col * (colW + colGap);
+      for (let row = 0; row < 3; row++) {
+        const rank = col * 3 + row;
+        const entry = topScores[rank] ?? null;
+        const rowY = y + frameW + boardPadY + row * (rowH + rowGap);
+
+        const badge = new Graphics();
+        badge.circle(badgeSize / 2, badgeSize / 2, badgeSize / 2).fill({ color: 0x4A7C3F });
+        badge.position.set(colInnerX, rowY);
+        c.addChild(badge);
+
+        const rankTxt = new Text({ text: String(rank + 1), style: rankStyle });
+        rankTxt.anchor.set(0.5);
+        rankTxt.position.set(colInnerX + badgeSize / 2, rowY + badgeSize / 2);
+        c.addChild(rankTxt);
+
+        const nameTxt = new Text({
+          text: entry ? entry.pseudo : '- -',
+          style: nameStyle,
+        });
+        nameTxt.anchor.set(0, 0.5);
+        nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2);
+        c.addChild(nameTxt);
+
+        const scoreTxt = new Text({
+          text: entry ? `${entry.highScore} ${this.t('points')}` : '',
+          style: scoreStyle,
+        });
+        scoreTxt.anchor.set(1, 0.5);
+        scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2);
+        c.addChild(scoreTxt);
+      }
+    }
+
+    y += boardH + xs(12);
+
+    // ── Character label ──
+    const secStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'Courier New',
+      fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
+      fontWeight: 'bold',
+      letterSpacing: xs(1),
+    });
+    this.charLbl = new Text({ text: '', style: secStyle });
+    this.charLbl.anchor.set(0.5);
+    this.charLbl.position.set(W / 2, y + xs(4));
+    c.addChild(this.charLbl);
+    y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
+
+    // ── Character cards ──
+    const maxCardW = Math.floor((W - xs(60)) / 2);
+    const cardW = isMobile
+      ? Math.min(Math.floor((W - (isSmallScreen ? xs(280) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      : Math.min(Math.max(xs(130), 80), maxCardW);
+    const cardH = Math.round(cardW * 1.08);
+    const cardGap = xs(36);
+    const cardTop = y;
+    const lucLeft = Math.round(W / 2 - cardGap / 2 - cardW);
+    const shanLeft = Math.round(W / 2 + cardGap / 2);
+
+    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH);
+    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH);
+    c.addChild(this.lucCard.gfx, this.shanCard.gfx);
+
+    const lucSpr = new Sprite(Texture.from('/assets/luc-idle-resize.png'));
+    lucSpr.anchor.set(0.5, 1);
+    const lucFit = Math.min((cardW * 0.80) / lucSpr.texture.width, (cardH * 0.72) / lucSpr.texture.height);
+    lucSpr.scale.set(lucFit);
+    lucSpr.position.set(lucLeft + Math.round(cardW / 2), cardTop + Math.round(cardH * 0.80));
+    c.addChild(lucSpr);
+
+    const charNameStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'Courier New',
+      fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
+    });
+
+    const lucName = new Text({ text: 'Luc', style: charNameStyle });
+    lucName.anchor.set(0.5);
+    lucName.position.set(lucLeft + Math.round(cardW / 2), cardTop + cardH - Math.max(xs(18), 12));
+    c.addChild(lucName);
+
+    const shanTex = Texture.from('/assets/shannon-idle-resize.png');
+    shanTex.source.scaleMode = 'linear';
+    const shanSpr = new Sprite(shanTex);
+    shanSpr.anchor.set(0.5, 1);
+    const shanFit = Math.min((cardW * 0.80) / shanSpr.texture.width, (cardH * 0.72) / shanSpr.texture.height);
+    shanSpr.scale.set(shanFit);
+    shanSpr.position.set(shanLeft + Math.round(cardW / 2), cardTop + Math.round(cardH * 0.80));
+    c.addChild(shanSpr);
+
+    const shanName = new Text({ text: 'Shannon', style: charNameStyle });
+    shanName.anchor.set(0.5);
+    shanName.position.set(shanLeft + Math.round(cardW / 2), cardTop + cardH - Math.max(xs(18), 12));
+    c.addChild(shanName);
+
+    this.lucCard.gfx.on('pointerdown', () => { this.char = 'luc'; this.refresh(); this.syncPlay(); });
+    this.shanCard.gfx.on('pointerdown', () => { this.char = 'shannon'; this.refresh(); this.syncPlay(); });
+
+    y += cardH;
+
+    // ── Tooltip (select_character) ──
+    const tipPadX = xs(12) + (isMobile ? 2 : 0);
+    const tipPadY = xs(7) + (isMobile ? 2 : 0);
+    const tipR = xs(6);
+    this._W = W;
+    this._tipParams = { padX: tipPadX, padY: tipPadY, r: tipR };
+
+    // ── Play button ──
+    const playH = Math.max(isTablet ? 84 : 54, xs(54));
+    const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
+    const shadow = Math.max(xs(5), 3);
+    const hintGapAfter = isMobile ? xs(10) : xs(4);
+
+    const playY = isMobile
+      ? Math.round(H * (isSmallScreen ? 0.91 : 0.88)) - shadow - playH
+      : y + xs(20);
+
+    this._hintY = playY + playH + shadow + hintGapAfter;
+
+    this.playBtn = new PlayBtn(Math.round(W / 2 - playW / 2), playY, playW, playH, shadow);
+    c.addChild(this.playBtn.gfx);
+
+    this.playTxt = new Text({
+      text: '',
+      style: new TextStyle({
+        fill: '#ffffff',
+        fontFamily: 'Courier New',
+        fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
+        fontWeight: 'bold',
+        letterSpacing: xs(1),
+      }),
+    });
+    this.playTxt.anchor.set(0.5);
+    this.playTxt.position.set(W / 2, playY + Math.round(playH / 2));
+    c.addChild(this.playTxt);
+
+    this.playBtn.gfx.on('pointerdown', () => {
+      if (this.char) onPlay(this.char, this.lang);
+    });
+
+    const tooltipContainer = new Container();
+    c.addChild(tooltipContainer);
+    const tooltipBg = new Graphics();
+    const tooltipTxt = new Text({
+      text: '',
+      style: new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'Courier New',
+        fontSize: Math.max(isTablet ? 16 : 11, xs(12)),
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: isMobile ? W * 0.65 : W,
+      }),
+    });
+    tooltipTxt.anchor.set(0.5, 0.5);
+    tooltipContainer.addChild(tooltipBg, tooltipTxt);
+    this.tooltip = { container: tooltipContainer, bg: tooltipBg, txt: tooltipTxt };
+  }
+
   private updateSign(): void {
     const { padX, h, r, y, borderW, W } = this._signParams;
     const w = Math.min(this.titleTxt.width + padX * 2, W - borderW * 2);
@@ -438,19 +677,21 @@ export class SettingsScreen {
     this.updateSign();
     this.tooltip.txt.text = this.t('select_character');
     this.redrawTooltip();
-    const howRaw = this.t('how_to_play');
-    const colonIdx = howRaw.indexOf(': ');
-    this.howToPlayTxt.text = colonIdx >= 0
-      ? `<b>${howRaw.slice(0, colonIdx)}:</b> ${howRaw.slice(colonIdx + 2)}`
-      : howRaw;
-    this.langLbl.text = `✦ ${this.t('language')} ✦`;
-    this.rulesTxt.text = this.t('rules').replace('75 points', '<b>75 points</b>');
-    this.charLbl.text = `✦ ${this.t('character')} ✦`;
-    this.frTxt.text = this.t('lang_fr');
-    this.enTxt.text = this.t('lang_en');
+    if (this.charLbl) this.charLbl.text = `✦ ${this.t('character')} ✦`;
+    if (this.langLbl) this.langLbl.text = `✦ ${this.t('language')} ✦`;
+    if (this.rulesTxt) this.rulesTxt.text = this.t('rules').replace('75 points', '<b>75 points</b>');
+    if (this.frTxt) this.frTxt.text = this.t('lang_fr');
+    if (this.enTxt) this.enTxt.text = this.t('lang_en');
+    if (this.howToPlayTxt) {
+      const howRaw = this.t('how_to_play');
+      const colonIdx = howRaw.indexOf(': ');
+      this.howToPlayTxt.text = colonIdx >= 0
+        ? `<b>${howRaw.slice(0, colonIdx)}:</b> ${howRaw.slice(colonIdx + 2)}`
+        : howRaw;
+    }
     this.playTxt.text = this.t('play');
-    this.frBtn.selected = this.lang === 'fr';
-    this.enBtn.selected = this.lang === 'en';
+    if (this.frBtn) this.frBtn.selected = this.lang === 'fr';
+    if (this.enBtn) this.enBtn.selected = this.lang === 'en';
     this.lucCard.selected = this.char === 'luc';
     this.shanCard.selected = this.char === 'shannon';
   }
