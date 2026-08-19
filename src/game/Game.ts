@@ -1,3 +1,4 @@
+import confetti from 'canvas-confetti';
 import {
   Application,
   Assets,
@@ -14,6 +15,7 @@ import { PlatformManager } from './PlatformManager';
 import { hitPlatform } from './Collisions';
 import { SettingsScreen } from './SettingsScreen';
 import type { Character, Language } from './SettingsScreen';
+import { SaveTheDateScreen } from './SaveTheDateScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
 import {
@@ -28,6 +30,7 @@ import {
   SCORE_PER_FRAME,
   SPEED_INCREMENT,
   FALL_DEATH_Y,
+  SAVE_THE_DATE_SCORE_THRESHOLD,
 } from './constants';
 
 export class Game {
@@ -73,11 +76,15 @@ export class Game {
 
   private settingsIconSprite!: Sprite;
   private inputBound = false;
+  private focusBound = false;
 
   private selectedCharacter: Character = 'shannon';
   private selectedLanguage: Language = 'fr';
   private gameStarted = false;
+  private saveTheDateShown = localStorage.getItem('saveTheDateShown') === 'true';
+  private confettiTriggered = false;
   private settingsScreen: SettingsScreen | null = null;
+  private saveTheDateScreen: SaveTheDateScreen | null = null;
 
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
@@ -107,9 +114,11 @@ export class Game {
 
   private async loadAssets(): Promise<void> {
     await Assets.load([
-      '/assets/settings-background.png',
-      '/assets/settings-background-mobile.png',
-      '/assets/background.png',
+      '/assets/background-settings.png',
+      '/assets/background-settings-mobile.png',
+      '/assets/background-save-the-date-overlay.png',
+      '/assets/background-save-the-date-mobile-overlay.png',
+      '/assets/background-game.png',
       // '/assets/water.png',
       '/assets/tilex1.png',
       '/assets/tilesx2.png',
@@ -131,6 +140,8 @@ export class Game {
       '/assets/pause.png',
       '/assets/play.png',
       '/assets/settings-icon.png',
+      '/assets/calendar-icon.png',
+      '/assets/location-icon.png',
     ]);
     this.jumpSound = new Audio('/assets/jump_sound.mp3');
     this.jumpSound.volume = 0.02;
@@ -142,7 +153,7 @@ export class Game {
     this.state = createState();
     const { stage } = this.app;
 
-    const bgTexture = Texture.from('/assets/background.png');
+    const bgTexture = Texture.from('/assets/background-game.png');
     if (this.isPortrait) {
       const bgSpriteSize = { width: this.gameWidth / 0.95, height: this.gameHeight / 0.95 };
       this.background = new TilingSprite({ texture: bgTexture, ...bgSpriteSize });
@@ -394,7 +405,7 @@ export class Game {
 
     if (s.score > s.newMilestone) {
       s.currentSpeed += SPEED_INCREMENT;
-      s.newMilestone *= 2;
+      s.newMilestone += 20 + Math.round(s.currentSpeed * 8);
     }
 
     this.platforms.move(s.currentSpeed * delta);
@@ -422,6 +433,10 @@ export class Game {
       }
     }
 
+    if (!this.saveTheDateShown && !this.confettiTriggered && Math.round(s.score) >= SAVE_THE_DATE_SCORE_THRESHOLD) {
+      this.triggerConfettiAndSaveTheDate();
+    }
+
     if (player.y + player.height > this.gameHeight + FALL_DEATH_Y) {
       if (s.score > s.highScore) {
         s.highScore = Math.round(s.score);
@@ -432,6 +447,45 @@ export class Game {
       s.newMilestone = s.firstMilestone;
       this.startGame();
     }
+  }
+
+  private triggerConfettiAndSaveTheDate(): void {
+    this.confettiTriggered = true;
+    this.isPaused = true;
+    this.pauseToggleSprite.texture = this.playTexture;
+    this.runAnim.stop();
+    for (const coin of this.state.coins) coin.stop();
+
+    const rect = this.app.canvas.getBoundingClientRect();
+    const confettiCanvas = document.createElement('canvas');
+    confettiCanvas.width = rect.width;
+    confettiCanvas.height = rect.height;
+    confettiCanvas.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:9999;`;
+    document.body.appendChild(confettiCanvas);
+
+    const myConfetti = confetti.create(confettiCanvas, { resize: false });
+
+    const count = 200;
+    const defaults = { origin: { y: 0.7 } };
+    const fire = (particleRatio: number, opts: object) => {
+      myConfetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
+    };
+
+    fire(0.25, { spread: 26, startVelocity: 55 });
+    fire(0.2, { spread: 60 });
+    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+    fire(0.1, { spread: 120, startVelocity: 45 });
+
+    setTimeout(() => {
+      myConfetti.reset();
+      confettiCanvas.remove();
+      // COMMENT FOR TESTING PURPOSES
+      this.saveTheDateShown = true;
+      localStorage.setItem('saveTheDateShown', 'true');
+      this.gameStarted = false;
+      this.showSaveTheDate();
+    }, 2000);
   }
 
   private checkGround(): boolean {
@@ -543,13 +597,50 @@ export class Game {
   private launchGame(char: Character, lang: Language): void {
     this.settingsScreen?.destroy();
     this.settingsScreen = null;
+    this.saveTheDateScreen?.destroy();
+    this.saveTheDateScreen = null;
+    this.isPaused = false;
     this.selectedCharacter = char;
     this.selectedLanguage = lang;
+    localStorage.setItem('selectedCharacter', char);
+    this.app.stage.removeChildren();
     this.buildScene();
     this.startGame();
     this.bindInput();
     this.watchFocus();
     this.gameStarted = true;
+  }
+
+  private showSaveTheDate(): void {
+    const lang = (localStorage.getItem('language') as Language) ?? this.selectedLanguage;
+    const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
+    const bodyLines = [
+      { text: tr['save_the_date_body_1'] ?? '', extraSpacingAfter: true },
+      { text: tr['save_the_date_body_2'] ?? '', icon: '/assets/calendar-icon.png', fixedSpacingAfter: 16 },
+      { text: tr['save_the_date_body_3'] ?? '', icon: '/assets/location-icon.png', extraSpacingAfter: true },
+      { text: tr['save_the_date_body_4'] ?? '' },
+    ].filter(item => Boolean(item.text));
+    this.saveTheDateScreen = new SaveTheDateScreen(
+      this.app,
+      this.gameWidth,
+      this.gameHeight,
+      tr['save_the_date'] ?? 'Save the date',
+      tr['play_again'] ?? 'Play again',
+      bodyLines,
+      () => this.launchFromSaveTheDate(),
+    );
+  }
+
+  private launchFromSaveTheDate(): void {
+    const char = localStorage.getItem('selectedCharacter') as Character | null;
+    const lang = (localStorage.getItem('language') as Language) ?? 'fr';
+    if (char) {
+      this.launchGame(char, lang);
+    } else {
+      this.saveTheDateScreen?.destroy();
+      this.saveTheDateScreen = null;
+      this.showSettings();
+    }
   }
 
   private goToSettings(): void {
@@ -567,6 +658,8 @@ export class Game {
   }
 
   private watchFocus(): void {
+    if (this.focusBound) return;
+    this.focusBound = true;
     const pause = () => { if (!this.isPaused) this.togglePause(); };
     document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
     window.addEventListener('blur', pause);

@@ -19,7 +19,12 @@ export const PLATFORM_RANDOM_Y_MIN = 35;
 export const COIN_POOL_SIZE = 12;
 export const COIN_SCORE = 5;
 export const SCORE_PER_FRAME = 0.017;
-export const SPEED_INCREMENT = 0.3;
+export const SPEED_INCREMENT = 0.4;
+
+export const SAVE_THE_DATE_SCORE_THRESHOLD = 75;
+// FOR TESTING PURPOSES
+// export const SAVE_THE_DATE_SCORE_THRESHOLD = 1;
+
 
 export const BG_SCROLL_SPEED = 0.8;
 export const WATER_SCROLL_SPEED = 2.4;

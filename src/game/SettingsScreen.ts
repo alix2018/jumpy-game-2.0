@@ -1,6 +1,8 @@
 import {
   Container,
   Graphics,
+  HTMLText,
+  HTMLTextStyle,
   Sprite,
   Text,
   TextStyle,
@@ -104,7 +106,9 @@ export class SettingsScreen {
   private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number };
 
   private langLbl!: Text;
+  private rulesTxt!: HTMLText;
   private charLbl!: Text;
+  private howToPlayTxt!: HTMLText;
   private frBtn!: OptionBtn;
   private enBtn!: OptionBtn;
   private frTxt!: Text;
@@ -149,9 +153,10 @@ export class SettingsScreen {
     const xs = (v: number) => Math.round(v * sc);
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
+    const isSmallScreen = isMobile && H < 665;
 
     // ─── Background: cover-scale the settings image ───
-    const bgImg = W < H ? '/assets/settings-background-mobile.png' : '/assets/settings-background.png';
+    const bgImg = W < H ? '/assets/background-settings-mobile.png' : '/assets/background-settings.png';
     const bgSpr = new Sprite(Texture.from(bgImg));
     bgSpr.width = W;
     bgSpr.height = H;
@@ -159,13 +164,13 @@ export class SettingsScreen {
 
     // ─── Flow layout — each element pushed below the previous ───
     // Top padding scales with H so portrait screens use proportional space.
-    let y = Math.round(H * 0.09);
+    let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.05);
 
     // ── Title sign — width fits the text ──
-    const signH = xs(76);
+    const signH = isMobile ? xs(76) : xs(58);
     const signR = xs(10);
     const signBorderW = xs(4);
-    const signPadX = xs(36);
+    const signPadX = isMobile ? xs(36) : xs(24);
 
     // Create text first so we can measure its width
     this.titleTxt = new Text({
@@ -173,9 +178,9 @@ export class SettingsScreen {
       style: new TextStyle({
         fill: '#5C3A1E',
         fontFamily: 'Courier New',
-        fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(36)),
+        fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
         fontWeight: 'bold',
-        letterSpacing: xs(1),
+        letterSpacing: xs(0),
       }),
     });
     this.titleTxt.anchor.set(0.5);
@@ -185,28 +190,27 @@ export class SettingsScreen {
     c.addChild(this.sign);       // sign drawn behind text
     c.addChild(this.titleTxt);   // text in front
 
-    y += signH + (isMobile ? (isTablet ? 60 : 28) : xs(24));
+    y += signH + (isMobile ? (isTablet ? 60 : 28) : xs(30));
 
     // ── Language label ──
     const secStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
-      fontSize: Math.max(isTablet ? 28 : 15, xs(17)),
+      fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
       fontWeight: 'bold',
-      letterSpacing: xs(2),
-      dropShadow: { color: '#ffffff', blur: 4, distance: 0, alpha: 0.7 },
+      letterSpacing: xs(1),
     });
 
     this.langLbl = new Text({ text: '', style: secStyle });
     this.langLbl.anchor.set(0.5);
-    this.langLbl.position.set(W / 2, y + xs(9));
+    this.langLbl.position.set(W / 2, y + xs(5));
     c.addChild(this.langLbl);
 
-    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? (isTablet ? 10 : 6) : xs(14));
+    y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
 
     // ── Language buttons ──
-    const lbH = Math.max(isTablet ? 58 : 44, xs(44));
-    const lbW = Math.max(isTablet ? 150 : 110, xs(120));
+    const lbH = Math.max(isTablet ? 50 : 38, xs(30));
+    const lbW = Math.max(isTablet ? 130 : 95, xs(85));
     const lbGap = xs(16);
     const lbY = y;
 
@@ -217,7 +221,7 @@ export class SettingsScreen {
     const btnTxtStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'Courier New',
-      fontSize: Math.max(isTablet ? 22 : 14, xs(15)),
+      fontSize: Math.max(isTablet ? 18 : 12, xs(11)),
     });
 
     this.frTxt = new Text({ text: '', style: btnTxtStyle });
@@ -233,22 +237,45 @@ export class SettingsScreen {
     this.frBtn.gfx.on('pointerdown', () => { this.lang = 'fr'; localStorage.setItem('language', 'fr'); this.refresh(); });
     this.enBtn.gfx.on('pointerdown', () => { this.lang = 'en'; localStorage.setItem('language', 'en'); this.refresh(); });
 
-    y += lbH + (isMobile ? (isTablet ? 60 : 28) : xs(24));
+    y += lbH + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
+
+    // ── Rules text ──
+    const rulesWrapW = isMobile ? W * 0.82 : W * 0.90;
+    const rulesFontSize = Math.max(isTablet ? 16 : 13, xs(13));
+    this.rulesTxt = new HTMLText({
+      text: this.t('rules'),
+      style: new HTMLTextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'Courier New',
+        fontSize: rulesFontSize,
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: rulesWrapW,
+        tagStyles: {
+          b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
+        },
+      }),
+    });
+    this.rulesTxt.anchor.set(0.5, 0);
+    this.rulesTxt.position.set(W / 2, y);
+    c.addChild(this.rulesTxt);
+
+    y += this.rulesTxt.height + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
     this.charLbl.anchor.set(0.5);
-    this.charLbl.position.set(W / 2, y + xs(9));
+    this.charLbl.position.set(W / 2, y + xs(4));
     c.addChild(this.charLbl);
 
-    y += Math.max(isTablet ? 32 : 16, xs(18)) + (isMobile ? (isTablet ? 10 : 6) : xs(14));
+    y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
 
     // ── Character cards ──
     // Square-ish cards; cap size so two fit side-by-side with a gap
     const maxCardW = Math.floor((W - xs(60)) / 2);  // half width minus gap
     const cardW = isMobile
-      ? Math.min(Math.floor((W - xs(160)) / 2), maxCardW)
-      : Math.min(Math.max(xs(170), 80), maxCardW);
+      ? Math.min(Math.floor((W - (isSmallScreen ? xs(280) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
     const cardTop = y;
@@ -298,18 +325,40 @@ export class SettingsScreen {
 
     y += cardH;
 
-    // ── Hint text between cards and play button ──
+    // ── How to play text (between cards and select_character) ──
+    const howWrapW = isMobile ? W * 0.82 : W * 0.90;
+    const howFontSize = Math.max(isTablet ? 16 : 13, xs(13));
+    this.howToPlayTxt = new HTMLText({
+      text: this.t('how_to_play'),
+      style: new HTMLTextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'Courier New',
+        fontSize: howFontSize,
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: howWrapW,
+        tagStyles: {
+          b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
+        },
+      }),
+    });
+    this.howToPlayTxt.anchor.set(0.5, 0);
+    c.addChild(this.howToPlayTxt);
+
+    const howToPlayGapAbove = xs(14);
+    const howToPlayGapBelow = xs(14);
+    y += howToPlayGapAbove;
+    const howToPlayFlowY = y;
+    y += this.howToPlayTxt.height + howToPlayGapBelow;
+
+    // ── Tooltip params (select_character) ──
     const tipPadX = xs(12) + (isMobile ? 2 : 0);
     const tipPadY = xs(7) + (isMobile ? 2 : 0);
     const tipR = xs(6);
     this._W = W;
     this._tipParams = { padX: tipPadX, padY: tipPadY, r: tipR };
-
-    const hintGap = isMobile ? xs(24) : xs(16);
-    y += hintGap;
-    this._hintY = y;
-    const hintEstH = Math.max(xs(13), 9) + tipPadY * 2;
-    y += hintEstH + hintGap;
+    const hintGapBefore = isMobile ? xs(28) : xs(60);
+    const hintGapAfter = isMobile ? xs(10) : xs(4);
 
     const tooltipContainer = new Container();
     tooltipContainer.visible = true;
@@ -321,7 +370,7 @@ export class SettingsScreen {
       style: new TextStyle({
         fill: '#5C3A1E',
         fontFamily: 'Courier New',
-        fontSize: Math.max(isTablet ? 22 : 13, xs(13)),
+        fontSize: Math.max(isTablet ? 16 : 11, xs(12)),
         align: 'center',
         wordWrap: true,
         wordWrapWidth: isMobile ? W * 0.65 : W,
@@ -332,13 +381,23 @@ export class SettingsScreen {
 
     this.tooltip = { container: tooltipContainer, bg: tooltipBg, txt: tooltipTxt };
 
-    // ── Play button below the hint ──
+    // ── Play button (above select_character on desktop) ──
     const playH = Math.max(isTablet ? 84 : 54, xs(54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
+
     const playY = isMobile
-      ? H - 60 - shadow - playH
-      : y;
+      ? Math.round(H * (isSmallScreen ? 0.91 : 0.88)) - shadow - playH
+      : y + hintGapBefore;
+
+    if (isMobile) {
+      // Anchor from bottom: howToPlayTxt → play button → tooltip
+      this.howToPlayTxt.position.set(W / 2, playY - hintGapBefore - this.howToPlayTxt.height);
+      this._hintY = playY + playH + shadow + hintGapAfter;
+    } else {
+      this.howToPlayTxt.position.set(W / 2, howToPlayFlowY);
+      this._hintY = playY + playH + shadow + hintGapAfter;
+    }
 
     this.playBtn = new PlayBtn(Math.round(W / 2 - playW / 2), playY, playW, playH, shadow);
     c.addChild(this.playBtn.gfx);
@@ -350,7 +409,7 @@ export class SettingsScreen {
         fontFamily: 'Courier New',
         fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
         fontWeight: 'bold',
-        letterSpacing: xs(3),
+        letterSpacing: xs(1),
       }),
     });
     this.playTxt.anchor.set(0.5);
@@ -379,7 +438,13 @@ export class SettingsScreen {
     this.updateSign();
     this.tooltip.txt.text = this.t('select_character');
     this.redrawTooltip();
+    const howRaw = this.t('how_to_play');
+    const colonIdx = howRaw.indexOf(': ');
+    this.howToPlayTxt.text = colonIdx >= 0
+      ? `<b>${howRaw.slice(0, colonIdx)}:</b> ${howRaw.slice(colonIdx + 2)}`
+      : howRaw;
     this.langLbl.text = `✦ ${this.t('language')} ✦`;
+    this.rulesTxt.text = this.t('rules').replace('75 points', '<b>75 points</b>');
     this.charLbl.text = `✦ ${this.t('character')} ✦`;
     this.frTxt.text = this.t('lang_fr');
     this.enTxt.text = this.t('lang_en');
