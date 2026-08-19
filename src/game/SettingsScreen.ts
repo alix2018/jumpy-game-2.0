@@ -178,25 +178,19 @@ export class SettingsScreen {
     const extraRowGap = this.saveTheDateShown ? xs(7) : 0;
     const signExtraH = this.saveTheDateShown ? extraLineH * 2 + extraRowGap + xs(5) : 0;
     const signH = baseTitleH + signExtraH;
-    const fixedSignW = this.saveTheDateShown ? Math.min(isMobile ? W * 0.88 : 500, W - signBorderW * 2) : undefined;
-    const signX = fixedSignW !== undefined ? Math.round((W - fixedSignW) / 2) : 0;
-
-    const titleStyle = new TextStyle({
-      fill: '#5C3A1E',
-      fontFamily: 'Courier New',
-      fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
-      fontWeight: 'bold',
-      letterSpacing: xs(0),
+    this.titleTxt = new Text({
+      text: '',
+      style: new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'Courier New',
+        fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
+        fontWeight: 'bold',
+        letterSpacing: xs(0),
+      }),
     });
-    if (this.saveTheDateShown && fixedSignW !== undefined) {
-      titleStyle.wordWrap = true;
-      titleStyle.wordWrapWidth = fixedSignW - signPadX * 2;
-      titleStyle.align = 'center';
-    }
-    this.titleTxt = new Text({ text: '', style: titleStyle });
     this.titleTxt.anchor.set(0.5);
 
-    this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W, titleH: baseTitleH, fixedW: fixedSignW };
+    this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W, titleH: baseTitleH };
     this.sign = new Graphics();
     c.addChild(this.sign);
     c.addChild(this.titleTxt);
@@ -506,7 +500,7 @@ export class SettingsScreen {
       { pseudo: 'Evan',    highScore: 1000 },
       { pseudo: 'Ana',     highScore: 550 },
     ];
-    const boardW = Math.min(isMobile ? W * 0.86 : 350, W - xs(24));
+    const boardW = Math.min(isTablet ? 450 : isMobile ? 270 : 350, W - xs(24));
     const boardX = Math.round((W - boardW) / 2);
     const frameW = xs(2);
     const boardPadX = xs(10);
@@ -596,7 +590,7 @@ export class SettingsScreen {
       c.addChild(scoreTxt);
     }
 
-    y += boardH + xs(12);
+    y += boardH + (isMobile ? xs(28) : xs(12));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
