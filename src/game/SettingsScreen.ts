@@ -9,7 +9,6 @@ import {
   Texture,
 } from 'pixi.js';
 import type { Application } from 'pixi.js';
-import { renderInfoCards } from './renderInfoCards';
 
 export type Language = 'fr' | 'en';
 export type Character = 'luc' | 'shannon';
@@ -103,11 +102,16 @@ export class SettingsScreen {
 
   private sign!: Graphics;
   private titleTxt!: Text;
-  private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number };
+  private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number; titleH?: number; fixedW?: number };
 
   private langLbl: Text | null = null;
   private rulesTxt: HTMLText | null = null;
   private charLbl: Text | null = null;
+  private _saveDateCalTxt: Text | null = null;
+  private _saveDateLocTxt: Text | null = null;
+  private _saveDateCalRow: Container | null = null;
+  private _saveDateLocRow: Container | null = null;
+  private _leaderboardTitleTxt: Text | null = null;
   private howToPlayTxt: HTMLText | null = null;
   private frBtn: OptionBtn | null = null;
   private enBtn: OptionBtn | null = null;
@@ -164,27 +168,79 @@ export class SettingsScreen {
     let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.05);
 
     // ── Title sign ──
-    const signH = isMobile ? xs(76) : xs(58);
+    const baseTitleH = isMobile ? xs(76) : xs(58);
     const signR = xs(10);
     const signBorderW = xs(4);
     const signPadX = isMobile ? xs(36) : xs(24);
 
-    this.titleTxt = new Text({
-      text: '',
-      style: new TextStyle({
-        fill: '#5C3A1E',
-        fontFamily: 'Courier New',
-        fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
-        fontWeight: 'bold',
-        letterSpacing: xs(0),
-      }),
+    const extraIconSz = this.saveTheDateShown ? Math.max(isTablet ? 22 : 16, xs(16)) : 0;
+    const extraLineH = this.saveTheDateShown ? extraIconSz + xs(2) : 0;
+    const extraRowGap = this.saveTheDateShown ? xs(7) : 0;
+    const signExtraH = this.saveTheDateShown ? extraLineH * 2 + extraRowGap + xs(5) : 0;
+    const signH = baseTitleH + signExtraH;
+    const fixedSignW = this.saveTheDateShown ? Math.min(isMobile ? W * 0.88 : 500, W - signBorderW * 2) : undefined;
+    const signX = fixedSignW !== undefined ? Math.round((W - fixedSignW) / 2) : 0;
+
+    const titleStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'Courier New',
+      fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
+      fontWeight: 'bold',
+      letterSpacing: xs(0),
     });
+    if (this.saveTheDateShown && fixedSignW !== undefined) {
+      titleStyle.wordWrap = true;
+      titleStyle.wordWrapWidth = fixedSignW - signPadX * 2;
+      titleStyle.align = 'center';
+    }
+    this.titleTxt = new Text({ text: '', style: titleStyle });
     this.titleTxt.anchor.set(0.5);
 
-    this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W };
+    this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W, titleH: baseTitleH, fixedW: fixedSignW };
     this.sign = new Graphics();
     c.addChild(this.sign);
     c.addChild(this.titleTxt);
+
+    if (this.saveTheDateShown) {
+      const signTitleY = y;
+      const iconTextGap = xs(8);
+      const extraTxtStyle = new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'Courier New',
+        fontSize: Math.max(isTablet ? 18 : 13, xs(14)),
+        fontWeight: 'bold',
+      });
+      const line1CenterY = signTitleY + baseTitleH - xs(8) + extraLineH / 2;
+      const line2CenterY = line1CenterY + extraLineH + extraRowGap;
+
+      this._saveDateCalRow = new Container();
+      this._saveDateCalRow.y = line1CenterY;
+      const calIcon = new Sprite(Texture.from('/assets/calendar-icon.png'));
+      calIcon.width = extraIconSz;
+      calIcon.height = extraIconSz;
+      calIcon.anchor.set(0, 0.5);
+      calIcon.position.set(0, 0);
+      this._saveDateCalRow.addChild(calIcon);
+      this._saveDateCalTxt = new Text({ text: '', style: extraTxtStyle });
+      this._saveDateCalTxt.anchor.set(0, 0.5);
+      this._saveDateCalTxt.position.set(extraIconSz + iconTextGap, 0);
+      this._saveDateCalRow.addChild(this._saveDateCalTxt);
+      c.addChild(this._saveDateCalRow);
+
+      this._saveDateLocRow = new Container();
+      this._saveDateLocRow.y = line2CenterY;
+      const locIcon = new Sprite(Texture.from('/assets/location-icon.png'));
+      locIcon.width = extraIconSz;
+      locIcon.height = extraIconSz;
+      locIcon.anchor.set(0, 0.5);
+      locIcon.position.set(0, 0);
+      this._saveDateLocRow.addChild(locIcon);
+      this._saveDateLocTxt = new Text({ text: '', style: extraTxtStyle });
+      this._saveDateLocTxt.anchor.set(0, 0.5);
+      this._saveDateLocTxt.position.set(extraIconSz + iconTextGap, 0);
+      this._saveDateLocRow.addChild(this._saveDateLocTxt);
+      c.addChild(this._saveDateLocRow);
+    }
 
     y += signH + (isMobile ? (isTablet ? 20 : 14) : xs(20));
 
@@ -434,13 +490,13 @@ export class SettingsScreen {
   ): void {
     const tr = this.tr[this.lang] as Record<string, string>;
 
-    // ── Date/location cards ──
-    const infoCards = [
-      { icon: '/assets/calendar-icon.png', label: tr['date'] ?? 'Date', value: tr['save_the_date_body_2'] ?? '' },
-      { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '' },
-    ];
-    const cardBlockH = renderInfoCards(c, infoCards, W, y, isMobile, isTablet, xs);
-    y += cardBlockH + xs(12);
+    const secStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'Courier New',
+      fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
+      fontWeight: 'bold',
+      letterSpacing: xs(1),
+    });
 
     // ── Leaderboard ──
     const topScores: Array<{ pseudo: string; highScore: number }> = [
@@ -449,36 +505,45 @@ export class SettingsScreen {
       { pseudo: 'Stephanie', highScore: 3800 },
       { pseudo: 'Evan',    highScore: 1000 },
       { pseudo: 'Ana',     highScore: 550 },
-      { pseudo: 'Laure',   highScore: 390 },
     ];
-    const boardW = Math.min(isMobile ? W * 0.86 : W * 0.68, W - xs(24));
+    const boardW = Math.min(isMobile ? W * 0.86 : 350, W - xs(24));
     const boardX = Math.round((W - boardW) / 2);
     const frameW = xs(2);
     const boardPadX = xs(10);
-    const boardPadY = xs(8);
-    const rowH = Math.max(isTablet ? 36 : 24, xs(22));
-    const rowGap = xs(5);
+    const boardPadY = xs(5);
+    const rowH = Math.max(isTablet ? 28 : 20, xs(18));
+    const rowGap = xs(3);
     const badgeSize = rowH;
     const badgeGap = xs(5);
-    const scoreColW = Math.max(isTablet ? 52 : 36, xs(34));
-    const colGap = xs(22);
     const innerW = boardW - frameW * 2;
-    const colW = Math.floor((innerW - boardPadX * 2 - colGap) / 2);
-    const boardInnerH = 3 * rowH + 2 * rowGap;
+    const colW = innerW - boardPadX * 2;
+    const lbTitleFontSize = Math.max(isTablet ? 22 : 15, xs(15));
+    const lbTitleH = Math.round(lbTitleFontSize * 1.2);
+    const lbTitleGap = xs(4);
+    const boardInnerH = lbTitleH + lbTitleGap + 5 * rowH + 4 * rowGap;
     const boardH = boardInnerH + boardPadY * 2 + frameW * 2;
     const boardR = xs(10);
 
     const boardGfx = new Graphics();
     boardGfx.roundRect(frameW, frameW, boardW, boardH, boardR).fill({ color: 0x7A4F2E, alpha: 0.25 });
-    boardGfx.roundRect(0, 0, boardW, boardH, boardR).fill({ color: 0xF5DC8A });
+    boardGfx.roundRect(0, 0, boardW, boardH, boardR).fill({ color: 0xFFFBF2, alpha: 0.85 });
     boardGfx.roundRect(0, 0, boardW, boardH, boardR).stroke({ color: 0x7A4F2E, width: frameW });
     boardGfx.position.set(boardX, y);
     c.addChild(boardGfx);
 
-    const divLine = new Graphics();
-    const divX = boardX + frameW + boardPadX + colW + Math.floor(colGap / 2);
-    divLine.rect(divX, y + frameW + boardPadY, 1, boardInnerH).fill({ color: 0xBCA882, alpha: 0.7 });
-    c.addChild(divLine);
+    this._leaderboardTitleTxt = new Text({
+      text: tr['leaderboard'] ?? 'High scores',
+      style: new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'Courier New',
+        fontSize: lbTitleFontSize,
+        fontWeight: 'bold',
+        letterSpacing: xs(1),
+      }),
+    });
+    this._leaderboardTitleTxt.anchor.set(0.5);
+    this._leaderboardTitleTxt.position.set(W / 2, y + frameW + boardPadY + Math.round(lbTitleH / 2));
+    c.addChild(this._leaderboardTitleTxt);
 
     const rankStyle = new TextStyle({
       fill: '#ffffff',
@@ -498,51 +563,42 @@ export class SettingsScreen {
       fontSize: Math.max(isTablet ? 20 : 14, xs(13)),
     });
 
-    for (let col = 0; col < 2; col++) {
-      const colInnerX = boardX + frameW + boardPadX + col * (colW + colGap);
-      for (let row = 0; row < 3; row++) {
-        const rank = col * 3 + row;
-        const entry = topScores[rank] ?? null;
-        const rowY = y + frameW + boardPadY + row * (rowH + rowGap);
+    const colInnerX = boardX + frameW + boardPadX;
+    const rowsStartY = y + frameW + boardPadY + lbTitleH + lbTitleGap;
+    for (let row = 0; row < 5; row++) {
+      const entry = topScores[row] ?? null;
+      const rowY = rowsStartY + row * (rowH + rowGap);
 
-        const badge = new Graphics();
-        badge.circle(badgeSize / 2, badgeSize / 2, badgeSize / 2).fill({ color: 0x4A7C3F });
-        badge.position.set(colInnerX, rowY);
-        c.addChild(badge);
+      const badge = new Graphics();
+      badge.circle(badgeSize / 2, badgeSize / 2, badgeSize / 2).fill({ color: 0x4A7C3F });
+      badge.position.set(colInnerX, rowY);
+      c.addChild(badge);
 
-        const rankTxt = new Text({ text: String(rank + 1), style: rankStyle });
-        rankTxt.anchor.set(0.5);
-        rankTxt.position.set(colInnerX + badgeSize / 2, rowY + badgeSize / 2);
-        c.addChild(rankTxt);
+      const rankTxt = new Text({ text: String(row + 1), style: rankStyle });
+      rankTxt.anchor.set(0.5);
+      rankTxt.position.set(colInnerX + badgeSize / 2, rowY + badgeSize / 2);
+      c.addChild(rankTxt);
 
-        const nameTxt = new Text({
-          text: entry ? entry.pseudo : '- -',
-          style: nameStyle,
-        });
-        nameTxt.anchor.set(0, 0.5);
-        nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2);
-        c.addChild(nameTxt);
+      const nameTxt = new Text({
+        text: entry ? entry.pseudo : '- -',
+        style: nameStyle,
+      });
+      nameTxt.anchor.set(0, 0.5);
+      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2);
+      c.addChild(nameTxt);
 
-        const scoreTxt = new Text({
-          text: entry ? `${entry.highScore} ${this.t('points')}` : '',
-          style: scoreStyle,
-        });
-        scoreTxt.anchor.set(1, 0.5);
-        scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2);
-        c.addChild(scoreTxt);
-      }
+      const scoreTxt = new Text({
+        text: entry ? `${entry.highScore} ${this.t('points')}` : '',
+        style: scoreStyle,
+      });
+      scoreTxt.anchor.set(1, 0.5);
+      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2);
+      c.addChild(scoreTxt);
     }
 
     y += boardH + xs(12);
 
     // ── Character label ──
-    const secStyle = new TextStyle({
-      fill: '#5C3A1E',
-      fontFamily: 'Courier New',
-      fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
-      fontWeight: 'bold',
-      letterSpacing: xs(1),
-    });
     this.charLbl = new Text({ text: '', style: secStyle });
     this.charLbl.anchor.set(0.5);
     this.charLbl.position.set(W / 2, y + xs(4));
@@ -661,15 +717,15 @@ export class SettingsScreen {
   }
 
   private updateSign(): void {
-    const { padX, h, r, y, borderW, W } = this._signParams;
-    const w = Math.min(this.titleTxt.width + padX * 2, W - borderW * 2);
+    const { padX, h, r, y, borderW, W, titleH, fixedW } = this._signParams;
+    const w = fixedW !== undefined ? fixedW : Math.min(this.titleTxt.width + padX * 2, W - borderW * 2);
     const x = Math.round((W - w) / 2);
     this.sign.clear();
     this.sign.roundRect(borderW, borderW, w, h, r).fill({ color: 0xBCA882, alpha: 0.5 });
     this.sign.roundRect(0, 0, w, h, r).fill({ color: 0xF5E6C0 });
     this.sign.roundRect(0, 0, w, h, r).stroke({ color: 0xBCA882, width: borderW });
     this.sign.position.set(x, y);
-    this.titleTxt.position.set(W / 2, y + Math.round(h / 2));
+    this.titleTxt.position.set(W / 2, y + Math.round((titleH ?? h) / 2));
   }
 
   private refresh(): void {
@@ -689,6 +745,15 @@ export class SettingsScreen {
         ? `<b>${howRaw.slice(0, colonIdx)}:</b> ${howRaw.slice(colonIdx + 2)}`
         : howRaw;
     }
+    if (this._saveDateCalTxt && this._saveDateCalRow) {
+      this._saveDateCalTxt.text = this.t('save_the_date_body_2');
+      this._saveDateCalRow.x = Math.round(this._W / 2 - this._saveDateCalRow.width / 2);
+    }
+    if (this._saveDateLocTxt && this._saveDateLocRow) {
+      this._saveDateLocTxt.text = this.t('save_the_date_body_3');
+      this._saveDateLocRow.x = Math.round(this._W / 2 - this._saveDateLocRow.width / 2);
+    }
+    if (this._leaderboardTitleTxt) this._leaderboardTitleTxt.text = this.t('leaderboard');
     this.playTxt.text = this.t('play');
     if (this.frBtn) this.frBtn.selected = this.lang === 'fr';
     if (this.enBtn) this.enBtn.selected = this.lang === 'en';
