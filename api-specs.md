@@ -37,7 +37,7 @@ Sent if hash is missing or invalid (e.g. pseudo missing, code missing or invalid
 
 ---
 
-## POST /scores
+## POST /score
 
 Submit a new score.
 
@@ -51,8 +51,17 @@ Submit a new score.
 - code: string (hash code), required, contains the user pseudo and the code to access the app
 
 *Response 200*
-{ "pseudo": "Alice", "highScore": 4200 }
-Sends back the pseudo and the high score for this user.
+```
+  { "pseudo": "Alice",
+    "highScore": 4200,
+    "highScoreList": [
+      { "pseudo": "Alice", "highScore": 4200 },
+      { "pseudo": "Bob",   "highScore": 3800 }
+      ...
+      ]
+  }
+```
+Sends back the pseudo, the high score for this user and the total high score list.
 
 Request creates a new entry if no entry exists for the current user. If an entry already exists, save the new one if score is higher than the existing one.
 
