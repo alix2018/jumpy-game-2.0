@@ -249,7 +249,7 @@ export class Game {
     this.pauseToggleSprite.cursor = 'pointer';
     stage.addChild(this.pauseToggleSprite);
 
-    this.soundEnabled = localStorage.getItem('soundEnabled') === 'true';
+    this.soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
     this.soundOffTexture = Texture.from('/assets/sound_off.png');
     this.soundOnTexture = Texture.from('/assets/sound_on.png');
     this.soundIconY = 20;
