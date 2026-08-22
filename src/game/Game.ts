@@ -55,8 +55,8 @@ export class Game {
   private textHighScore!: Text;
   private platformPool!: Sprite[];
 
-  private jumpSound!: HTMLAudioElement;
-  private fallSound!: HTMLAudioElement;
+  private jumpSounds!: Record<Character, HTMLAudioElement>;
+  private fallSounds!: Record<Character, HTMLAudioElement>;
   private fallSoundPlayed = false;
   private lastDisplayedScore = -1;
   private lastDisplayedHighScore = -1;
@@ -148,10 +148,9 @@ export class Game {
       { src: '/fonts/TypoWriter-Regular.otf', data: { family: 'TypoWriter', weights: ['normal'] } },
       { src: '/fonts/TypoWriter-Bold.otf', data: { family: 'TypoWriter', weights: ['bold'] } },
     ]);
-    this.jumpSound = new Audio('/assets/jump_sound.mp3');
-    this.jumpSound.volume = 0.02;
-    this.fallSound = new Audio('/assets/fall_sound.mp3');
-    this.fallSound.volume = 0.02;
+    const makeAudio = (src: string, rate = 1) => { const a = new Audio(src); a.volume = 0.07; a.playbackRate = rate; return a; };
+    this.jumpSounds = { luc: makeAudio('/assets/luc-jump.m4a'), shannon: makeAudio('/assets/shannon-jump.m4a') };
+    this.fallSounds = { luc: makeAudio('/assets/luc-fall.m4a', 1), shannon: makeAudio('/assets/shannon-fall.m4a', 1.4) };
   }
 
   private buildScene(): void {
@@ -373,8 +372,8 @@ export class Game {
         this.fallSprite.visible = false;
         s.air = true;
         if (this.soundEnabled) {
-          this.jumpSound.currentTime = 0;
-          this.jumpSound.play();
+          this.jumpSounds[this.selectedCharacter].currentTime = 0;
+          this.jumpSounds[this.selectedCharacter].play();
         }
       } else {
         this.jumpInitiated = false;
@@ -435,8 +434,8 @@ export class Game {
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
       this.fallSoundPlayed = true;
       if (this.soundEnabled) {
-        this.fallSound.currentTime = 0;
-        this.fallSound.play();
+        this.fallSounds[this.selectedCharacter].currentTime = 0;
+        this.fallSounds[this.selectedCharacter].play();
       }
     }
 
