@@ -1,13 +1,13 @@
 # TODO
 
 ## SETTINGS PAGE
-- Improve layout on mobile/tablet
-- Choose another font
+- [x] Improve layout on mobile/tablet
+- [x] Choose another font
 
 ## GAME
-- [ ] Fix the first platforms spacing: Make 2 long platforms so the user has time to jump once and figure things out (so removing the tilex1 platform in between). Make sure the platform are spaced enough so the user has to jump
-- [ ] Fix: long click on mobile (iphone) selects or do other actions (e.g. screenshot)
-- Press play again feature only for local development
+- [x] Fix the first platforms spacing: Make 2 long platforms so the user has time to jump once and figure things out (so removing the tilex1 platform in between). Make sure the platform are spaced enough so the user has to jump
+- [x] Fix: long click on mobile (iphone) selects or do other actions (e.g. screenshot)
+- [x] Press play again feature only for local development
 
 ## SAVE THE DATE PAGE
 - Save the date page
@@ -15,7 +15,6 @@
   - If not matched the game continue
   - If matched, the game freezes with an effect and the save the date page comes as an overlay on top
   - Button displays "Continue playing"
-  - Save the date button on the top right
   - When the person looses, the game starts directly
 
 ## OTHERS

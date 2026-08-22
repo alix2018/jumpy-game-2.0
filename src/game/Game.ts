@@ -156,6 +156,8 @@ export class Game {
 
   private buildScene(): void {
     this.state = createState();
+    this.lastDisplayedScore = -1;
+    this.lastDisplayedHighScore = -1;
     const { stage } = this.app;
 
     const bgTexture = Texture.from('/assets/background-game.png');
@@ -311,12 +313,12 @@ export class Game {
       // In portrait, platform widths are unscaled so scaled x-positions cause overlap.
       // Instead place platforms sequentially using their actual widths.
       t5a.position.set(0, platformY);
-      t1a.position.set(t5a.width + 80, platformY);
-      t4a.position.set(t5a.width + t1a.width + 130, platformY);
+      t1a.position.set(t5a.width + 140, platformY);
+      t4a.position.set(t5a.width + 140 + t1a.width + 140, platformY);
     } else {
-      t1a.position.set(685, platformY);
-      t4a.position.set(900, platformY);
       t5a.position.set(60, platformY);
+      t1a.position.set(60 + t5a.width + 140, platformY);
+      t4a.position.set(60 + t5a.width + 140 + t1a.width + 140, platformY);
     }
     s.stackOnScreen.push(t5a, t1a, t4a);
 
@@ -684,8 +686,10 @@ export class Game {
     if (this.focusBound) return;
     this.focusBound = true;
     const pause = () => { if (!this.isPaused) this.togglePause(); };
-    document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+    const resume = () => { if (this.isPaused) this.togglePause(); };
+    document.addEventListener('visibilitychange', () => { document.hidden ? pause() : resume(); });
     window.addEventListener('blur', pause);
+    window.addEventListener('focus', resume);
   }
 
   private watchResize(): void {
