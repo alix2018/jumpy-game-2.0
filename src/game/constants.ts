@@ -21,9 +21,9 @@ export const COIN_SCORE = 5;
 export const SCORE_PER_FRAME = 0.017;
 export const SPEED_INCREMENT = 0.4;
 
-// export const SAVE_THE_DATE_SCORE_THRESHOLD = 75;
+export const SAVE_THE_DATE_SCORE_THRESHOLD = 75;
 // FOR TESTING PURPOSES
-export const SAVE_THE_DATE_SCORE_THRESHOLD = 1;
+// export const SAVE_THE_DATE_SCORE_THRESHOLD = 1;
 
 
 export const BG_SCROLL_SPEED = 0.8;

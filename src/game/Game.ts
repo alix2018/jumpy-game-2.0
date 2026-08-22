@@ -577,6 +577,8 @@ export class Game {
       if (!this.isPaused) this.pressDown();
     }, { passive: false });
     canvas.addEventListener('touchend', () => this.pressUp());
+    canvas.addEventListener('touchcancel', () => this.pressUp());
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
