@@ -25,6 +25,7 @@ class OptionBtn {
     readonly y: number,
     readonly w: number,
     readonly h: number,
+    private readonly _r?: number,
   ) {
     this.gfx = new Graphics();
     this.gfx.position.set(x, y);
@@ -44,7 +45,7 @@ class OptionBtn {
   }
 
   private redraw() {
-    const r = Math.round(this.h * 0.22);
+    const r = this._r ?? Math.round(Math.min(this.w, this.h) * 0.22);
     this.gfx.clear();
     this.gfx.roundRect(0, 0, this.w, this.h, r).fill({ color: 0xF5E6C0 });
     this.gfx.roundRect(0, 0, this.w, this.h, r).stroke({
@@ -85,7 +86,7 @@ class PlayBtn {
   }
 
   private redraw() {
-    const r = Math.round(this.h * 0.22);
+    const r = Math.round(Math.min(this.w, this.h) * 0.22);
     const fill = this._enabled ? 0x4A7C3F : 0xBECA7A;
     const shade = this._enabled ? 0x2D5224 : 0xAAB462;
     this.gfx.clear();
@@ -159,6 +160,7 @@ export class SettingsScreen {
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
     const isSmallScreen = isMobile && H < 665;
+    const cornerR = Math.max(isTablet ? 11 : 8, xs(7));
 
     // ─── Background ───
     const bgImg = W < H ? '/assets/background-settings-mobile.png' : '/assets/background-settings.png';
@@ -171,7 +173,7 @@ export class SettingsScreen {
 
     // ── Title sign ──
     const baseTitleH = isMobile ? xs(76) : xs(58);
-    const signR = xs(10);
+    const signR = cornerR;
     const signBorderW = xs(4);
     const signPadX = isMobile ? xs(36) : xs(24);
 
@@ -266,19 +268,19 @@ export class SettingsScreen {
     y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
 
     // ── Language buttons ──
-    const lbH = Math.max(isTablet ? 50 : 38, xs(30));
-    const lbW = Math.max(isTablet ? 130 : 95, xs(85));
+    const lbH = Math.max(isTablet ? 64 : 38, xs(30));
+    const lbW = Math.max(isTablet ? 170 : 95, xs(85));
     const lbGap = xs(16);
     const lbY = y;
 
-    this.frBtn = new OptionBtn(W / 2 - lbGap / 2 - lbW, lbY, lbW, lbH);
-    this.enBtn = new OptionBtn(W / 2 + lbGap / 2, lbY, lbW, lbH);
+    this.frBtn = new OptionBtn(W / 2 - lbGap / 2 - lbW, lbY, lbW, lbH, cornerR);
+    this.enBtn = new OptionBtn(W / 2 + lbGap / 2, lbY, lbW, lbH, cornerR);
     c.addChild(this.frBtn.gfx, this.enBtn.gfx);
 
     const btnTxtStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'TypoWriter',
-      fontSize: Math.max(isTablet ? 18 : 12, xs(11)),
+      fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
     });
 
     this.frTxt = new Text({ text: '', style: btnTxtStyle });
@@ -294,11 +296,11 @@ export class SettingsScreen {
     this.frBtn.gfx.on('pointerdown', () => { this.lang = 'fr'; localStorage.setItem('language', 'fr'); this.refresh(); });
     this.enBtn.gfx.on('pointerdown', () => { this.lang = 'en'; localStorage.setItem('language', 'en'); this.refresh(); });
 
-    y += lbH + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
+    y += lbH + (isMobile ? (isSmallScreen ? 8 : isTablet ? 24 : 14) : xs(16));
 
     // ── Rules text ──
-    const rulesWrapW = isMobile ? W * 0.82 : W * 0.90;
-    const rulesFontSize = Math.max(isTablet ? 16 : 13, xs(13));
+    const rulesWrapW = isMobile ? W * 0.92 : W * 0.90;
+    const rulesFontSize = Math.max(isTablet ? 22 : 13, xs(13));
     this._rulesTxt = new HTMLText({
       text: this.t('rules'),
       style: new HTMLTextStyle({
@@ -317,7 +319,7 @@ export class SettingsScreen {
     this._rulesTxt.position.set(W / 2, y);
     c.addChild(this._rulesTxt);
 
-    y += this._rulesTxt.height + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
+    y += this._rulesTxt.height + (isMobile ? (isSmallScreen ? 8 : isTablet ? 24 : 14) : xs(16));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -330,7 +332,7 @@ export class SettingsScreen {
     // ── Character cards ──
     const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isSmallScreen ? xs(280) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
@@ -338,8 +340,8 @@ export class SettingsScreen {
     const lucLeft = Math.round(W / 2 - cardGap / 2 - cardW);
     const shanLeft = Math.round(W / 2 + cardGap / 2);
 
-    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH);
-    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH);
+    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH, cornerR);
+    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH, cornerR);
     c.addChild(this.lucCard.gfx, this.shanCard.gfx);
 
     const lucSpr = new Sprite(Texture.from('/assets/luc-idle-resize.png'));
@@ -380,8 +382,8 @@ export class SettingsScreen {
     y += cardH;
 
     // ── How to play text ──
-    const howWrapW = isMobile ? W * 0.82 : W * 0.90;
-    const howFontSize = Math.max(isTablet ? 16 : 13, xs(13));
+    const howWrapW = isMobile ? W * 0.92 : W * 0.90;
+    const howFontSize = Math.max(isTablet ? 22 : 13, xs(13));
     const howBaseStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'TypoWriter',
@@ -417,10 +419,9 @@ export class SettingsScreen {
     // ── Tooltip (select_character) ──
     const tipPadX = xs(12) + (isMobile ? 2 : 0);
     const tipPadY = xs(7) + (isMobile ? 2 : 0);
-    const tipR = xs(6);
     this._W = W;
-    this._tipParams = { padX: tipPadX, padY: tipPadY, r: tipR };
-    const hintGapBefore = isMobile ? xs(28) : xs(60);
+    this._tipParams = { padX: tipPadX, padY: tipPadY, r: cornerR };
+    const hintGapBefore = isMobile ? (isSmallScreen ? xs(14) : xs(28)) : xs(40);
     const hintGapAfter = isMobile ? xs(10) : xs(4);
 
     const tooltipContainer = new Container();
@@ -444,7 +445,7 @@ export class SettingsScreen {
     this.tooltip = { container: tooltipContainer, bg: tooltipBg, txt: tooltipTxt };
 
     // ── Play button ──
-    const playH = Math.max(isTablet ? 84 : 54, xs(54));
+    const playH = Math.max(isSmallScreen ? 44 : isTablet ? 84 : 54, xs(isSmallScreen ? 44 : 54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
 
@@ -494,6 +495,7 @@ export class SettingsScreen {
     onPlay: (char: Character, lang: Language) => void,
   ): void {
     const tr = this.tr[this.lang] as Record<string, string>;
+    const cornerR = Math.max(isTablet ? 11 : 8, xs(7));
 
     const secStyle = new TextStyle({
       fill: '#5C3A1E',
@@ -527,11 +529,11 @@ export class SettingsScreen {
     const lbTitleGap = xs(4);
     const boardInnerH = lbTitleH + lbTitleGap + 5 * rowH + 4 * rowGap;
     const boardH = boardInnerH + boardPadY * 2 + frameW * 2;
-    const boardR = xs(10);
+    const boardR = cornerR;
 
     const boardGfx = new Graphics();
     boardGfx.roundRect(frameW, frameW, boardW, boardH, boardR).fill({ color: 0x7A4F2E, alpha: 0.25 });
-    boardGfx.roundRect(0, 0, boardW, boardH, boardR).fill({ color: 0xFFFBF2, alpha: 0.85 });
+    boardGfx.roundRect(0, 0, boardW, boardH, boardR).fill({ color: 0xE8CDB0 });
     boardGfx.roundRect(0, 0, boardW, boardH, boardR).stroke({ color: 0x7A4F2E, width: frameW });
     boardGfx.position.set(boardX, y);
     c.addChild(boardGfx);
@@ -613,7 +615,7 @@ export class SettingsScreen {
     // ── Character cards ──
     const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isSmallScreen ? xs(280) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
@@ -621,8 +623,8 @@ export class SettingsScreen {
     const lucLeft = Math.round(W / 2 - cardGap / 2 - cardW);
     const shanLeft = Math.round(W / 2 + cardGap / 2);
 
-    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH);
-    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH);
+    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH, cornerR);
+    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH, cornerR);
     c.addChild(this.lucCard.gfx, this.shanCard.gfx);
 
     const lucSpr = new Sprite(Texture.from('/assets/luc-idle-resize.png'));
@@ -665,12 +667,11 @@ export class SettingsScreen {
     // ── Tooltip (select_character) ──
     const tipPadX = xs(12) + (isMobile ? 2 : 0);
     const tipPadY = xs(7) + (isMobile ? 2 : 0);
-    const tipR = xs(6);
     this._W = W;
-    this._tipParams = { padX: tipPadX, padY: tipPadY, r: tipR };
+    this._tipParams = { padX: tipPadX, padY: tipPadY, r: cornerR };
 
     // ── Play button ──
-    const playH = Math.max(isTablet ? 84 : 54, xs(54));
+    const playH = Math.max(isSmallScreen ? 44 : isTablet ? 84 : 54, xs(isSmallScreen ? 44 : 54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
     const hintGapAfter = isMobile ? xs(10) : xs(4);

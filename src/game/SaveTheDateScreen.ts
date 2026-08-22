@@ -61,6 +61,7 @@ export class SaveTheDateScreen {
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
     const isSmallScreen = isMobile && H < 665;
+    const isLargeMobile = isMobile && !isTablet && H > 765;
     const sc = Math.max(Math.min(W / 960, H / 600), 0.45);
     const xs = (v: number) => Math.round(v * sc);
 
@@ -117,8 +118,8 @@ export class SaveTheDateScreen {
     // Body text
     const paraFontSize = Math.max(isTablet ? 28 : isMobile ? 15 : 0, xs(14));
     const bulletFontSize = paraFontSize;
-    const paraGap = isMobile ? (isSmallScreen ? xs(14) : xs(26)) : xs(20);
-    const bulletGap = isMobile ? (isSmallScreen ? xs(7) : xs(14)) : xs(10);
+    const paraGap = isMobile ? (isSmallScreen ? xs(0) : isTablet ? xs(26) : xs(8)) : xs(20);
+    const bulletGap = isMobile ? (isSmallScreen ? xs(7) : isTablet ? xs(14) : xs(4)) : xs(10);
 
     const paraStyle = new TextStyle({
       fill: '#5C3A1E',
@@ -144,10 +145,10 @@ export class SaveTheDateScreen {
 
     for (const line of bodyLines) {
       if (line.cards) {
-        const maxCardH = renderInfoCards(c, line.cards, W, y, isMobile, isTablet, xs);
-        y += maxCardH + paraGap;
-        if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
-        if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+        const maxCardH = renderInfoCards(c, line.cards, W, y, isMobile, isTablet, xs, isLargeMobile);
+        y += maxCardH + (isLargeMobile ? xs(32) : paraGap);
+        if (isMobile && !isLargeMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+        if (isMobile && !isLargeMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
       } else {
         const hasIcon = Boolean(line.icon);
         const txt = new Text({ text: line.text ?? '', style: hasIcon ? bulletStyle : paraStyle });
@@ -165,26 +166,26 @@ export class SaveTheDateScreen {
           txt.position.set(groupX + iconSize + gap, y);
           c.addChild(iconSpr);
           c.addChild(txt);
-          y += txt.height + bulletGap;
-          if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
-          if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+          y += txt.height + (isLargeMobile ? xs(26) : bulletGap);
+          if (isMobile && !isLargeMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+          if (isMobile && !isLargeMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
         } else {
           txt.anchor.set(0.5, 0);
           txt.position.set(W / 2, y);
           c.addChild(txt);
-          y += txt.height + paraGap;
-          if (isMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
-          if (isMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
+          y += txt.height + (isLargeMobile ? xs(34) : paraGap);
+          if (isMobile && !isLargeMobile && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+          if (isMobile && !isLargeMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
         }
       }
     }
 
     // Play again button
-    const playH = Math.max(isTablet ? 84 : 54, xs(54));
+    const playH = Math.max(isSmallScreen ? 44 : isTablet ? 84 : 54, xs(isSmallScreen ? 44 : 54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
     const playY = isMobile
-      ? H - 70 - shadow - playH
+      ? H - (isSmallScreen ? 50 : 70) - shadow - playH
       : H - 85 - shadow - playH;
     const playX = Math.round(W / 2 - playW / 2);
     const btnR = Math.round(playH * 0.22);

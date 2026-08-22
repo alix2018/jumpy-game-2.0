@@ -14,10 +14,11 @@ export function renderInfoCards(
   isMobile: boolean,
   isTablet: boolean,
   xs: (v: number) => number,
+  stackVertically = false,
 ): number {
-  const cardsW = Math.min(isMobile ? W * 0.74 : W * 0.68, W - xs(24));
-  const cardGap = xs(8);
-  const cardW = Math.floor((cardsW - cardGap) / 2);
+  const cardsW = stackVertically ? W * 0.65 : Math.min(isMobile ? W * 0.74 : W * 0.68, W - xs(24));
+  const cardGap = stackVertically ? xs(42) : xs(8);
+  const cardW = stackVertically ? cardsW : Math.floor((cardsW - cardGap) / 2);
   const cardPadX = xs(16);
   const cardPadY = xs(8);
   const labelFontSize = Math.max(isTablet ? 23 : isMobile ? 15 : 0, xs(16));
@@ -58,31 +59,35 @@ export function renderInfoCards(
 
   for (let i = 0; i < cards.length; i++) {
     const cardData = cards[i];
-    const cardX = cardX0 + i * (cardW + cardGap);
+    const cardX = cardX0;
+    const cardY = stackVertically ? y + i * (maxCardH + cardGap) : y;
+    const cardXOffset = stackVertically ? 0 : i * (cardW + cardGap);
     const { label: labelTxt, value: valueTxt } = cardTexts[i];
 
     const card = new Graphics();
     card.roundRect(cardBorderW, cardBorderW, cardW, maxCardH, cardR).fill({ color: 0x7A4F2E, alpha: 0.25 });
-    card.roundRect(0, 0, cardW, maxCardH, cardR).fill({ color: 0xFFFBF2, alpha: 0.85 });
+    card.roundRect(0, 0, cardW, maxCardH, cardR).fill({ color: 0xE8CDB0 });
     card.roundRect(0, 0, cardW, maxCardH, cardR).stroke({ color: 0x7A4F2E, width: cardBorderW });
-    card.position.set(cardX, y);
+    card.position.set(cardX + cardXOffset, cardY);
     c.addChild(card);
 
     const iconSpr = new Sprite(Texture.from(cardData.icon));
     iconSpr.width = iconSizeInCard;
     iconSpr.height = iconSizeInCard;
-    iconSpr.position.set(cardX + cardPadX, y + cardPadY + Math.round((rowH - iconSizeInCard) / 2));
+    iconSpr.position.set(cardX + cardXOffset + cardPadX, cardY + cardPadY + Math.round((rowH - iconSizeInCard) / 2));
     c.addChild(iconSpr);
 
     labelTxt.position.set(
-      cardX + cardPadX + iconSizeInCard + iconLabelGap,
-      y + cardPadY + Math.round((rowH - labelTxt.height) / 2),
+      cardX + cardXOffset + cardPadX + iconSizeInCard + iconLabelGap,
+      cardY + cardPadY + Math.round((rowH - labelTxt.height) / 2),
     );
     c.addChild(labelTxt);
 
-    valueTxt.position.set(cardX + cardPadX, y + cardPadY + rowH + labelValueGap);
+    valueTxt.position.set(cardX + cardXOffset + cardPadX, cardY + cardPadY + rowH + labelValueGap);
     c.addChild(valueTxt);
   }
 
-  return maxCardH;
+  return stackVertically
+    ? cards.length * maxCardH + (cards.length - 1) * cardGap
+    : maxCardH;
 }
