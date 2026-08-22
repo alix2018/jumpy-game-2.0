@@ -31,14 +31,14 @@ export function renderInfoCards(
 
   const labelStyle = new TextStyle({
     fill: '#5C3A1E',
-    fontFamily: 'Courier New',
+    fontFamily: 'TypoWriter',
     fontSize: labelFontSize,
     fontWeight: 'bold',
     letterSpacing: xs(1),
   });
   const valueStyle = new TextStyle({
     fill: '#7A5C3A',
-    fontFamily: 'Courier New',
+    fontFamily: 'TypoWriter',
     fontSize: valueFontSize,
     fontWeight: 'bold',
     wordWrap: true,

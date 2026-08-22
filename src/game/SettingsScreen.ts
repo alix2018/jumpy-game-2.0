@@ -105,14 +105,16 @@ export class SettingsScreen {
   private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number; titleH?: number; fixedW?: number };
 
   private langLbl: Text | null = null;
-  private rulesTxt: HTMLText | null = null;
+  private _rulesTxt: HTMLText | null = null;
   private charLbl: Text | null = null;
   private _saveDateCalTxt: Text | null = null;
   private _saveDateLocTxt: Text | null = null;
   private _saveDateCalRow: Container | null = null;
   private _saveDateLocRow: Container | null = null;
   private _leaderboardTitleTxt: Text | null = null;
-  private howToPlayTxt: HTMLText | null = null;
+  private _howCont: Container | null = null;
+  private _howTxt1: Text | null = null;
+  private _howTxt2: Text | null = null;
   private frBtn: OptionBtn | null = null;
   private enBtn: OptionBtn | null = null;
   private frTxt: Text | null = null;
@@ -182,7 +184,7 @@ export class SettingsScreen {
       text: '',
       style: new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
         fontWeight: 'bold',
         letterSpacing: xs(0),
@@ -200,7 +202,7 @@ export class SettingsScreen {
       const iconTextGap = xs(8);
       const extraTxtStyle = new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 18 : 13, xs(14)),
         fontWeight: 'bold',
       });
@@ -250,7 +252,7 @@ export class SettingsScreen {
     // ── Language label ──
     const secStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
       fontWeight: 'bold',
       letterSpacing: xs(1),
@@ -275,7 +277,7 @@ export class SettingsScreen {
 
     const btnTxtStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 18 : 12, xs(11)),
     });
 
@@ -297,25 +299,25 @@ export class SettingsScreen {
     // ── Rules text ──
     const rulesWrapW = isMobile ? W * 0.82 : W * 0.90;
     const rulesFontSize = Math.max(isTablet ? 16 : 13, xs(13));
-    this.rulesTxt = new HTMLText({
+    this._rulesTxt = new HTMLText({
       text: this.t('rules'),
       style: new HTMLTextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: rulesFontSize,
         align: 'center',
         wordWrap: true,
         wordWrapWidth: rulesWrapW,
         tagStyles: {
-          b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
+          b: { fontWeight: 'bold' },
         },
       }),
     });
-    this.rulesTxt.anchor.set(0.5, 0);
-    this.rulesTxt.position.set(W / 2, y);
-    c.addChild(this.rulesTxt);
+    this._rulesTxt.anchor.set(0.5, 0);
+    this._rulesTxt.position.set(W / 2, y);
+    c.addChild(this._rulesTxt);
 
-    y += this.rulesTxt.height + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
+    y += this._rulesTxt.height + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -349,7 +351,7 @@ export class SettingsScreen {
 
     const charNameStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
     });
 
@@ -380,28 +382,37 @@ export class SettingsScreen {
     // ── How to play text ──
     const howWrapW = isMobile ? W * 0.82 : W * 0.90;
     const howFontSize = Math.max(isTablet ? 16 : 13, xs(13));
-    this.howToPlayTxt = new HTMLText({
-      text: this.t('how_to_play'),
-      style: new HTMLTextStyle({
-        fill: '#5C3A1E',
-        fontFamily: 'Courier New',
-        fontSize: howFontSize,
-        align: 'center',
-        wordWrap: true,
-        wordWrapWidth: howWrapW,
-        tagStyles: {
-          b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
-        },
-      }),
+    const howBaseStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: howFontSize,
+      align: 'center',
+      wordWrap: true,
+      wordWrapWidth: howWrapW,
     });
-    this.howToPlayTxt.anchor.set(0.5, 0);
-    c.addChild(this.howToPlayTxt);
+    const how1Style = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: howFontSize,
+      fontWeight: 'bold',
+      align: 'center',
+    });
+    const howGap = xs(2);
+    this._howTxt1 = new Text({ text: this.t('how_to_play_1'), style: how1Style });
+    this._howTxt1.anchor.set(0.5, 0);
+    this._howTxt1.x = W / 2;
+    this._howTxt2 = new Text({ text: this.t('how_to_play_2'), style: howBaseStyle });
+    this._howTxt2.anchor.set(0.5, 0);
+    this._howTxt2.position.set(W / 2, this._howTxt1.height + howGap);
+    this._howCont = new Container();
+    this._howCont.addChild(this._howTxt1, this._howTxt2);
+    c.addChild(this._howCont);
 
     const howToPlayGapAbove = xs(14);
     const howToPlayGapBelow = xs(14);
     y += howToPlayGapAbove;
     const howToPlayFlowY = y;
-    y += this.howToPlayTxt.height + howToPlayGapBelow;
+    y += this._howCont.height + howToPlayGapBelow;
 
     // ── Tooltip (select_character) ──
     const tipPadX = xs(12) + (isMobile ? 2 : 0);
@@ -421,7 +432,7 @@ export class SettingsScreen {
       text: '',
       style: new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 16 : 11, xs(12)),
         align: 'center',
         wordWrap: true,
@@ -442,10 +453,10 @@ export class SettingsScreen {
       : y + hintGapBefore;
 
     if (isMobile) {
-      this.howToPlayTxt.position.set(W / 2, playY - hintGapBefore - this.howToPlayTxt.height);
+      this._howCont!.position.set(0, playY - hintGapBefore - this._howCont!.height);
       this._hintY = playY + playH + shadow + hintGapAfter;
     } else {
-      this.howToPlayTxt.position.set(W / 2, howToPlayFlowY);
+      this._howCont!.position.set(0, howToPlayFlowY);
       this._hintY = playY + playH + shadow + hintGapAfter;
     }
 
@@ -456,7 +467,7 @@ export class SettingsScreen {
       text: '',
       style: new TextStyle({
         fill: '#ffffff',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
         fontWeight: 'bold',
         letterSpacing: xs(1),
@@ -486,7 +497,7 @@ export class SettingsScreen {
 
     const secStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
       fontWeight: 'bold',
       letterSpacing: xs(1),
@@ -529,7 +540,7 @@ export class SettingsScreen {
       text: tr['leaderboard'] ?? 'High scores',
       style: new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: lbTitleFontSize,
         fontWeight: 'bold',
         letterSpacing: xs(1),
@@ -541,19 +552,19 @@ export class SettingsScreen {
 
     const rankStyle = new TextStyle({
       fill: '#ffffff',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 16 : 11, xs(10)),
       fontWeight: 'bold',
     });
     const nameStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 22 : 15, xs(14)),
       fontWeight: 'bold',
     });
     const scoreStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 20 : 14, xs(13)),
     });
 
@@ -623,7 +634,7 @@ export class SettingsScreen {
 
     const charNameStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
     });
 
@@ -677,7 +688,7 @@ export class SettingsScreen {
       text: '',
       style: new TextStyle({
         fill: '#ffffff',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
         fontWeight: 'bold',
         letterSpacing: xs(1),
@@ -698,7 +709,7 @@ export class SettingsScreen {
       text: '',
       style: new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 16 : 11, xs(12)),
         align: 'center',
         wordWrap: true,
@@ -729,16 +740,11 @@ export class SettingsScreen {
     this.redrawTooltip();
     if (this.charLbl) this.charLbl.text = `✦ ${this.t('character')} ✦`;
     if (this.langLbl) this.langLbl.text = `✦ ${this.t('language')} ✦`;
-    if (this.rulesTxt) this.rulesTxt.text = this.t('rules').replace('75 points', '<b>75 points</b>');
+    if (this._rulesTxt) this._rulesTxt.text = this.t('rules').replace('75 points', '<b>75 points</b>');
     if (this.frTxt) this.frTxt.text = this.t('lang_fr');
     if (this.enTxt) this.enTxt.text = this.t('lang_en');
-    if (this.howToPlayTxt) {
-      const howRaw = this.t('how_to_play');
-      const colonIdx = howRaw.indexOf(': ');
-      this.howToPlayTxt.text = colonIdx >= 0
-        ? `<b>${howRaw.slice(0, colonIdx)}:</b> ${howRaw.slice(colonIdx + 2)}`
-        : howRaw;
-    }
+    if (this._howTxt1) this._howTxt1.text = this.t('how_to_play_1');
+    if (this._howTxt2) this._howTxt2.text = this.t('how_to_play_2');
     if (this._saveDateCalTxt && this._saveDateCalRow) {
       this._saveDateCalTxt.text = this.t('save_the_date_body_2');
       this._saveDateCalRow.x = Math.round(this._W / 2 - this._saveDateCalRow.width / 2);

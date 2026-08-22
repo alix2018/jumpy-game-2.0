@@ -91,7 +91,7 @@ export class SaveTheDateScreen {
       text: titleText,
       style: new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 36 : isMobile ? 22 : 0, xs(30)),
         fontWeight: 'bold',
         letterSpacing: xs(0),
@@ -122,9 +122,8 @@ export class SaveTheDateScreen {
 
     const paraStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: paraFontSize,
-      fontWeight: 'bold',
       letterSpacing: 0,
       wordWrap: true,
       wordWrapWidth: bodyW,
@@ -134,7 +133,7 @@ export class SaveTheDateScreen {
 
     const bulletStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: bulletFontSize,
       fontWeight: '900',
       letterSpacing: xs(1),
@@ -202,7 +201,7 @@ export class SaveTheDateScreen {
       text: playAgainText,
       style: new TextStyle({
         fill: '#ffffff',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
         fontWeight: 'bold',
         letterSpacing: xs(3),

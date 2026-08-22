@@ -143,6 +143,11 @@ export class Game {
       '/assets/calendar-icon.png',
       '/assets/location-icon.png',
     ]);
+    // Load fonts via Assets so HTMLText can embed them in its SVG context
+    await Assets.load([
+      { src: '/fonts/TypoWriter-Regular.otf', data: { family: 'TypoWriter', weights: ['normal'] } },
+      { src: '/fonts/TypoWriter-Bold.otf', data: { family: 'TypoWriter', weights: ['bold'] } },
+    ]);
     this.jumpSound = new Audio('/assets/jump_sound.mp3');
     this.jumpSound.volume = 0.02;
     this.fallSound = new Audio('/assets/fall_sound.mp3');
@@ -219,7 +224,7 @@ export class Game {
     const style = new TextStyle({
       dropShadow: { angle: 0.5, blur: 1, color: '#424242', distance: 1 },
       fill: '#1d1d1d',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize,
     });
     this.textScore = new Text({ text: `${this.t('score')}: 0`, style });
