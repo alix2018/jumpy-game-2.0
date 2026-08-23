@@ -8,4 +8,11 @@ export default defineConfig({
   optimizeDeps: {
     include: ['pixi.js'],
   },
+  server: {
+    proxy: {
+      '/user': 'http://localhost:3000',
+      '/high-scores': 'http://localhost:3000',
+      '/score': 'http://localhost:3000',
+    },
+  },
 });

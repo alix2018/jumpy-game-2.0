@@ -32,7 +32,7 @@ export function createState(): GameState {
     coinsOffScreen: [],
     coins: [],
     score: 0,
-    highScore: Number(localStorage.getItem('highScore') ?? 0),
+    highScore: 0,
     currentSpeed: INITIAL_SPEED,
     baseSpeed: INITIAL_SPEED,
     newMilestone: FIRST_MILESTONE,

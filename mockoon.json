@@ -1,0 +1,260 @@
+{
+  "uuid": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "lastMigration": 33,
+  "name": "Jumpy Game API",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "localhost",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "11111111-1111-1111-1111-111111111111",
+      "type": "http",
+      "documentation": "Check if user can access the game based on hash code",
+      "method": "get",
+      "endpoint": "user",
+      "responses": [
+        {
+          "uuid": "11111111-1111-1111-1111-111111111112",
+          "body": "{\n  \"pseudo\": \"Alice\",\n  \"highScore\": 2400,\n    \"highScoreList\": [\n    { \"pseudo\": \"Alice\", \"highScore\": 4200 },\n    { \"pseudo\": \"Bob\", \"highScore\": 3800 },\n    { \"pseudo\": \"Charlie\", \"highScore\": 3100 },\n    { \"pseudo\": \"Diana\", \"highScore\": 2750 },\n    { \"pseudo\": \"Eve\", \"highScore\": 1500 }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "11111111-1111-1111-1111-111111111113",
+          "body": "",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "Unauthorized - missing or invalid code",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "code",
+              "operator": "null",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "22222222-2222-2222-2222-222222222221",
+      "type": "http",
+      "documentation": "Retrieve all high scores ordered highest to lowest",
+      "method": "get",
+      "endpoint": "high-scores",
+      "responses": [
+        {
+          "uuid": "22222222-2222-2222-2222-222222222222",
+          "body": "[\n  { \"pseudo\": \"Alice\", \"highScore\": 4200 },\n  { \"pseudo\": \"Bob\", \"highScore\": 3800 },\n  { \"pseudo\": \"Charlie\", \"highScore\": 3100 },\n  { \"pseudo\": \"Diana\", \"highScore\": 2750 },\n  { \"pseudo\": \"Eve\", \"highScore\": 1500 }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "22222222-2222-2222-2222-222222222223",
+          "body": "",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "Unauthorized - missing or invalid code",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "code",
+              "operator": "null",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "33333333-3333-3333-3333-333333333331",
+      "type": "http",
+      "documentation": "Submit a new score",
+      "method": "post",
+      "endpoint": "score",
+      "responses": [
+        {
+          "uuid": "33333333-3333-3333-3333-333333333332",
+          "body": "{\n  \"pseudo\": \"Alice\",\n  \"highScore\": 4200,\n  \"highScoreList\": [\n    { \"pseudo\": \"Alice\", \"highScore\": 4200 },\n    { \"pseudo\": \"Bob\", \"highScore\": 3800 },\n    { \"pseudo\": \"Charlie\", \"highScore\": 3100 },\n    { \"pseudo\": \"Diana\", \"highScore\": 2750 },\n    { \"pseudo\": \"Eve\", \"highScore\": 1500 }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "33333333-3333-3333-3333-333333333333",
+          "body": "",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "Bad Request - missing or invalid score",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "score",
+              "operator": "null",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "33333333-3333-3333-3333-333333333334",
+          "body": "",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "Unauthorized - missing or invalid code",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "code",
+              "operator": "null",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "11111111-1111-1111-1111-111111111111"
+    },
+    {
+      "type": "route",
+      "uuid": "22222222-2222-2222-2222-222222222221"
+    },
+    {
+      "type": "route",
+      "uuid": "33333333-3333-3333-3333-333333333331"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

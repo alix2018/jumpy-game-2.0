@@ -7,30 +7,16 @@ Check if the user can access the game and the API based on the hash code, return
 
 *Response 200*
 ```
-{ "pseudo: "Alice", "highScore": "2400" }
+  { "pseudo": "Alice",
+    "highScore": 4200,
+    "highScoreList": [
+      { "pseudo": "Alice", "highScore": 4200 },
+      { "pseudo": "Bob",   "highScore": 3800 }
+      ...
+      ]
+  }
 ```
-Retrieve the high score of the current user, sends back 0 if high score is not yet available.
-
-*Response 401*
-Sent if hash is missing or invalid (e.g. pseudo missing, code missing or invalid)
-
----
-
-## GET /high-scores
-
-Retrieve all available high scores from all the players ordered highest to lowest.
-
-*Query params*
-- code: string (hash code), required, contains the user pseudo and the code to access the app
-- limit: integer, not required (if missing, sends all the scores) => Max number of scores to return from highest to lowest
-
-*Response 200*
-```
-[
-  { "pseudo": "Alice", "highScore": 4200 },
-  { "pseudo": "Bob",   "highScore": 3800 }
-]
-```
+Sends back the pseudo, the high score for this user (0 if high score not available yet) and the total high score list.
 
 *Response 401*
 Sent if hash is missing or invalid (e.g. pseudo missing, code missing or invalid)
@@ -56,8 +42,10 @@ Submit a new score.
     "highScore": 4200,
     "highScoreList": [
       { "pseudo": "Alice", "highScore": 4200 },
-      { "pseudo": "Bob",   "highScore": 3800 }
-      ...
+      { "pseudo": "Bob", "highScore": 3800 },
+      { "pseudo": "Charlie", "highScore": 3100 },
+      { "pseudo": "Diana", "highScore": 2750 },
+      { "pseudo": "Eve", "highScore": 1500 }
       ]
   }
 ```

@@ -9,8 +9,9 @@
   "select_character": "Tu dois sélectionner un personnage pour pouvoir jouer",
   "lang_fr": "Français",
   "lang_en": "English",
-  "score": "Score",
-  "high_score": "Meilleur score",
+  "score": "Ton score :",
+  "high_score": "Ton meilleur score :",
+  "total_high_score": "Meilleur score total:",
   "save_the_date": "Réserve la date !",
   "play_again": "Rejouer",
   "save_the_date_body_1": "Prépare tes valises pour un week-end rempli d'amour, de rires et de célébration !",
@@ -20,5 +21,6 @@
   "save_the_date_body_3": "Lieu du mariage",
   "save_the_date_body_4": "Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées !",
   "leaderboard": "Meilleurs scores",
-  "points": "points"
+  "points": "points",
+  "code_error": "Tu n'as pas accès à ce contenu, utilise l'URL contenant le code qui t'a été envoyé․"
 }

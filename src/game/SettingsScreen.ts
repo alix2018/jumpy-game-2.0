@@ -137,6 +137,7 @@ export class SettingsScreen {
     onPlay: (char: Character, lang: Language) => void,
     private readonly saveTheDateShown: boolean = false,
     defaultChar: Character | null = null,
+    private readonly highScoreList: Array<{ pseudo: string; highScore: number }> = [],
   ) {
     this.container = new Container();
     const stored = localStorage.getItem('language');
@@ -506,13 +507,7 @@ export class SettingsScreen {
     });
 
     // ── Leaderboard ──
-    const topScores: Array<{ pseudo: string; highScore: number }> = [
-      { pseudo: 'Shannon', highScore: 4200 },
-      { pseudo: 'Luc',     highScore: 4200 },
-      { pseudo: 'Stephanie', highScore: 3800 },
-      { pseudo: 'Evan',    highScore: 1000 },
-      { pseudo: 'Ana',     highScore: 550 },
-    ];
+    const topScores = this.highScoreList;
     const boardW = Math.min(isTablet ? 450 : isMobile ? 270 : 350, W - xs(24));
     const boardX = Math.round((W - boardW) / 2);
     const frameW = xs(2);

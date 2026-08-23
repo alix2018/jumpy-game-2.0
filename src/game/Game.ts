@@ -16,6 +16,7 @@ import { hitPlatform } from './Collisions';
 import { SettingsScreen } from './SettingsScreen';
 import type { Character, Language } from './SettingsScreen';
 import { SaveTheDateScreen } from './SaveTheDateScreen';
+import { ErrorScreen } from './ErrorScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
 import {
@@ -53,6 +54,7 @@ export class Game {
   private runAnim!: AnimatedSprite;
   private textScore!: Text;
   private textHighScore!: Text;
+  private textWeddingHighScore!: Text;
   private platformPool!: Sprite[];
 
   private jumpSounds!: Record<Character, HTMLAudioElement>;
@@ -83,8 +85,14 @@ export class Game {
   private gameStarted = false;
   private saveTheDateShown = localStorage.getItem('saveTheDateShown') === 'true';
   private confettiTriggered = false;
+  private userCode: string | null = null;
+  private userPseudo = '';
+  private sessionHighScore = 0;
+  private weddingTopScore = 0;
+  private highScoreList: Array<{ pseudo: string; highScore: number }> = [];
   private settingsScreen: SettingsScreen | null = null;
   private saveTheDateScreen: SaveTheDateScreen | null = null;
+  private errorScreen: ErrorScreen | null = null;
 
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
@@ -106,7 +114,7 @@ export class Game {
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
     await this.loadAssets();
-    this.showSettings();
+    await this.checkAccess();
     this.watchResize();
 
     this.app.ticker.add((ticker) => this.tick(ticker.deltaTime));
@@ -151,6 +159,44 @@ export class Game {
     const makeAudio = (src: string, rate = 1) => { const a = new Audio(src); a.volume = 0.07; a.playbackRate = rate; return a; };
     this.jumpSounds = { luc: makeAudio('/assets/luc-jump.m4a'), shannon: makeAudio('/assets/shannon-jump.m4a') };
     this.fallSounds = { luc: makeAudio('/assets/luc-fall.m4a', 1), shannon: makeAudio('/assets/shannon-fall.m4a', 1.4) };
+  }
+
+  private async checkAccess(): Promise<void> {
+    const code = new URLSearchParams(window.location.search).get('code');
+    if (!code) {
+      this.showErrorScreen();
+      return;
+    }
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user?code=${encodeURIComponent(code)}`);
+      if (res.ok) {
+        const data = await res.json() as {
+          pseudo: string;
+          highScore: number;
+          highScoreList?: Array<{ pseudo: string; highScore: number }>;
+        };
+        this.userCode = code;
+        this.userPseudo = data.pseudo;
+        this.sessionHighScore = Number(data.highScore) || 0;
+        this.highScoreList = data.highScoreList ?? [];
+        this.weddingTopScore = this.highScoreList[0]?.highScore ?? this.sessionHighScore;
+        this.showSettings();
+      } else {
+        this.showErrorScreen();
+      }
+    } catch {
+      this.showErrorScreen();
+    }
+  }
+
+  private showErrorScreen(): void {
+    const fr = frTranslations as Record<string, string>;
+    const en = enTranslations as Record<string, string>;
+    this.errorScreen = new ErrorScreen(
+      this.app, this.gameWidth, this.gameHeight,
+      fr['code_error'] ?? 'Accès refusé',
+      en['code_error'] ?? 'Access denied',
+    );
   }
 
   private buildScene(): void {
@@ -221,22 +267,37 @@ export class Game {
     this.runAnim = new AnimatedSprite(runSheet.animations[`${ch}_run`]);
     stage.addChild(this.runAnim);
 
-    const fontSize = Math.max(14, Math.round(28 * this.scaleX));
+    const fontSize = Math.max(11, Math.round(18 * this.scaleX));
     const style = new TextStyle({
-      dropShadow: { angle: 0.5, blur: 1, color: '#424242', distance: 1 },
       fill: '#1d1d1d',
       fontFamily: 'TypoWriter',
       fontSize,
+      fontWeight: 'bold',
     });
-    this.textScore = new Text({ text: `${this.t('score')}: 0`, style });
-    this.textScore.anchor.set(1, 0);
-    this.textScore.position.set(this.gameWidth - 20, 20);
-    stage.addChild(this.textScore);
+    const lineH = fontSize + 10;
+    this.textWeddingHighScore = new Text({ text: `${this.t('total_high_score')} ${this.weddingTopScore}`, style });
+    this.textWeddingHighScore.anchor.set(1, 0);
+    this.textWeddingHighScore.position.set(this.gameWidth - 20, 20);
+    stage.addChild(this.textWeddingHighScore);
 
-    this.textHighScore = new Text({ text: `${this.t('high_score')}: 0`, style });
+    this.textHighScore = new Text({ text: `${this.t('high_score')}: ${this.sessionHighScore}`, style });
     this.textHighScore.anchor.set(1, 0);
-    this.textHighScore.position.set(this.gameWidth - 20, 20 + fontSize + 10);
+    this.textHighScore.position.set(this.gameWidth - 20, 20 + lineH);
     stage.addChild(this.textHighScore);
+
+    const scoreFontSize = this.isPortrait ? Math.max(32, Math.round(64 * this.scaleX)) : Math.max(28, Math.round(52 * this.scaleX));
+    this.textScore = new Text({
+      text: '0',
+      style: new TextStyle({
+        fill: '#1d1d1d',
+        fontFamily: 'TypoWriter',
+        fontSize: scoreFontSize,
+        fontWeight: 'bold',
+      }),
+    });
+    this.textScore.anchor.set(0.5, 0);
+    this.textScore.position.set(this.gameWidth / 2, this.isPortrait ? 20 + lineH * 2 + 4 : 15);
+    stage.addChild(this.textScore);
 
     this.pauseTexture = Texture.from('/assets/pause.png');
     this.playTexture = Texture.from('/assets/play.png');
@@ -423,12 +484,13 @@ export class Game {
     const roundedScore = Math.round(s.score);
     if (roundedScore !== this.lastDisplayedScore) {
       this.lastDisplayedScore = roundedScore;
-      this.textScore.text = `${this.t('score')}: ${roundedScore}`;
+      this.textScore.text = this.saveTheDateShown
+        ? String(roundedScore)
+        : `${roundedScore}/${SAVE_THE_DATE_SCORE_THRESHOLD}`;
     }
-    const roundedHighScore = Math.round(s.highScore);
-    if (roundedHighScore !== this.lastDisplayedHighScore) {
-      this.lastDisplayedHighScore = roundedHighScore;
-      this.textHighScore.text = `${this.t('high_score')}: ${roundedHighScore}`;
+    if (this.sessionHighScore !== this.lastDisplayedHighScore) {
+      this.lastDisplayedHighScore = this.sessionHighScore;
+      this.textHighScore.text = `${this.t('high_score')} ${this.sessionHighScore}`;
     }
 
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
@@ -444,11 +506,7 @@ export class Game {
     }
 
     if (player.y + player.height > this.gameHeight + FALL_DEATH_Y) {
-      if (s.score > s.highScore) {
-        s.highScore = Math.round(s.score);
-        localStorage.setItem('highScore', String(s.highScore));
-      }
-      if (this.saveTheDateShown && Math.round(s.score) > 0) {
+      if (Math.round(s.score) > 0) {
         this.saveToLeaderboard(Math.round(s.score));
       }
       s.score = 0;
@@ -498,10 +556,27 @@ export class Game {
   }
 
   private saveToLeaderboard(score: number): void {
-    const entries: Array<{ name: string; score: number }> = JSON.parse(localStorage.getItem('topScores') ?? '[]');
-    entries.push({ name: this.selectedCharacter, score });
-    entries.sort((a, b) => b.score - a.score);
-    localStorage.setItem('topScores', JSON.stringify(entries.slice(0, 6)));
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/score?code=${encodeURIComponent(this.userCode ?? '')}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score }),
+    })
+      .then(res => (res.ok ? res.json() : null))
+      .then((data: { pseudo: string; highScore: number; highScoreList: Array<{ pseudo: string; highScore: number }> } | null) => {
+        if (!data) return;
+        if (data.highScore > this.sessionHighScore) {
+          this.sessionHighScore = data.highScore;
+          this.lastDisplayedHighScore = -1;
+        }
+        const newTopScore = data.highScoreList?.[0]?.highScore ?? data.highScore;
+        if (newTopScore > this.weddingTopScore) {
+          this.weddingTopScore = newTopScore;
+          if (this.textWeddingHighScore) {
+            this.textWeddingHighScore.text = `${this.t('total_high_score')} ${this.weddingTopScore}`;
+          }
+        }
+      })
+      .catch(() => { /* ignore */ });
   }
 
   private checkGround(): boolean {
@@ -610,6 +685,7 @@ export class Game {
       (char, lang) => this.launchGame(char, lang),
       this.saveTheDateShown,
       defaultChar,
+      this.highScoreList,
     );
   }
 
