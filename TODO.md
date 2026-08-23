@@ -1,14 +1,13 @@
 # TODO
 
 ## SETTINGS PAGE
-- Improve layout on mobile/tablet
-- Choose another font
+- [x] Improve layout on mobile/tablet
+- [x] Choose another font
 
 ## GAME
-- Fix the first platforms spacing: Make 2 long platforms so the user has time to jump once and figure things out (so removing the tilex1 platform in between). Make sure the platform are spaced enough so the user has to jump
-- Fix: long click on mobile (iphone) selects or do other actions (e.g. screenshot)
-- Make the game faster over time (more exponential)
-- Press play again feature only for local development
+- [x] Fix the first platforms spacing: Make 2 long platforms so the user has time to jump once and figure things out (so removing the tilex1 platform in between). Make sure the platform are spaced enough so the user has to jump
+- [x] Fix: long click on mobile (iphone) selects or do other actions (e.g. screenshot)
+- [x] Press play again feature only for local development
 
 ## SAVE THE DATE PAGE
 - Save the date page
@@ -16,7 +15,6 @@
   - If not matched the game continue
   - If matched, the game freezes with an effect and the save the date page comes as an overlay on top
   - Button displays "Continue playing"
-  - Save the date button on the top right
   - When the person looses, the game starts directly
 
 ## OTHERS
@@ -55,14 +53,16 @@ Text Screen Un Mariage Baxcus
 - ⁠Comment jouer: Touchez votre écran ou appuyez sur la barre espace… et surtout, ne tombez pas !
 
 ## Alignments
-- [ ] Arrive sur la page perso: ajouter le texte des règles du jeu
+- [x] Arrive sur la page perso: ajouter le texte des règles du jeu
 - [x] minimum 75 points pour accéder au save the date > jeu pause > confetti > overlay plus petit pour qu'on voit le jeu derrière
-- [ ] Page de base par défaut après save the date: choix du perso, le classement + titre avec lieu et date
+- [x] Page de base par défaut après save the date: choix du perso, le classement + titre avec lieu et date
 et rejoue
 - [x] Augmenter vitesse plus rapidement
 - [ ] Audios custom pour chaque perso
 - [x] baxcus.com avec blason familial: Baxcus wedding - Save the date
-- [ ] Fixer les animations des personnages
-- [ ] Demander pseudo si pas encore sauvegardé après save the date et si la personne rafraîchit
-- [ ] Afficher top 5: nom des joueurs et leurs points
+- [x] Afficher top 5: nom des joueurs et leurs points
 - [ ] Ajouter ligne high score
+- [ ] Fixer les animations des personnages
+
+Plus valide:
+- [ ] Demander pseudo si pas encore sauvegardé après save the date et si la personne rafraîchit

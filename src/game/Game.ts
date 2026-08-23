@@ -55,8 +55,8 @@ export class Game {
   private textHighScore!: Text;
   private platformPool!: Sprite[];
 
-  private jumpSound!: HTMLAudioElement;
-  private fallSound!: HTMLAudioElement;
+  private jumpSounds!: Record<Character, HTMLAudioElement>;
+  private fallSounds!: Record<Character, HTMLAudioElement>;
   private fallSoundPlayed = false;
   private lastDisplayedScore = -1;
   private lastDisplayedHighScore = -1;
@@ -143,14 +143,20 @@ export class Game {
       '/assets/calendar-icon.png',
       '/assets/location-icon.png',
     ]);
-    this.jumpSound = new Audio('/assets/jump_sound.mp3');
-    this.jumpSound.volume = 0.02;
-    this.fallSound = new Audio('/assets/fall_sound.mp3');
-    this.fallSound.volume = 0.02;
+    // Load fonts via Assets so HTMLText can embed them in its SVG context
+    await Assets.load([
+      { src: '/fonts/TypoWriter-Regular.otf', data: { family: 'TypoWriter', weights: ['normal'] } },
+      { src: '/fonts/TypoWriter-Bold.otf', data: { family: 'TypoWriter', weights: ['bold'] } },
+    ]);
+    const makeAudio = (src: string, rate = 1) => { const a = new Audio(src); a.volume = 0.07; a.playbackRate = rate; return a; };
+    this.jumpSounds = { luc: makeAudio('/assets/luc-jump.m4a'), shannon: makeAudio('/assets/shannon-jump.m4a') };
+    this.fallSounds = { luc: makeAudio('/assets/luc-fall.m4a', 1), shannon: makeAudio('/assets/shannon-fall.m4a', 1.4) };
   }
 
   private buildScene(): void {
     this.state = createState();
+    this.lastDisplayedScore = -1;
+    this.lastDisplayedHighScore = -1;
     const { stage } = this.app;
 
     const bgTexture = Texture.from('/assets/background-game.png');
@@ -219,7 +225,7 @@ export class Game {
     const style = new TextStyle({
       dropShadow: { angle: 0.5, blur: 1, color: '#424242', distance: 1 },
       fill: '#1d1d1d',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize,
     });
     this.textScore = new Text({ text: `${this.t('score')}: 0`, style });
@@ -243,7 +249,7 @@ export class Game {
     this.pauseToggleSprite.cursor = 'pointer';
     stage.addChild(this.pauseToggleSprite);
 
-    this.soundEnabled = localStorage.getItem('soundEnabled') === 'true';
+    this.soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
     this.soundOffTexture = Texture.from('/assets/sound_off.png');
     this.soundOnTexture = Texture.from('/assets/sound_on.png');
     this.soundIconY = 20;
@@ -306,12 +312,12 @@ export class Game {
       // In portrait, platform widths are unscaled so scaled x-positions cause overlap.
       // Instead place platforms sequentially using their actual widths.
       t5a.position.set(0, platformY);
-      t1a.position.set(t5a.width + 80, platformY);
-      t4a.position.set(t5a.width + t1a.width + 130, platformY);
+      t1a.position.set(t5a.width + 140, platformY);
+      t4a.position.set(t5a.width + 140 + t1a.width + 140, platformY);
     } else {
-      t1a.position.set(685, platformY);
-      t4a.position.set(900, platformY);
       t5a.position.set(60, platformY);
+      t1a.position.set(60 + t5a.width + 140, platformY);
+      t4a.position.set(60 + t5a.width + 140 + t1a.width + 140, platformY);
     }
     s.stackOnScreen.push(t5a, t1a, t4a);
 
@@ -366,8 +372,8 @@ export class Game {
         this.fallSprite.visible = false;
         s.air = true;
         if (this.soundEnabled) {
-          this.jumpSound.currentTime = 0;
-          this.jumpSound.play();
+          this.jumpSounds[this.selectedCharacter].currentTime = 0;
+          this.jumpSounds[this.selectedCharacter].play();
         }
       } else {
         this.jumpInitiated = false;
@@ -428,8 +434,8 @@ export class Game {
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
       this.fallSoundPlayed = true;
       if (this.soundEnabled) {
-        this.fallSound.currentTime = 0;
-        this.fallSound.play();
+        this.fallSounds[this.selectedCharacter].currentTime = 0;
+        this.fallSounds[this.selectedCharacter].play();
       }
     }
 
@@ -441,6 +447,9 @@ export class Game {
       if (s.score > s.highScore) {
         s.highScore = Math.round(s.score);
         localStorage.setItem('highScore', String(s.highScore));
+      }
+      if (this.saveTheDateShown && Math.round(s.score) > 0) {
+        this.saveToLeaderboard(Math.round(s.score));
       }
       s.score = 0;
       s.currentSpeed = s.baseSpeed;
@@ -486,6 +495,13 @@ export class Game {
       this.gameStarted = false;
       this.showSaveTheDate();
     }, 2000);
+  }
+
+  private saveToLeaderboard(score: number): void {
+    const entries: Array<{ name: string; score: number }> = JSON.parse(localStorage.getItem('topScores') ?? '[]');
+    entries.push({ name: this.selectedCharacter, score });
+    entries.sort((a, b) => b.score - a.score);
+    localStorage.setItem('topScores', JSON.stringify(entries.slice(0, 6)));
   }
 
   private checkGround(): boolean {
@@ -562,6 +578,8 @@ export class Game {
       if (!this.isPaused) this.pressDown();
     }, { passive: false });
     canvas.addEventListener('touchend', () => this.pressUp());
+    canvas.addEventListener('touchcancel', () => this.pressUp());
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
@@ -590,6 +608,7 @@ export class Game {
       this.gameWidth,
       this.gameHeight,
       (char, lang) => this.launchGame(char, lang),
+      this.saveTheDateShown,
       defaultChar,
     );
   }
@@ -616,10 +635,15 @@ export class Game {
     const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
     const bodyLines = [
       { text: tr['save_the_date_body_1'] ?? '', extraSpacingAfter: true },
-      { text: tr['save_the_date_body_2'] ?? '', icon: '/assets/calendar-icon.png', fixedSpacingAfter: 16 },
-      { text: tr['save_the_date_body_3'] ?? '', icon: '/assets/location-icon.png', extraSpacingAfter: true },
+      {
+        cards: [
+          { icon: '/assets/calendar-icon.png', label: tr['date'] ?? 'Date', value: tr['save_the_date_body_2'] ?? '' },
+          { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '' },
+        ],
+        extraSpacingAfter: true,
+      },
       { text: tr['save_the_date_body_4'] ?? '' },
-    ].filter(item => Boolean(item.text));
+    ].filter(item => Boolean(item.text) || Boolean(item.cards));
     this.saveTheDateScreen = new SaveTheDateScreen(
       this.app,
       this.gameWidth,
@@ -661,8 +685,10 @@ export class Game {
     if (this.focusBound) return;
     this.focusBound = true;
     const pause = () => { if (!this.isPaused) this.togglePause(); };
-    document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+    const resume = () => { if (this.isPaused) this.togglePause(); };
+    document.addEventListener('visibilitychange', () => { document.hidden ? pause() : resume(); });
     window.addEventListener('blur', pause);
+    window.addEventListener('focus', resume);
   }
 
   private watchResize(): void {

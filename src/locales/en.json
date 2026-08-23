@@ -3,7 +3,8 @@
   "language": "Choose your language",
   "rules": "The wedding details are waiting… Score 75 points to discover where and when the adventure begins!",
   "character": "Choose a character",
-  "how_to_play": "How to play: tap your screen or press the space bar… and don't fall!",
+  "how_to_play_1": "How to play: ",
+  "how_to_play_2": "tap your screen or press the space bar… and don't fall!",
   "play": "Play",
   "select_character": "You have to select a character to be able to play",
   "lang_fr": "Français",
@@ -13,7 +14,11 @@
   "save_the_date": "Save the date!",
   "play_again": "Play again",
   "save_the_date_body_1": "Pack your bags for a weekend full of love, laughter, and celebration!",
-  "save_the_date_body_2": "Date: 01/01/2001",
-  "save_the_date_body_3": "Location: longer text as an example",
-  "save_the_date_body_4": "We can't wait to celebrate our special day with you and spend an unforgettable weekend with our favorite people!"
+  "date": "Date",
+  "save_the_date_body_2": "1st-31st January 2000",
+  "location": "Location",
+  "save_the_date_body_3": "Location of the wedding",
+  "save_the_date_body_4": "We can't wait to celebrate our special day with you and spend an unforgettable weekend with our favorite people!",
+  "leaderboard": "High scores",
+  "points": "points"
 }

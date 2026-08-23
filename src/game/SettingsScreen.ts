@@ -25,6 +25,7 @@ class OptionBtn {
     readonly y: number,
     readonly w: number,
     readonly h: number,
+    private readonly _r?: number,
   ) {
     this.gfx = new Graphics();
     this.gfx.position.set(x, y);
@@ -44,7 +45,7 @@ class OptionBtn {
   }
 
   private redraw() {
-    const r = Math.round(this.h * 0.22);
+    const r = this._r ?? Math.round(Math.min(this.w, this.h) * 0.22);
     this.gfx.clear();
     this.gfx.roundRect(0, 0, this.w, this.h, r).fill({ color: 0xF5E6C0 });
     this.gfx.roundRect(0, 0, this.w, this.h, r).stroke({
@@ -85,10 +86,9 @@ class PlayBtn {
   }
 
   private redraw() {
-    const r = Math.round(this.h * 0.22);
+    const r = Math.round(Math.min(this.w, this.h) * 0.22);
     const fill = this._enabled ? 0x4A7C3F : 0xBECA7A;
     const shade = this._enabled ? 0x2D5224 : 0xAAB462;
-    // const alpha = this._enabled ? 1 : 0.7;
     this.gfx.clear();
     this.gfx.roundRect(0, this.shadow, this.w, this.h, r).fill({ color: shade });
     this.gfx.roundRect(0, 0, this.w, this.h, r).fill({ color: fill });
@@ -103,16 +103,23 @@ export class SettingsScreen {
 
   private sign!: Graphics;
   private titleTxt!: Text;
-  private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number };
+  private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number; titleH?: number; fixedW?: number };
 
-  private langLbl!: Text;
-  private rulesTxt!: HTMLText;
-  private charLbl!: Text;
-  private howToPlayTxt!: HTMLText;
-  private frBtn!: OptionBtn;
-  private enBtn!: OptionBtn;
-  private frTxt!: Text;
-  private enTxt!: Text;
+  private langLbl: Text | null = null;
+  private _rulesTxt: HTMLText | null = null;
+  private charLbl: Text | null = null;
+  private _saveDateCalTxt: Text | null = null;
+  private _saveDateLocTxt: Text | null = null;
+  private _saveDateCalRow: Container | null = null;
+  private _saveDateLocRow: Container | null = null;
+  private _leaderboardTitleTxt: Text | null = null;
+  private _howCont: Container | null = null;
+  private _howTxt1: Text | null = null;
+  private _howTxt2: Text | null = null;
+  private frBtn: OptionBtn | null = null;
+  private enBtn: OptionBtn | null = null;
+  private frTxt: Text | null = null;
+  private enTxt: Text | null = null;
   private lucCard!: OptionBtn;
   private shanCard!: OptionBtn;
   private playBtn!: PlayBtn;
@@ -128,6 +135,7 @@ export class SettingsScreen {
     W: number,
     H: number,
     onPlay: (char: Character, lang: Language) => void,
+    private readonly saveTheDateShown: boolean = false,
     defaultChar: Character | null = null,
   ) {
     this.container = new Container();
@@ -147,37 +155,38 @@ export class SettingsScreen {
   private buildUI(W: number, H: number, onPlay: (char: Character, lang: Language) => void): void {
     const c = this.container;
 
-    // Uniform scale so the base design (960 wide) shrinks to fit smaller screens.
-    // We clamp to 0.45 so portrait mobile never becomes unreadably tiny.
     const sc = Math.max(Math.min(W / 960, H / 600), 0.45);
     const xs = (v: number) => Math.round(v * sc);
     const isMobile = W < H;
     const isTablet = isMobile && W >= 600;
     const isSmallScreen = isMobile && H < 665;
+    const cornerR = Math.max(isTablet ? 11 : 8, xs(7));
 
-    // ─── Background: cover-scale the settings image ───
+    // ─── Background ───
     const bgImg = W < H ? '/assets/background-settings-mobile.png' : '/assets/background-settings.png';
     const bgSpr = new Sprite(Texture.from(bgImg));
     bgSpr.width = W;
     bgSpr.height = H;
     c.addChild(bgSpr);
 
-    // ─── Flow layout — each element pushed below the previous ───
-    // Top padding scales with H so portrait screens use proportional space.
     let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.05);
 
-    // ── Title sign — width fits the text ──
-    const signH = isMobile ? xs(76) : xs(58);
-    const signR = xs(10);
+    // ── Title sign ──
+    const baseTitleH = isMobile ? xs(76) : xs(58);
+    const signR = cornerR;
     const signBorderW = xs(4);
     const signPadX = isMobile ? xs(36) : xs(24);
 
-    // Create text first so we can measure its width
+    const extraIconSz = this.saveTheDateShown ? Math.max(isTablet ? 22 : 16, xs(16)) : 0;
+    const extraLineH = this.saveTheDateShown ? extraIconSz + xs(2) : 0;
+    const extraRowGap = this.saveTheDateShown ? xs(7) : 0;
+    const signExtraH = this.saveTheDateShown ? extraLineH * 2 + extraRowGap + xs(5) : 0;
+    const signH = baseTitleH + signExtraH;
     this.titleTxt = new Text({
       text: '',
       style: new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
         fontWeight: 'bold',
         letterSpacing: xs(0),
@@ -185,17 +194,67 @@ export class SettingsScreen {
     });
     this.titleTxt.anchor.set(0.5);
 
-    this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W };
+    this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W, titleH: baseTitleH };
     this.sign = new Graphics();
-    c.addChild(this.sign);       // sign drawn behind text
-    c.addChild(this.titleTxt);   // text in front
+    c.addChild(this.sign);
+    c.addChild(this.titleTxt);
 
-    y += signH + (isMobile ? (isTablet ? 60 : 28) : xs(30));
+    if (this.saveTheDateShown) {
+      const signTitleY = y;
+      const iconTextGap = xs(8);
+      const extraTxtStyle = new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'TypoWriter',
+        fontSize: Math.max(isTablet ? 18 : 13, xs(14)),
+        fontWeight: 'bold',
+      });
+      const line1CenterY = signTitleY + baseTitleH - xs(8) + extraLineH / 2;
+      const line2CenterY = line1CenterY + extraLineH + extraRowGap;
+
+      this._saveDateCalRow = new Container();
+      this._saveDateCalRow.y = line1CenterY;
+      const calIcon = new Sprite(Texture.from('/assets/calendar-icon.png'));
+      calIcon.width = extraIconSz;
+      calIcon.height = extraIconSz;
+      calIcon.anchor.set(0, 0.5);
+      calIcon.position.set(0, 0);
+      this._saveDateCalRow.addChild(calIcon);
+      this._saveDateCalTxt = new Text({ text: '', style: extraTxtStyle });
+      this._saveDateCalTxt.anchor.set(0, 0.5);
+      this._saveDateCalTxt.position.set(extraIconSz + iconTextGap, 0);
+      this._saveDateCalRow.addChild(this._saveDateCalTxt);
+      c.addChild(this._saveDateCalRow);
+
+      this._saveDateLocRow = new Container();
+      this._saveDateLocRow.y = line2CenterY;
+      const locIcon = new Sprite(Texture.from('/assets/location-icon.png'));
+      locIcon.width = extraIconSz;
+      locIcon.height = extraIconSz;
+      locIcon.anchor.set(0, 0.5);
+      locIcon.position.set(0, 0);
+      this._saveDateLocRow.addChild(locIcon);
+      this._saveDateLocTxt = new Text({ text: '', style: extraTxtStyle });
+      this._saveDateLocTxt.anchor.set(0, 0.5);
+      this._saveDateLocTxt.position.set(extraIconSz + iconTextGap, 0);
+      this._saveDateLocRow.addChild(this._saveDateLocTxt);
+      c.addChild(this._saveDateLocRow);
+    }
+
+    y += signH + (isMobile ? (isTablet ? 20 : 14) : xs(20));
+
+    if (this.saveTheDateShown) {
+      this.buildRevealedSection(c, W, H, y, xs, isMobile, isTablet, isSmallScreen, onPlay);
+      return;
+    }
+
+    // ─── Standard layout ───
+
+    y += isMobile ? (isTablet ? 40 : 14) : xs(10);
 
     // ── Language label ──
     const secStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
       fontWeight: 'bold',
       letterSpacing: xs(1),
@@ -209,19 +268,19 @@ export class SettingsScreen {
     y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
 
     // ── Language buttons ──
-    const lbH = Math.max(isTablet ? 50 : 38, xs(30));
-    const lbW = Math.max(isTablet ? 130 : 95, xs(85));
+    const lbH = Math.max(isTablet ? 64 : 38, xs(30));
+    const lbW = Math.max(isTablet ? 170 : 95, xs(85));
     const lbGap = xs(16);
     const lbY = y;
 
-    this.frBtn = new OptionBtn(W / 2 - lbGap / 2 - lbW, lbY, lbW, lbH);
-    this.enBtn = new OptionBtn(W / 2 + lbGap / 2, lbY, lbW, lbH);
+    this.frBtn = new OptionBtn(W / 2 - lbGap / 2 - lbW, lbY, lbW, lbH, cornerR);
+    this.enBtn = new OptionBtn(W / 2 + lbGap / 2, lbY, lbW, lbH, cornerR);
     c.addChild(this.frBtn.gfx, this.enBtn.gfx);
 
     const btnTxtStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
-      fontSize: Math.max(isTablet ? 18 : 12, xs(11)),
+      fontFamily: 'TypoWriter',
+      fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
     });
 
     this.frTxt = new Text({ text: '', style: btnTxtStyle });
@@ -237,30 +296,30 @@ export class SettingsScreen {
     this.frBtn.gfx.on('pointerdown', () => { this.lang = 'fr'; localStorage.setItem('language', 'fr'); this.refresh(); });
     this.enBtn.gfx.on('pointerdown', () => { this.lang = 'en'; localStorage.setItem('language', 'en'); this.refresh(); });
 
-    y += lbH + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
+    y += lbH + (isMobile ? (isSmallScreen ? 8 : isTablet ? 24 : 14) : xs(16));
 
     // ── Rules text ──
-    const rulesWrapW = isMobile ? W * 0.82 : W * 0.90;
-    const rulesFontSize = Math.max(isTablet ? 16 : 13, xs(13));
-    this.rulesTxt = new HTMLText({
+    const rulesWrapW = isMobile ? W * 0.92 : W * 0.90;
+    const rulesFontSize = Math.max(isTablet ? 22 : 13, xs(13));
+    this._rulesTxt = new HTMLText({
       text: this.t('rules'),
       style: new HTMLTextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: rulesFontSize,
         align: 'center',
         wordWrap: true,
         wordWrapWidth: rulesWrapW,
         tagStyles: {
-          b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
+          b: { fontWeight: 'bold' },
         },
       }),
     });
-    this.rulesTxt.anchor.set(0.5, 0);
-    this.rulesTxt.position.set(W / 2, y);
-    c.addChild(this.rulesTxt);
+    this._rulesTxt.anchor.set(0.5, 0);
+    this._rulesTxt.position.set(W / 2, y);
+    c.addChild(this._rulesTxt);
 
-    y += this.rulesTxt.height + (isMobile ? (isSmallScreen ? 14 : isTablet ? 50 : 28) : xs(16));
+    y += this._rulesTxt.height + (isMobile ? (isSmallScreen ? 8 : isTablet ? 24 : 14) : xs(16));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -271,10 +330,9 @@ export class SettingsScreen {
     y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
 
     // ── Character cards ──
-    // Square-ish cards; cap size so two fit side-by-side with a gap
-    const maxCardW = Math.floor((W - xs(60)) / 2);  // half width minus gap
+    const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isSmallScreen ? xs(280) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
@@ -282,11 +340,10 @@ export class SettingsScreen {
     const lucLeft = Math.round(W / 2 - cardGap / 2 - cardW);
     const shanLeft = Math.round(W / 2 + cardGap / 2);
 
-    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH);
-    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH);
+    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH, cornerR);
+    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH, cornerR);
     c.addChild(this.lucCard.gfx, this.shanCard.gfx);
 
-    // Luc sprite (luc-idle.png not in assets; using luc-idle.png as preview)
     const lucSpr = new Sprite(Texture.from('/assets/luc-idle-resize.png'));
     lucSpr.anchor.set(0.5, 1);
     const lucFit = Math.min((cardW * 0.80) / lucSpr.texture.width, (cardH * 0.72) / lucSpr.texture.height);
@@ -296,7 +353,7 @@ export class SettingsScreen {
 
     const charNameStyle = new TextStyle({
       fill: '#5C3A1E',
-      fontFamily: 'Courier New',
+      fontFamily: 'TypoWriter',
       fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
     });
 
@@ -305,7 +362,6 @@ export class SettingsScreen {
     lucName.position.set(lucLeft + Math.round(cardW / 2), cardTop + cardH - Math.max(xs(18), 12));
     c.addChild(lucName);
 
-    // Shannon sprite
     const shanTex = Texture.from('/assets/shannon-idle-resize.png');
     shanTex.source.scaleMode = 'linear';
     const shanSpr = new Sprite(shanTex);
@@ -325,39 +381,47 @@ export class SettingsScreen {
 
     y += cardH;
 
-    // ── How to play text (between cards and select_character) ──
-    const howWrapW = isMobile ? W * 0.82 : W * 0.90;
-    const howFontSize = Math.max(isTablet ? 16 : 13, xs(13));
-    this.howToPlayTxt = new HTMLText({
-      text: this.t('how_to_play'),
-      style: new HTMLTextStyle({
-        fill: '#5C3A1E',
-        fontFamily: 'Courier New',
-        fontSize: howFontSize,
-        align: 'center',
-        wordWrap: true,
-        wordWrapWidth: howWrapW,
-        tagStyles: {
-          b: { fontWeight: 'bold', fontSize: Math.max(isTablet ? 17 : 12, xs(13)) },
-        },
-      }),
+    // ── How to play text ──
+    const howWrapW = isMobile ? W * 0.92 : W * 0.90;
+    const howFontSize = Math.max(isTablet ? 22 : 13, xs(13));
+    const howBaseStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: howFontSize,
+      align: 'center',
+      wordWrap: true,
+      wordWrapWidth: howWrapW,
     });
-    this.howToPlayTxt.anchor.set(0.5, 0);
-    c.addChild(this.howToPlayTxt);
+    const how1Style = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: howFontSize,
+      fontWeight: 'bold',
+      align: 'center',
+    });
+    const howGap = xs(2);
+    this._howTxt1 = new Text({ text: this.t('how_to_play_1'), style: how1Style });
+    this._howTxt1.anchor.set(0.5, 0);
+    this._howTxt1.x = W / 2;
+    this._howTxt2 = new Text({ text: this.t('how_to_play_2'), style: howBaseStyle });
+    this._howTxt2.anchor.set(0.5, 0);
+    this._howTxt2.position.set(W / 2, this._howTxt1.height + howGap);
+    this._howCont = new Container();
+    this._howCont.addChild(this._howTxt1, this._howTxt2);
+    c.addChild(this._howCont);
 
     const howToPlayGapAbove = xs(14);
     const howToPlayGapBelow = xs(14);
     y += howToPlayGapAbove;
     const howToPlayFlowY = y;
-    y += this.howToPlayTxt.height + howToPlayGapBelow;
+    y += this._howCont.height + howToPlayGapBelow;
 
-    // ── Tooltip params (select_character) ──
+    // ── Tooltip (select_character) ──
     const tipPadX = xs(12) + (isMobile ? 2 : 0);
     const tipPadY = xs(7) + (isMobile ? 2 : 0);
-    const tipR = xs(6);
     this._W = W;
-    this._tipParams = { padX: tipPadX, padY: tipPadY, r: tipR };
-    const hintGapBefore = isMobile ? xs(28) : xs(60);
+    this._tipParams = { padX: tipPadX, padY: tipPadY, r: cornerR };
+    const hintGapBefore = isMobile ? (isSmallScreen ? xs(14) : xs(28)) : xs(40);
     const hintGapAfter = isMobile ? xs(10) : xs(4);
 
     const tooltipContainer = new Container();
@@ -369,7 +433,7 @@ export class SettingsScreen {
       text: '',
       style: new TextStyle({
         fill: '#5C3A1E',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 16 : 11, xs(12)),
         align: 'center',
         wordWrap: true,
@@ -378,11 +442,10 @@ export class SettingsScreen {
     });
     tooltipTxt.anchor.set(0.5, 0.5);
     tooltipContainer.addChild(tooltipBg, tooltipTxt);
-
     this.tooltip = { container: tooltipContainer, bg: tooltipBg, txt: tooltipTxt };
 
-    // ── Play button (above select_character on desktop) ──
-    const playH = Math.max(isTablet ? 84 : 54, xs(54));
+    // ── Play button ──
+    const playH = Math.max(isSmallScreen ? 44 : isTablet ? 84 : 54, xs(isSmallScreen ? 44 : 54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
 
@@ -391,11 +454,10 @@ export class SettingsScreen {
       : y + hintGapBefore;
 
     if (isMobile) {
-      // Anchor from bottom: howToPlayTxt → play button → tooltip
-      this.howToPlayTxt.position.set(W / 2, playY - hintGapBefore - this.howToPlayTxt.height);
+      this._howCont!.position.set(0, playY - hintGapBefore - this._howCont!.height);
       this._hintY = playY + playH + shadow + hintGapAfter;
     } else {
-      this.howToPlayTxt.position.set(W / 2, howToPlayFlowY);
+      this._howCont!.position.set(0, howToPlayFlowY);
       this._hintY = playY + playH + shadow + hintGapAfter;
     }
 
@@ -406,7 +468,7 @@ export class SettingsScreen {
       text: '',
       style: new TextStyle({
         fill: '#ffffff',
-        fontFamily: 'Courier New',
+        fontFamily: 'TypoWriter',
         fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
         fontWeight: 'bold',
         letterSpacing: xs(1),
@@ -421,16 +483,255 @@ export class SettingsScreen {
     });
   }
 
+  private buildRevealedSection(
+    c: Container,
+    W: number,
+    H: number,
+    y: number,
+    xs: (v: number) => number,
+    isMobile: boolean,
+    isTablet: boolean,
+    isSmallScreen: boolean,
+    onPlay: (char: Character, lang: Language) => void,
+  ): void {
+    const tr = this.tr[this.lang] as Record<string, string>;
+    const cornerR = Math.max(isTablet ? 11 : 8, xs(7));
+
+    const secStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: Math.max(isTablet ? 28 : 15, xs(13)),
+      fontWeight: 'bold',
+      letterSpacing: xs(1),
+    });
+
+    // ── Leaderboard ──
+    const topScores: Array<{ pseudo: string; highScore: number }> = [
+      { pseudo: 'Shannon', highScore: 4200 },
+      { pseudo: 'Luc',     highScore: 4200 },
+      { pseudo: 'Stephanie', highScore: 3800 },
+      { pseudo: 'Evan',    highScore: 1000 },
+      { pseudo: 'Ana',     highScore: 550 },
+    ];
+    const boardW = Math.min(isTablet ? 450 : isMobile ? 270 : 350, W - xs(24));
+    const boardX = Math.round((W - boardW) / 2);
+    const frameW = xs(2);
+    const boardPadX = xs(10);
+    const boardPadY = xs(5);
+    const rowH = Math.max(isTablet ? 28 : 20, xs(18));
+    const rowGap = xs(3);
+    const badgeSize = rowH;
+    const badgeGap = xs(5);
+    const innerW = boardW - frameW * 2;
+    const colW = innerW - boardPadX * 2;
+    const lbTitleFontSize = Math.max(isTablet ? 22 : 15, xs(15));
+    const lbTitleH = Math.round(lbTitleFontSize * 1.2);
+    const lbTitleGap = xs(4);
+    const boardInnerH = lbTitleH + lbTitleGap + 5 * rowH + 4 * rowGap;
+    const boardH = boardInnerH + boardPadY * 2 + frameW * 2;
+    const boardR = cornerR;
+
+    const boardGfx = new Graphics();
+    boardGfx.roundRect(frameW, frameW, boardW, boardH, boardR).fill({ color: 0x7A4F2E, alpha: 0.25 });
+    boardGfx.roundRect(0, 0, boardW, boardH, boardR).fill({ color: 0xE8CDB0 });
+    boardGfx.roundRect(0, 0, boardW, boardH, boardR).stroke({ color: 0x7A4F2E, width: frameW });
+    boardGfx.position.set(boardX, y);
+    c.addChild(boardGfx);
+
+    this._leaderboardTitleTxt = new Text({
+      text: tr['leaderboard'] ?? 'High scores',
+      style: new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'TypoWriter',
+        fontSize: lbTitleFontSize,
+        fontWeight: 'bold',
+        letterSpacing: xs(1),
+      }),
+    });
+    this._leaderboardTitleTxt.anchor.set(0.5);
+    this._leaderboardTitleTxt.position.set(W / 2, y + frameW + boardPadY + Math.round(lbTitleH / 2));
+    c.addChild(this._leaderboardTitleTxt);
+
+    const rankStyle = new TextStyle({
+      fill: '#ffffff',
+      fontFamily: 'TypoWriter',
+      fontSize: Math.max(isTablet ? 16 : 11, xs(10)),
+      fontWeight: 'bold',
+    });
+    const nameStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: Math.max(isTablet ? 22 : 15, xs(14)),
+      fontWeight: 'bold',
+    });
+    const scoreStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: Math.max(isTablet ? 20 : 14, xs(13)),
+    });
+
+    const colInnerX = boardX + frameW + boardPadX;
+    const rowsStartY = y + frameW + boardPadY + lbTitleH + lbTitleGap;
+    for (let row = 0; row < 5; row++) {
+      const entry = topScores[row] ?? null;
+      const rowY = rowsStartY + row * (rowH + rowGap);
+
+      const badge = new Graphics();
+      badge.circle(badgeSize / 2, badgeSize / 2, badgeSize / 2).fill({ color: 0x4A7C3F });
+      badge.position.set(colInnerX, rowY);
+      c.addChild(badge);
+
+      const rankTxt = new Text({ text: String(row + 1), style: rankStyle });
+      rankTxt.anchor.set(0.5);
+      rankTxt.position.set(colInnerX + badgeSize / 2, rowY + badgeSize / 2);
+      c.addChild(rankTxt);
+
+      const nameTxt = new Text({
+        text: entry ? entry.pseudo : '- -',
+        style: nameStyle,
+      });
+      nameTxt.anchor.set(0, 0.5);
+      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2);
+      c.addChild(nameTxt);
+
+      const scoreTxt = new Text({
+        text: entry ? `${entry.highScore} ${this.t('points')}` : '',
+        style: scoreStyle,
+      });
+      scoreTxt.anchor.set(1, 0.5);
+      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2);
+      c.addChild(scoreTxt);
+    }
+
+    y += boardH + (isMobile ? xs(28) : xs(12));
+
+    // ── Character label ──
+    this.charLbl = new Text({ text: '', style: secStyle });
+    this.charLbl.anchor.set(0.5);
+    this.charLbl.position.set(W / 2, y + xs(4));
+    c.addChild(this.charLbl);
+    y += Math.max(isTablet ? 32 : 16, xs(13)) + (isMobile ? (isTablet ? 10 : 6) : xs(4));
+
+    // ── Character cards ──
+    const maxCardW = Math.floor((W - xs(60)) / 2);
+    const cardW = isMobile
+      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      : Math.min(Math.max(xs(130), 80), maxCardW);
+    const cardH = Math.round(cardW * 1.08);
+    const cardGap = xs(36);
+    const cardTop = y;
+    const lucLeft = Math.round(W / 2 - cardGap / 2 - cardW);
+    const shanLeft = Math.round(W / 2 + cardGap / 2);
+
+    this.lucCard = new OptionBtn(lucLeft, cardTop, cardW, cardH, cornerR);
+    this.shanCard = new OptionBtn(shanLeft, cardTop, cardW, cardH, cornerR);
+    c.addChild(this.lucCard.gfx, this.shanCard.gfx);
+
+    const lucSpr = new Sprite(Texture.from('/assets/luc-idle-resize.png'));
+    lucSpr.anchor.set(0.5, 1);
+    const lucFit = Math.min((cardW * 0.80) / lucSpr.texture.width, (cardH * 0.72) / lucSpr.texture.height);
+    lucSpr.scale.set(lucFit);
+    lucSpr.position.set(lucLeft + Math.round(cardW / 2), cardTop + Math.round(cardH * 0.80));
+    c.addChild(lucSpr);
+
+    const charNameStyle = new TextStyle({
+      fill: '#5C3A1E',
+      fontFamily: 'TypoWriter',
+      fontSize: Math.max(isTablet ? 24 : 14, xs(14)),
+    });
+
+    const lucName = new Text({ text: 'Luc', style: charNameStyle });
+    lucName.anchor.set(0.5);
+    lucName.position.set(lucLeft + Math.round(cardW / 2), cardTop + cardH - Math.max(xs(18), 12));
+    c.addChild(lucName);
+
+    const shanTex = Texture.from('/assets/shannon-idle-resize.png');
+    shanTex.source.scaleMode = 'linear';
+    const shanSpr = new Sprite(shanTex);
+    shanSpr.anchor.set(0.5, 1);
+    const shanFit = Math.min((cardW * 0.80) / shanSpr.texture.width, (cardH * 0.72) / shanSpr.texture.height);
+    shanSpr.scale.set(shanFit);
+    shanSpr.position.set(shanLeft + Math.round(cardW / 2), cardTop + Math.round(cardH * 0.80));
+    c.addChild(shanSpr);
+
+    const shanName = new Text({ text: 'Shannon', style: charNameStyle });
+    shanName.anchor.set(0.5);
+    shanName.position.set(shanLeft + Math.round(cardW / 2), cardTop + cardH - Math.max(xs(18), 12));
+    c.addChild(shanName);
+
+    this.lucCard.gfx.on('pointerdown', () => { this.char = 'luc'; this.refresh(); this.syncPlay(); });
+    this.shanCard.gfx.on('pointerdown', () => { this.char = 'shannon'; this.refresh(); this.syncPlay(); });
+
+    y += cardH;
+
+    // ── Tooltip (select_character) ──
+    const tipPadX = xs(12) + (isMobile ? 2 : 0);
+    const tipPadY = xs(7) + (isMobile ? 2 : 0);
+    this._W = W;
+    this._tipParams = { padX: tipPadX, padY: tipPadY, r: cornerR };
+
+    // ── Play button ──
+    const playH = Math.max(isSmallScreen ? 44 : isTablet ? 84 : 54, xs(isSmallScreen ? 44 : 54));
+    const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
+    const shadow = Math.max(xs(5), 3);
+    const hintGapAfter = isMobile ? xs(10) : xs(4);
+
+    const playY = isMobile
+      ? Math.round(H * (isSmallScreen ? 0.91 : 0.88)) - shadow - playH
+      : y + xs(20);
+
+    this._hintY = playY + playH + shadow + hintGapAfter;
+
+    this.playBtn = new PlayBtn(Math.round(W / 2 - playW / 2), playY, playW, playH, shadow);
+    c.addChild(this.playBtn.gfx);
+
+    this.playTxt = new Text({
+      text: '',
+      style: new TextStyle({
+        fill: '#ffffff',
+        fontFamily: 'TypoWriter',
+        fontSize: Math.max(isTablet ? 32 : 20, xs(22)),
+        fontWeight: 'bold',
+        letterSpacing: xs(1),
+      }),
+    });
+    this.playTxt.anchor.set(0.5);
+    this.playTxt.position.set(W / 2, playY + Math.round(playH / 2));
+    c.addChild(this.playTxt);
+
+    this.playBtn.gfx.on('pointerdown', () => {
+      if (this.char) onPlay(this.char, this.lang);
+    });
+
+    const tooltipContainer = new Container();
+    c.addChild(tooltipContainer);
+    const tooltipBg = new Graphics();
+    const tooltipTxt = new Text({
+      text: '',
+      style: new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'TypoWriter',
+        fontSize: Math.max(isTablet ? 16 : 11, xs(12)),
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: isMobile ? W * 0.65 : W,
+      }),
+    });
+    tooltipTxt.anchor.set(0.5, 0.5);
+    tooltipContainer.addChild(tooltipBg, tooltipTxt);
+    this.tooltip = { container: tooltipContainer, bg: tooltipBg, txt: tooltipTxt };
+  }
+
   private updateSign(): void {
-    const { padX, h, r, y, borderW, W } = this._signParams;
-    const w = Math.min(this.titleTxt.width + padX * 2, W - borderW * 2);
+    const { padX, h, r, y, borderW, W, titleH, fixedW } = this._signParams;
+    const w = fixedW !== undefined ? fixedW : Math.min(this.titleTxt.width + padX * 2, W - borderW * 2);
     const x = Math.round((W - w) / 2);
     this.sign.clear();
     this.sign.roundRect(borderW, borderW, w, h, r).fill({ color: 0xBCA882, alpha: 0.5 });
     this.sign.roundRect(0, 0, w, h, r).fill({ color: 0xF5E6C0 });
     this.sign.roundRect(0, 0, w, h, r).stroke({ color: 0xBCA882, width: borderW });
     this.sign.position.set(x, y);
-    this.titleTxt.position.set(W / 2, y + Math.round(h / 2));
+    this.titleTxt.position.set(W / 2, y + Math.round((titleH ?? h) / 2));
   }
 
   private refresh(): void {
@@ -438,19 +739,25 @@ export class SettingsScreen {
     this.updateSign();
     this.tooltip.txt.text = this.t('select_character');
     this.redrawTooltip();
-    const howRaw = this.t('how_to_play');
-    const colonIdx = howRaw.indexOf(': ');
-    this.howToPlayTxt.text = colonIdx >= 0
-      ? `<b>${howRaw.slice(0, colonIdx)}:</b> ${howRaw.slice(colonIdx + 2)}`
-      : howRaw;
-    this.langLbl.text = `✦ ${this.t('language')} ✦`;
-    this.rulesTxt.text = this.t('rules').replace('75 points', '<b>75 points</b>');
-    this.charLbl.text = `✦ ${this.t('character')} ✦`;
-    this.frTxt.text = this.t('lang_fr');
-    this.enTxt.text = this.t('lang_en');
+    if (this.charLbl) this.charLbl.text = `✦ ${this.t('character')} ✦`;
+    if (this.langLbl) this.langLbl.text = `✦ ${this.t('language')} ✦`;
+    if (this._rulesTxt) this._rulesTxt.text = this.t('rules').replace('75 points', '<b>75 points</b>');
+    if (this.frTxt) this.frTxt.text = this.t('lang_fr');
+    if (this.enTxt) this.enTxt.text = this.t('lang_en');
+    if (this._howTxt1) this._howTxt1.text = this.t('how_to_play_1');
+    if (this._howTxt2) this._howTxt2.text = this.t('how_to_play_2');
+    if (this._saveDateCalTxt && this._saveDateCalRow) {
+      this._saveDateCalTxt.text = this.t('save_the_date_body_2');
+      this._saveDateCalRow.x = Math.round(this._W / 2 - this._saveDateCalRow.width / 2);
+    }
+    if (this._saveDateLocTxt && this._saveDateLocRow) {
+      this._saveDateLocTxt.text = this.t('save_the_date_body_3');
+      this._saveDateLocRow.x = Math.round(this._W / 2 - this._saveDateLocRow.width / 2);
+    }
+    if (this._leaderboardTitleTxt) this._leaderboardTitleTxt.text = this.t('leaderboard');
     this.playTxt.text = this.t('play');
-    this.frBtn.selected = this.lang === 'fr';
-    this.enBtn.selected = this.lang === 'en';
+    if (this.frBtn) this.frBtn.selected = this.lang === 'fr';
+    if (this.enBtn) this.enBtn.selected = this.lang === 'en';
     this.lucCard.selected = this.char === 'luc';
     this.shanCard.selected = this.char === 'shannon';
   }
