@@ -116,9 +116,9 @@ export class AccessScreen {
 
    private show_result(result?: Exclude<AccessResult, 'success'>): void {
       if (result === 'unauthorized') {
-         this.error_message.textContent = 'Code incorrect. / Invalid code.';
+         this.error_message.textContent = 'Code incorrect / Invalid code';
       } else if (result === 'unavailable') {
-         this.error_message.textContent = 'Service indisponible, réessaie. / Service unavailable, please try again.';
+         this.error_message.textContent = 'Service indisponible, réessaie / Service unavailable, please try again';
       } else {
          this.error_message.textContent = '';
       }

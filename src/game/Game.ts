@@ -15,6 +15,7 @@ import { SettingsScreen } from './SettingsScreen';
 import type { Character, Language } from './SettingsScreen';
 import type { SaveTheDateScreen } from './SaveTheDateScreen';
 import { AccessScreen, type AccessResult } from './AccessScreen';
+import { ErrorScreen } from './ErrorScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
 import {
@@ -101,6 +102,7 @@ export class Game {
   private settingsScreen: SettingsScreen | null = null;
   private saveTheDateScreen: SaveTheDateScreen | null = null;
   private accessScreen: AccessScreen | null = null;
+  private errorScreen: ErrorScreen | null = null;
 
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
@@ -180,12 +182,28 @@ export class Game {
   }
 
   private async checkAccess(): Promise<void> {
-    const query_code = new URLSearchParams(window.location.search).get('code');
-    const stored_code = sessionStorage.getItem('baxcus_login_code');
-    const code = query_code ?? stored_code;
+    const query = new URLSearchParams(window.location.search);
+    let query_parameter: 'c' | 'code' | null = null;
+    if (query.has('c')) {
+      query_parameter = 'c';
+    } else if (query.has('code')) {
+      query_parameter = 'code';
+    }
 
-    if (code) {
-      const result = await this.authenticate(code);
+    if (query_parameter) {
+      const result = await this.authenticate(query.get(query_parameter) ?? '');
+      if (result === 'success') {
+        this.removeCodeFromUrl();
+        this.showSettings();
+      } else {
+        this.showErrorScreen();
+      }
+      return;
+    }
+
+    const stored_code = sessionStorage.getItem('baxcus_login_code');
+    if (stored_code) {
+      const result = await this.authenticate(stored_code);
       if (result === 'success') {
         this.removeCodeFromUrl();
         this.showSettings();
@@ -250,10 +268,21 @@ export class Game {
     );
   }
 
+  private showErrorScreen(): void {
+    const fr = frTranslations as Record<string, string>;
+    const en = enTranslations as Record<string, string>;
+    this.errorScreen = new ErrorScreen(
+      this.app, this.gameWidth, this.gameHeight,
+      fr['code_error'] ?? 'Accès refusé',
+      en['code_error'] ?? 'Access denied',
+    );
+  }
+
   private removeCodeFromUrl(): void {
     const url = new URL(window.location.href);
-    if (!url.searchParams.has('code')) return;
+    if (!url.searchParams.has('c') && !url.searchParams.has('code')) return;
 
+    url.searchParams.delete('c');
     url.searchParams.delete('code');
     window.history.replaceState(null, '', url);
   }
