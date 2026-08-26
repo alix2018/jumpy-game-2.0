@@ -33,6 +33,11 @@ import {
   SAVE_THE_DATE_SCORE_THRESHOLD,
 } from './constants';
 
+interface SoundEffect {
+  buffer: AudioBuffer;
+  playback_rate: number;
+}
+
 export class Game {
   private app!: Application;
   private state!: GameState;
@@ -56,8 +61,10 @@ export class Game {
   private textWeddingHighScore!: Text;
   private platformPool!: Sprite[];
 
-  private jumpSounds!: Record<Character, HTMLAudioElement>;
-  private fallSounds!: Record<Character, HTMLAudioElement>;
+  private audioContext: AudioContext | null = null;
+  private audioGain: GainNode | null = null;
+  private jumpSounds!: Record<Character, SoundEffect>;
+  private fallSounds!: Record<Character, SoundEffect>;
   private fallSoundPlayed = false;
   private lastDisplayedScore = -1;
   private lastDisplayedHighScore = -1;
@@ -150,35 +157,88 @@ export class Game {
   private loadGameAssets(): Promise<void> {
     if (this.gameAssetsPromise) return this.gameAssetsPromise;
     this.gameAssetsPromise = (async () => {
-      await Assets.load([
-        '/assets/background-save-the-date-overlay.png',
-        '/assets/background-save-the-date-mobile-overlay.png',
-        '/assets/background-game.png',
-        // '/assets/water.png',
-        '/assets/tilex1.png',
-        '/assets/tilesx2.png',
-        '/assets/tilesx3.png',
-        '/assets/tilesx4.png',
-        '/assets/tilesx5.png',
-        '/assets/shannon-jump-resize.png',
-        '/assets/shannon-fall.png',
-        '/assets/shannon_run.json',
-        '/assets/luc-jump-resize.png',
-        '/assets/luc-fall.png',
-        '/assets/luc_run.json',
-        '/assets/luc-jump.png',
-        '/assets/coins_anim.json',
-        '/assets/sound_off.png',
-        '/assets/sound_on.png',
-        '/assets/pause.png',
-        '/assets/play.png',
-        '/assets/settings-icon.png',
+      const [, luc_jump, shannon_jump, luc_fall, shannon_fall] = await Promise.all([
+        Assets.load([
+          '/assets/background-save-the-date-overlay.png',
+          '/assets/background-save-the-date-mobile-overlay.png',
+          '/assets/background-game.png',
+          // '/assets/water.png',
+          '/assets/tilex1.png',
+          '/assets/tilesx2.png',
+          '/assets/tilesx3.png',
+          '/assets/tilesx4.png',
+          '/assets/tilesx5.png',
+          '/assets/shannon-jump-resize.png',
+          '/assets/shannon-fall.png',
+          '/assets/shannon_run.json',
+          '/assets/luc-jump-resize.png',
+          '/assets/luc-fall.png',
+          '/assets/luc_run.json',
+          '/assets/luc-jump.png',
+          '/assets/coins_anim.json',
+          '/assets/sound_off.png',
+          '/assets/sound_on.png',
+          '/assets/pause.png',
+          '/assets/play.png',
+          '/assets/settings-icon.png',
+        ]),
+        this.loadSoundBuffer('/assets/luc-jump.m4a'),
+        this.loadSoundBuffer('/assets/shannon-jump.m4a'),
+        this.loadSoundBuffer('/assets/luc-fall.m4a'),
+        this.loadSoundBuffer('/assets/shannon-fall.m4a'),
       ]);
-      const makeAudio = (src: string, rate = 1) => { const a = new Audio(src); a.volume = 0.07; a.playbackRate = rate; return a; };
-      this.jumpSounds = { luc: makeAudio('/assets/luc-jump.m4a'), shannon: makeAudio('/assets/shannon-jump.m4a') };
-      this.fallSounds = { luc: makeAudio('/assets/luc-fall.m4a', 1), shannon: makeAudio('/assets/shannon-fall.m4a', 1.4) };
+
+      this.jumpSounds = {
+        luc: { buffer: luc_jump, playback_rate: 1 },
+        shannon: { buffer: shannon_jump, playback_rate: 1 },
+      };
+      this.fallSounds = {
+        luc: { buffer: luc_fall, playback_rate: 1 },
+        shannon: { buffer: shannon_fall, playback_rate: 1.4 },
+      };
     })();
     return this.gameAssetsPromise;
+  }
+
+  private getAudioContext(): AudioContext {
+    if (!this.audioContext) {
+      this.audioContext = new AudioContext();
+      this.audioGain = this.audioContext.createGain();
+      this.audioGain.gain.value = 0.07;
+      this.audioGain.connect(this.audioContext.destination);
+    }
+
+    return this.audioContext;
+  }
+
+  private async loadSoundBuffer(path: string): Promise<AudioBuffer> {
+    const response = await fetch(path);
+    if (!response.ok) {
+      throw new Error(`Unable to load sound effect: ${path}`);
+    }
+
+    const encoded_audio = await response.arrayBuffer();
+    return this.getAudioContext().decodeAudioData(encoded_audio);
+  }
+
+  private playSound(effect: SoundEffect): void {
+    const context = this.getAudioContext();
+    if (context.state === 'suspended') {
+      void context.resume().then(() => this.startSound(effect));
+      return;
+    }
+
+    this.startSound(effect);
+  }
+
+  private startSound(effect: SoundEffect): void {
+    if (!this.audioGain) return;
+
+    const source = this.getAudioContext().createBufferSource();
+    source.buffer = effect.buffer;
+    source.playbackRate.value = effect.playback_rate;
+    source.connect(this.audioGain);
+    source.start();
   }
 
   private async checkAccess(): Promise<void> {
@@ -521,8 +581,7 @@ export class Game {
         this.fallSprite.visible = false;
         s.air = true;
         if (this.soundEnabled) {
-          this.jumpSounds[this.selectedCharacter].currentTime = 0;
-          this.jumpSounds[this.selectedCharacter].play();
+          this.playSound(this.jumpSounds[this.selectedCharacter]);
         }
       } else {
         this.jumpInitiated = false;
@@ -584,8 +643,7 @@ export class Game {
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
       this.fallSoundPlayed = true;
       if (this.soundEnabled) {
-        this.fallSounds[this.selectedCharacter].currentTime = 0;
-        this.fallSounds[this.selectedCharacter].play();
+        this.playSound(this.fallSounds[this.selectedCharacter]);
       }
     }
 
@@ -801,6 +859,11 @@ export class Game {
   }
 
   private async launchGame(char: Character, lang: Language): Promise<void> {
+    const audio_context = this.getAudioContext();
+    if (audio_context.state === 'suspended') {
+      void audio_context.resume();
+    }
+
     const [{ CoinManager }, { PlatformManager }, { hitPlatform }, { default: confetti }] = await Promise.all([
       import('./CoinManager'),
       import('./PlatformManager'),
