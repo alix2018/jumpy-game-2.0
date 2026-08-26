@@ -1,4 +1,3 @@
-import confetti from 'canvas-confetti';
 import {
   Application,
   Assets,
@@ -10,12 +9,11 @@ import {
   TilingSprite,
 } from 'pixi.js';
 import { createState, type GameState } from './state';
-import { CoinManager } from './CoinManager';
-import { PlatformManager } from './PlatformManager';
-import { hitPlatform } from './Collisions';
+import type { CoinManager } from './CoinManager';
+import type { PlatformManager } from './PlatformManager';
 import { SettingsScreen } from './SettingsScreen';
 import type { Character, Language } from './SettingsScreen';
-import { SaveTheDateScreen } from './SaveTheDateScreen';
+import type { SaveTheDateScreen } from './SaveTheDateScreen';
 import { ErrorScreen } from './ErrorScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
@@ -69,6 +67,15 @@ export class Game {
   private soundOnTexture!: Texture;
   private soundIconY!: number;
 
+  private gameAssetsPromise: Promise<void> | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _CoinManagerCtor!: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _PlatformManagerCtor!: any;
+  private _hitPlatform!: (player: Sprite, platform: Sprite) => boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _confetti!: any;
+
   private isPaused = false;
 
   private pauseToggleSprite!: Sprite;
@@ -113,41 +120,33 @@ export class Game {
     container.appendChild(this.app.canvas);
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
-    await this.loadAssets();
-    await this.checkAccess();
+    const [, userData] = await Promise.all([
+      this.loadEssentialAssets(),
+      this.fetchUserData(),
+    ]);
+
+    if (userData) {
+      this.userCode = userData.code;
+      this.userPseudo = userData.pseudo;
+      this.sessionHighScore = userData.highScore;
+      this.highScoreList = userData.highScoreList;
+      this.weddingTopScore = userData.highScoreList[0]?.highScore ?? userData.highScore;
+      this.showSettings();
+    } else {
+      this.showErrorScreen();
+    }
+
     this.watchResize();
 
     this.app.ticker.add((ticker) => this.tick(ticker.deltaTime));
   }
 
-  private async loadAssets(): Promise<void> {
+  private async loadEssentialAssets(): Promise<void> {
     await Assets.load([
       '/assets/background-settings.png',
       '/assets/background-settings-mobile.png',
-      '/assets/background-save-the-date-overlay.png',
-      '/assets/background-save-the-date-mobile-overlay.png',
-      '/assets/background-game.png',
-      // '/assets/water.png',
-      '/assets/tilex1.png',
-      '/assets/tilesx2.png',
-      '/assets/tilesx3.png',
-      '/assets/tilesx4.png',
-      '/assets/tilesx5.png',
-      '/assets/shannon-jump-resize.png',
-      '/assets/shannon-fall.png',
-      '/assets/shannon_run.json',
-      '/assets/shannon-idle-resize.png',
-      '/assets/luc-jump-resize.png',
-      '/assets/luc-fall.png',
-      '/assets/luc_run.json',
       '/assets/luc-idle-resize.png',
-      '/assets/luc-jump.png',
-      '/assets/coins_anim.json',
-      '/assets/sound_off.png',
-      '/assets/sound_on.png',
-      '/assets/pause.png',
-      '/assets/play.png',
-      '/assets/settings-icon.png',
+      '/assets/shannon-idle-resize.png',
       '/assets/calendar-icon.png',
       '/assets/location-icon.png',
     ]);
@@ -156,36 +155,66 @@ export class Game {
       { src: '/fonts/TypoWriter-Regular.otf', data: { family: 'TypoWriter', weights: ['normal'] } },
       { src: '/fonts/TypoWriter-Bold.otf', data: { family: 'TypoWriter', weights: ['bold'] } },
     ]);
-    const makeAudio = (src: string, rate = 1) => { const a = new Audio(src); a.volume = 0.07; a.playbackRate = rate; return a; };
-    this.jumpSounds = { luc: makeAudio('/assets/luc-jump.m4a'), shannon: makeAudio('/assets/shannon-jump.m4a') };
-    this.fallSounds = { luc: makeAudio('/assets/luc-fall.m4a', 1), shannon: makeAudio('/assets/shannon-fall.m4a', 1.4) };
   }
 
-  private async checkAccess(): Promise<void> {
+  private loadGameAssets(): Promise<void> {
+    if (this.gameAssetsPromise) return this.gameAssetsPromise;
+    this.gameAssetsPromise = (async () => {
+      await Assets.load([
+        '/assets/background-save-the-date-overlay.png',
+        '/assets/background-save-the-date-mobile-overlay.png',
+        '/assets/background-game.png',
+        // '/assets/water.png',
+        '/assets/tilex1.png',
+        '/assets/tilesx2.png',
+        '/assets/tilesx3.png',
+        '/assets/tilesx4.png',
+        '/assets/tilesx5.png',
+        '/assets/shannon-jump-resize.png',
+        '/assets/shannon-fall.png',
+        '/assets/shannon_run.json',
+        '/assets/luc-jump-resize.png',
+        '/assets/luc-fall.png',
+        '/assets/luc_run.json',
+        '/assets/luc-jump.png',
+        '/assets/coins_anim.json',
+        '/assets/sound_off.png',
+        '/assets/sound_on.png',
+        '/assets/pause.png',
+        '/assets/play.png',
+        '/assets/settings-icon.png',
+      ]);
+      const makeAudio = (src: string, rate = 1) => { const a = new Audio(src); a.volume = 0.07; a.playbackRate = rate; return a; };
+      this.jumpSounds = { luc: makeAudio('/assets/luc-jump.m4a'), shannon: makeAudio('/assets/shannon-jump.m4a') };
+      this.fallSounds = { luc: makeAudio('/assets/luc-fall.m4a', 1), shannon: makeAudio('/assets/shannon-fall.m4a', 1.4) };
+    })();
+    return this.gameAssetsPromise;
+  }
+
+  private async fetchUserData(): Promise<{
+    code: string;
+    pseudo: string;
+    highScore: number;
+    highScoreList: Array<{ pseudo: string; highScore: number }>;
+  } | null> {
     const code = new URLSearchParams(window.location.search).get('code');
-    if (!code) {
-      this.showErrorScreen();
-      return;
-    }
+    if (!code) return null;
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user?code=${encodeURIComponent(code)}`);
-      if (res.ok) {
-        const data = await res.json() as {
-          pseudo: string;
-          highScore: number;
-          highScoreList?: Array<{ pseudo: string; highScore: number }>;
-        };
-        this.userCode = code;
-        this.userPseudo = data.pseudo;
-        this.sessionHighScore = Number(data.highScore) || 0;
-        this.highScoreList = data.highScoreList ?? [];
-        this.weddingTopScore = this.highScoreList[0]?.highScore ?? this.sessionHighScore;
-        this.showSettings();
-      } else {
-        this.showErrorScreen();
-      }
+      if (!res.ok) return null;
+      const data = await res.json() as {
+        pseudo: string;
+        highScore: number;
+        highScoreList?: Array<{ pseudo: string; highScore: number }>;
+      };
+      return {
+        code,
+        pseudo: data.pseudo,
+        highScore: Number(data.highScore) || 0,
+        highScoreList: data.highScoreList ?? [],
+      };
     } catch {
-      this.showErrorScreen();
+      return null;
     }
   }
 
@@ -333,8 +362,8 @@ export class Game {
     this.settingsIconSprite.cursor = 'pointer';
     stage.addChild(this.settingsIconSprite);
 
-    this.coins = new CoinManager(this.state);
-    this.platforms = new PlatformManager(
+    this.coins = new this._CoinManagerCtor(this.state);
+    this.platforms = new this._PlatformManagerCtor(
       this.state,
       this.coins,
       this.gameWidth,
@@ -530,7 +559,7 @@ export class Game {
     confettiCanvas.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:9999;`;
     document.body.appendChild(confettiCanvas);
 
-    const myConfetti = confetti.create(confettiCanvas, { resize: false });
+    const myConfetti = this._confetti.create(confettiCanvas, { resize: false });
 
     const count = 200;
     const defaults = { origin: { y: 0.7 } };
@@ -551,7 +580,7 @@ export class Game {
       this.saveTheDateShown = true;
       localStorage.setItem('saveTheDateShown', 'true');
       this.gameStarted = false;
-      this.showSaveTheDate();
+      void this.showSaveTheDate();
     }, 2000);
   }
 
@@ -583,7 +612,7 @@ export class Game {
     if (this.state.vy < 0) return false;
     const { stackOnScreen } = this.state;
     for (let i = 0; i < Math.min(stackOnScreen.length, 2); i++) {
-      if (hitPlatform(this.jumpSprite, stackOnScreen[i])) {
+      if (this._hitPlatform(this.jumpSprite, stackOnScreen[i])) {
         this.state.currentPlatform = stackOnScreen[i];
         return true;
       }
@@ -674,6 +703,7 @@ export class Game {
   private pressUp(): void { this.state.isPress = false; }
 
   private showSettings(defaultChar: Character | null = null): void {
+    requestAnimationFrame(() => { this.loadGameAssets(); });
     this.settingsScreen = new SettingsScreen(
       this.app,
       {
@@ -682,14 +712,26 @@ export class Game {
       },
       this.gameWidth,
       this.gameHeight,
-      (char, lang) => this.launchGame(char, lang),
+      (char, lang) => { void this.launchGame(char, lang); },
       this.saveTheDateShown,
       defaultChar,
       this.highScoreList,
     );
   }
 
-  private launchGame(char: Character, lang: Language): void {
+  private async launchGame(char: Character, lang: Language): Promise<void> {
+    const [{ CoinManager }, { PlatformManager }, { hitPlatform }, { default: confetti }] = await Promise.all([
+      import('./CoinManager'),
+      import('./PlatformManager'),
+      import('./Collisions'),
+      import('canvas-confetti'),
+      this.loadGameAssets(),
+    ]);
+    this._CoinManagerCtor = CoinManager;
+    this._PlatformManagerCtor = PlatformManager;
+    this._hitPlatform = hitPlatform;
+    this._confetti = confetti;
+
     this.settingsScreen?.destroy();
     this.settingsScreen = null;
     this.saveTheDateScreen?.destroy();
@@ -706,7 +748,8 @@ export class Game {
     this.gameStarted = true;
   }
 
-  private showSaveTheDate(): void {
+  private async showSaveTheDate(): Promise<void> {
+    const { SaveTheDateScreen } = await import('./SaveTheDateScreen');
     const lang = (localStorage.getItem('language') as Language) ?? this.selectedLanguage;
     const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
     const bodyLines = [
