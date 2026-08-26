@@ -10,9 +10,14 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/user': 'http://localhost:3000',
-      '/high-scores': 'http://localhost:3000',
-      '/score': 'http://localhost:3000',
+      '/user': {
+        target: 'https://dev-api.baxcus.com',
+        changeOrigin: true,
+      },
+      '/score': {
+        target: 'https://dev-api.baxcus.com',
+        changeOrigin: true,
+      },
     },
   },
 });

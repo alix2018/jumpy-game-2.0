@@ -14,7 +14,7 @@ import type { PlatformManager } from './PlatformManager';
 import { SettingsScreen } from './SettingsScreen';
 import type { Character, Language } from './SettingsScreen';
 import type { SaveTheDateScreen } from './SaveTheDateScreen';
-import { ErrorScreen } from './ErrorScreen';
+import { AccessScreen, type AccessResult } from './AccessScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
 import {
@@ -100,7 +100,7 @@ export class Game {
   private highScoreList: Array<{ pseudo: string; highScore: number }> = [];
   private settingsScreen: SettingsScreen | null = null;
   private saveTheDateScreen: SaveTheDateScreen | null = null;
-  private errorScreen: ErrorScreen | null = null;
+  private accessScreen: AccessScreen | null = null;
 
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
@@ -121,21 +121,8 @@ export class Game {
     container.appendChild(this.app.canvas);
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
-    const [, userData] = await Promise.all([
-      this.loadEssentialAssets(),
-      this.fetchUserData(),
-    ]);
-
-    if (userData) {
-      this.userCode = userData.code;
-      this.userPseudo = userData.pseudo;
-      this.sessionHighScore = userData.highScore;
-      this.highScoreList = userData.highScoreList;
-      this.weddingTopScore = userData.highScoreList[0]?.highScore ?? userData.highScore;
-      this.showSettings();
-    } else {
-      this.showErrorScreen();
-    }
+    await this.loadEssentialAssets();
+    await this.checkAccess();
 
     this.watchResize();
 
@@ -192,41 +179,83 @@ export class Game {
     return this.gameAssetsPromise;
   }
 
-  private async fetchUserData(): Promise<{
-    code: string;
-    pseudo: string;
-    highScore: number;
-    highScoreList: Array<{ pseudo: string; highScore: number }>;
-  } | null> {
-    const code = new URLSearchParams(window.location.search).get('code');
-    if (!code) return null;
+  private async checkAccess(): Promise<void> {
+    const query_code = new URLSearchParams(window.location.search).get('code');
+    const stored_code = sessionStorage.getItem('baxcus_login_code');
+    const code = query_code ?? stored_code;
+
+    if (code) {
+      const result = await this.authenticate(code);
+      if (result === 'success') {
+        this.removeCodeFromUrl();
+        this.showSettings();
+        return;
+      }
+
+      this.showAccessScreen(result);
+      return;
+    }
+
+    this.showAccessScreen();
+  }
+
+  private async authenticate(code: string): Promise<AccessResult> {
+    const normalized_code = code.trim().toUpperCase();
+
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user?code=${encodeURIComponent(code)}`);
-      if (!res.ok) return null;
-      const data = await res.json() as {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user`, {
+        headers: { Authorization: `Bearer ${normalized_code}` },
+      });
+      if (response.status === 401) {
+        sessionStorage.removeItem('baxcus_login_code');
+        return 'unauthorized';
+      }
+      if (!response.ok) {
+        return 'unavailable';
+      }
+
+      const data = await response.json() as {
         pseudo: string;
         highScore: number;
         highScoreList?: Array<{ pseudo: string; highScore: number }>;
       };
-      return {
-        code,
-        pseudo: data.pseudo,
-        highScore: Number(data.highScore) || 0,
-        highScoreList: data.highScoreList ?? [],
-      };
+      this.userCode = normalized_code;
+      this.userPseudo = data.pseudo;
+      this.sessionHighScore = Number(data.highScore) || 0;
+      this.highScoreList = data.highScoreList ?? [];
+      this.weddingTopScore = this.highScoreList[0]?.highScore ?? this.sessionHighScore;
+      sessionStorage.setItem('baxcus_login_code', normalized_code);
+      return 'success';
     } catch {
-      return null;
+      return 'unavailable';
     }
   }
 
-  private showErrorScreen(): void {
-    const fr = frTranslations as Record<string, string>;
-    const en = enTranslations as Record<string, string>;
-    this.errorScreen = new ErrorScreen(
-      this.app, this.gameWidth, this.gameHeight,
-      fr['code_error'] ?? 'Accès refusé',
-      en['code_error'] ?? 'Access denied',
+  private showAccessScreen(initial_result?: Exclude<AccessResult, 'success'>): void {
+    this.accessScreen = new AccessScreen(
+      this.app,
+      this.gameWidth,
+      this.gameHeight,
+      async (code) => {
+        const result = await this.authenticate(code);
+        if (result === 'success') {
+          this.removeCodeFromUrl();
+          this.accessScreen?.destroy();
+          this.accessScreen = null;
+          this.showSettings();
+        }
+        return result;
+      },
+      initial_result,
     );
+  }
+
+  private removeCodeFromUrl(): void {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('code')) return;
+
+    url.searchParams.delete('code');
+    window.history.replaceState(null, '', url);
   }
 
   private buildScene(): void {
@@ -537,7 +566,7 @@ export class Game {
 
     if (player.y + player.height > this.gameHeight + FALL_DEATH_Y) {
       if (Math.round(s.score) > 0) {
-        this.saveToLeaderboard(Math.round(s.score));
+        void this.saveToLeaderboard(Math.round(s.score));
       }
       s.score = 0;
       s.currentSpeed = s.baseSpeed;
@@ -549,6 +578,7 @@ export class Game {
   private triggerConfettiAndSaveTheDate(): void {
     this.confettiTriggered = true;
     this.isPaused = true;
+    void this.saveToLeaderboard(Math.round(this.state.score));
     this.pauseToggleSprite.texture = this.playTexture;
     this.runAnim.stop();
     for (const coin of this.state.coins) coin.stop();
@@ -585,28 +615,49 @@ export class Game {
     }, 2000);
   }
 
-  private saveToLeaderboard(score: number): void {
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/score?code=${encodeURIComponent(this.userCode ?? '')}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ score }),
-    })
-      .then(res => (res.ok ? res.json() : null))
-      .then((data: { pseudo: string; highScore: number; highScoreList: Array<{ pseudo: string; highScore: number }> } | null) => {
-        if (!data) return;
-        if (data.highScore > this.sessionHighScore) {
-          this.sessionHighScore = data.highScore;
-          this.lastDisplayedHighScore = -1;
+  private async saveToLeaderboard(score: number): Promise<void> {
+    const code = this.userCode;
+    if (!code) return;
+
+    try {
+      const scoreHash = await this.createScoreHash(code, score);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/score`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${code}`,
+          'Content-Type': 'application/json',
+          'X-Score-Hash': scoreHash,
+        },
+        body: JSON.stringify({ score }),
+      });
+      if (!res.ok) return;
+
+      const data = await res.json() as {
+        pseudo: string;
+        highScore: number;
+        highScoreList: Array<{ pseudo: string; highScore: number }>;
+      };
+      this.highScoreList = data.highScoreList ?? [];
+      if (data.highScore > this.sessionHighScore) {
+        this.sessionHighScore = data.highScore;
+        this.lastDisplayedHighScore = -1;
+      }
+      const newTopScore = this.highScoreList[0]?.highScore ?? data.highScore;
+      if (newTopScore > this.weddingTopScore) {
+        this.weddingTopScore = newTopScore;
+        if (this.textWeddingHighScore) {
+          this.textWeddingHighScore.text = `${this.t('total_high_score')} ${this.weddingTopScore}`;
         }
-        const newTopScore = data.highScoreList?.[0]?.highScore ?? data.highScore;
-        if (newTopScore > this.weddingTopScore) {
-          this.weddingTopScore = newTopScore;
-          if (this.textWeddingHighScore) {
-            this.textWeddingHighScore.text = `${this.t('total_high_score')} ${this.weddingTopScore}`;
-          }
-        }
-      })
-      .catch(() => { /* ignore */ });
+      }
+    } catch {
+      // Score persistence must not interrupt the game.
+    }
+  }
+
+  private async createScoreHash(code: string, score: number): Promise<string> {
+    const input = `${import.meta.env.VITE_SCORE_HASH_SALT}:${code.trim().toUpperCase()}:${score}`;
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private checkGround(): boolean {

@@ -84,6 +84,24 @@ Cache-Control: no-store
 
 Login codes must not be included in responses or application logs. Production traffic must use HTTPS because the code is a reusable credential.
 
+## Score-submission hash
+
+`POST /score` must include an `X-Score-Hash` header. Its value is the lowercase hexadecimal SHA-256 digest of this UTF-8 string:
+
+```text
+<salt>:<uppercase-login-code>:<decimal-score>
+```
+
+For example, if the configured salt is `baxcus-jumpy-score-v1`, the login code is `k7mt3p`, and the submitted score is `100`, the hashed input is:
+
+```text
+baxcus-jumpy-score-v1:K7MT3P:100
+```
+
+The game receives the salt as `VITE_SCORE_HASH_SALT`; the API receives the same value as `SCORE_HASH_SALT`. The API calculates the expected hash from the authenticated code and parsed score and compares it with the complete supplied hash.
+
+Because browser code and configuration can be inspected, this mechanism is only intended to deter casual request modification. It is not proof that the score was produced by legitimate gameplay.
+
 ## Score rules
 
 - A submitted score must be a non-negative integer.
@@ -178,6 +196,7 @@ POST /score HTTP/1.1
 Host: api.baxcus.com
 Authorization: Bearer K7MT3P
 Content-Type: application/json
+X-Score-Hash: <sha256-hex-digest>
 
 {
   "score": 100
@@ -221,7 +240,7 @@ Returned when the JSON body is missing or malformed, or when `score` is missing,
 
 ### `401 Unauthorized`
 
-Returned when authentication is missing or invalid.
+Returned when authentication is missing or invalid, or when `X-Score-Hash` is missing, malformed, or does not match the authenticated code and submitted score.
 
 ### `415 Unsupported Media Type`
 
@@ -265,6 +284,7 @@ The API should be implemented as a small, separate TypeScript/Node.js service in
 The service must:
 
 - take the PostgreSQL connection string and allowed browser origins from environment variables;
+- require the score-hash salt from an environment variable;
 - run idempotent schema migrations before listening for requests;
 - use a maintained CSV parser so quoted commas and other valid CSV content are preserved;
 - reject duplicate pseudos and case-insensitive duplicate login codes during import;
@@ -280,6 +300,7 @@ Automated tests must cover:
 - case-insensitive code authentication;
 - missing, malformed, and unknown authorization values;
 - invalid score bodies and valid boundary values;
+- missing, malformed, valid, and mismatched score hashes;
 - retaining exactly the five highest scores per user;
 - one leaderboard entry per user and a maximum of five entries;
 - deterministic ordering of tied scores;
@@ -297,6 +318,6 @@ The same API image runs as two services. `api.baxcus.com` connects to `baxcus_pr
 
 The public nginx instance terminates HTTPS and proxies each hostname to its matching API container over the internal Docker network. It must forward the `Authorization` header and must not log its value. The API containers must not publish ports on the production host.
 
-Because the game and API use different origins, nginx or the API must return CORS headers allowing the configured game origins. It must allow the `Authorization` and `Content-Type` request headers and the required HTTP methods. The allowed origins should be explicit rather than `*`.
+Because the game and API use different origins, nginx or the API must return CORS headers allowing the configured game origins. It must allow the `Authorization`, `Content-Type`, and `X-Score-Hash` request headers and the required HTTP methods. The allowed origins should be explicit rather than `*`.
 
 HTTP port 80 may serve ACME challenges but must redirect all other requests to HTTPS without proxying them to the API. Certbot obtains a certificate covering both API hostnames during deployment and the existing renewal service keeps it current. Add a container health check that calls `GET /health`, and make nginx depend on both healthy API services.
