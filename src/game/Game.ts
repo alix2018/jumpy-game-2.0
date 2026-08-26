@@ -86,6 +86,7 @@ export class Game {
   private settingsIconSprite!: Sprite;
   private inputBound = false;
   private focusBound = false;
+  private focusGainedAt = 0;
 
   private selectedCharacter: Character = 'shannon';
   private selectedLanguage: Language = 'fr';
@@ -515,7 +516,7 @@ export class Game {
       this.lastDisplayedScore = roundedScore;
       this.textScore.text = this.saveTheDateShown
         ? String(roundedScore)
-        : `${roundedScore}/${SAVE_THE_DATE_SCORE_THRESHOLD}`;
+        : `${Math.min(roundedScore, SAVE_THE_DATE_SCORE_THRESHOLD)}/${SAVE_THE_DATE_SCORE_THRESHOLD}`;
     }
     if (this.sessionHighScore !== this.lastDisplayedHighScore) {
       this.lastDisplayedHighScore = this.sessionHighScore;
@@ -668,7 +669,7 @@ export class Game {
     const canvas = this.app.canvas;
     canvas.addEventListener('mousedown', (e) => {
       if (this.hitsSettings(e.clientX, e.clientY)) { this.goToSettings(); return; }
-      if (this.hitsPause(e.clientX, e.clientY)) { this.togglePause(); return; }
+      if (this.hitsPause(e.clientX, e.clientY)) { if (Date.now() - this.focusGainedAt > 200) this.togglePause(); return; }
       if (this.hitsSound(e.clientX, e.clientY)) { this.toggleSound(); return; }
       if (!this.isPaused) this.pressDown();
     });
@@ -677,7 +678,7 @@ export class Game {
       e.preventDefault();
       const t = e.touches[0];
       if (t && this.hitsSettings(t.clientX, t.clientY)) { this.goToSettings(); return; }
-      if (t && this.hitsPause(t.clientX, t.clientY)) { this.togglePause(); return; }
+      if (t && this.hitsPause(t.clientX, t.clientY)) { if (Date.now() - this.focusGainedAt > 200) this.togglePause(); return; }
       if (t && this.hitsSound(t.clientX, t.clientY)) { this.toggleSound(); return; }
       if (!this.isPaused) this.pressDown();
     }, { passive: false });
@@ -804,7 +805,7 @@ export class Game {
     if (this.focusBound) return;
     this.focusBound = true;
     const pause = () => { if (!this.isPaused) this.togglePause(); };
-    const resume = () => { if (this.isPaused) this.togglePause(); };
+    const resume = () => { if (this.isPaused) { this.focusGainedAt = Date.now(); this.togglePause(); } };
     document.addEventListener('visibilitychange', () => { document.hidden ? pause() : resume(); });
     window.addEventListener('blur', pause);
     window.addEventListener('focus', resume);
