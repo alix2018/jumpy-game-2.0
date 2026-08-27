@@ -274,7 +274,6 @@ export class Game {
     if (query_parameter) {
       const result = await this.authenticate(query.get(query_parameter) ?? '');
       if (result === 'success') {
-        this.removeCodeFromUrl();
         this.showSettings();
       } else {
         this.showErrorScreen();
@@ -286,7 +285,6 @@ export class Game {
     if (stored_code) {
       const result = await this.authenticate(stored_code);
       if (result === 'success') {
-        this.removeCodeFromUrl();
         this.showSettings();
         return;
       }
@@ -338,7 +336,6 @@ export class Game {
       async (code) => {
         const result = await this.authenticate(code);
         if (result === 'success') {
-          this.removeCodeFromUrl();
           this.accessScreen?.destroy();
           this.accessScreen = null;
           this.showSettings();
@@ -357,15 +354,6 @@ export class Game {
       fr['code_error'] ?? 'Accès refusé',
       en['code_error'] ?? 'Access denied',
     );
-  }
-
-  private removeCodeFromUrl(): void {
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has('c') && !url.searchParams.has('code')) return;
-
-    url.searchParams.delete('c');
-    url.searchParams.delete('code');
-    window.history.replaceState(null, '', url);
   }
 
   private buildScene(): void {
