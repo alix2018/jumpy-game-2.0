@@ -76,6 +76,7 @@ export class Game {
   private soundIconY!: number;
 
   private gameAssetsPromise: Promise<void> | null = null;
+  private gameModulesPromise: Promise<void> | null = null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _CoinManagerCtor!: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,6 +84,8 @@ export class Game {
   private _hitPlatform!: (player: Sprite, platform: Sprite) => boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _confetti!: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _SaveTheDateScreenCtor!: any;
 
   private isPaused = false;
 
@@ -207,8 +210,26 @@ export class Game {
       this.audioGain.gain.value = 0.07;
       this.audioGain.connect(this.audioContext.destination);
     }
-
     return this.audioContext;
+  }
+
+  private loadGameModules(): Promise<void> {
+    if (this.gameModulesPromise) return this.gameModulesPromise;
+    this.gameModulesPromise = (async () => {
+      const [{ CoinManager }, { PlatformManager }, { hitPlatform }, { default: confetti }, { SaveTheDateScreen }] = await Promise.all([
+        import('./CoinManager'),
+        import('./PlatformManager'),
+        import('./Collisions'),
+        import('canvas-confetti'),
+        import('./SaveTheDateScreen'),
+      ]);
+      this._CoinManagerCtor = CoinManager;
+      this._PlatformManagerCtor = PlatformManager;
+      this._hitPlatform = hitPlatform;
+      this._confetti = confetti;
+      this._SaveTheDateScreenCtor = SaveTheDateScreen;
+    })();
+    return this.gameModulesPromise;
   }
 
   private async loadSoundBuffer(path: string): Promise<AudioBuffer> {
@@ -842,7 +863,7 @@ export class Game {
   private pressUp(): void { this.state.isPress = false; }
 
   private showSettings(defaultChar: Character | null = null): void {
-    requestAnimationFrame(() => { this.loadGameAssets(); });
+    requestAnimationFrame(() => { this.loadGameAssets(); this.loadGameModules(); });
     this.settingsScreen = new SettingsScreen(
       this.app,
       {
@@ -864,17 +885,7 @@ export class Game {
       void audio_context.resume();
     }
 
-    const [{ CoinManager }, { PlatformManager }, { hitPlatform }, { default: confetti }] = await Promise.all([
-      import('./CoinManager'),
-      import('./PlatformManager'),
-      import('./Collisions'),
-      import('canvas-confetti'),
-      this.loadGameAssets(),
-    ]);
-    this._CoinManagerCtor = CoinManager;
-    this._PlatformManagerCtor = PlatformManager;
-    this._hitPlatform = hitPlatform;
-    this._confetti = confetti;
+    await Promise.all([this.loadGameAssets(), this.loadGameModules()]);
 
     this.settingsScreen?.destroy();
     this.settingsScreen = null;
@@ -893,7 +904,7 @@ export class Game {
   }
 
   private async showSaveTheDate(): Promise<void> {
-    const { SaveTheDateScreen } = await import('./SaveTheDateScreen');
+    await this.loadGameModules();
     const lang = (localStorage.getItem('language') as Language) ?? this.selectedLanguage;
     const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
     const bodyLines = [
@@ -907,7 +918,7 @@ export class Game {
       },
       { text: tr['save_the_date_body_4'] ?? '' },
     ].filter(item => Boolean(item.text) || Boolean(item.cards));
-    this.saveTheDateScreen = new SaveTheDateScreen(
+    this.saveTheDateScreen = new this._SaveTheDateScreenCtor(
       this.app,
       this.gameWidth,
       this.gameHeight,

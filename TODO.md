@@ -66,3 +66,14 @@ et rejoue
 
 Plus valide:
 - [ ] Demander pseudo si pas encore sauvegardé après save the date et si la personne rafraîchit
+
+## To check
+- Code on the url or to enter manually? (delete error screen?) => right now both
+- Redirect to high score after save the date? And pre-select previous character selected (button: continue instead of play again?)
+- Show leaderboard page after losing
+- Improve placeholder for leaderboard
+- Add real save the date
+- Add loader?
+- Improve pre-fetch ts files
+- Change settings to home icon
+- Pressing icons on safari mobile doesn't work
