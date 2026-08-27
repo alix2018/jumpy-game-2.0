@@ -582,7 +582,7 @@ export class SettingsScreen {
       c.addChild(rankTxt);
 
       const nameTxt = new Text({
-        text: entry ? entry.pseudo : '- -',
+        text: entry ? entry.pseudo : '-',
         style: nameStyle,
       });
       nameTxt.anchor.set(0, 0.5);
@@ -590,7 +590,7 @@ export class SettingsScreen {
       c.addChild(nameTxt);
 
       const scoreTxt = new Text({
-        text: entry ? `${entry.highScore} ${this.t('points')}` : '',
+        text: entry ? `${entry.highScore} ${this.t('points')}` : '-',
         style: scoreStyle,
       });
       scoreTxt.anchor.set(1, 0.5);

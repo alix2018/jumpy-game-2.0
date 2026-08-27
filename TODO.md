@@ -35,7 +35,7 @@ _
 
 Préparez vos valises pour un week-end rempli d’amour, de rires et de célébration!
 - Date: 1 au 3 octobre 2027
-- ⁠Lieu: B&B Domaine ‘t Eikennest Beerst, Diskmuide
+- ⁠Lieu: B&B Domein ‘t Eikennest Beerst, Diskmuide
 Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées!
 
 Remplissez votre nom ci-dessous pour continuer à jouer et rentrer dans la compétition avec nos autres invités.
@@ -74,6 +74,12 @@ Plus valide:
 - Improve placeholder for leaderboard
 - Add real save the date
 - Add loader?
-- Improve pre-fetch ts files
+- [x] Improve pre-fetch ts files
 - Change settings to home icon
+- Laisser le code dans l'URL
+
+## New
 - Pressing icons on safari mobile doesn't work
+- Smaller tablet (air tablet): bottom text overlap
+- Mode paysage sur tablet height too big (bigger v)
+- Sound doesn't work on Shannon's ipad, any browsers
