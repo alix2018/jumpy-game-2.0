@@ -37,6 +37,14 @@ interface SoundEffect {
   playback_rate: number;
 }
 
+interface PlaybackAudioSession {
+   type: 'auto' | 'playback';
+}
+
+interface NavigatorWithAudioSession extends Navigator {
+   audioSession?: PlaybackAudioSession;
+}
+
 export class Game {
   private app!: Application;
   private state!: GameState;
@@ -228,6 +236,11 @@ export class Game {
 
   private getAudioContext(): AudioContext {
     if (!this.audioContext) {
+      const audio_navigator = navigator as NavigatorWithAudioSession;
+      if (audio_navigator.audioSession) {
+         audio_navigator.audioSession.type = 'playback';
+      }
+
       this.audioContext = new AudioContext();
       this.audioGain = this.audioContext.createGain();
       this.audioGain.gain.value = 0.07;
@@ -257,8 +270,12 @@ export class Game {
 
   private playSound(effect: SoundEffect): void {
     const context = this.getAudioContext();
-    if (context.state === 'suspended') {
-      void context.resume().then(() => this.startSound(effect));
+    if (context.state !== 'running') {
+      void context.resume().then(() => {
+         if (context.state === 'running') {
+            this.startSound(effect);
+         }
+      });
       return;
     }
 
