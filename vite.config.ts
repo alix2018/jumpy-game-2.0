@@ -4,6 +4,12 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'docs',
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: { pixi: ['pixi.js'] },
+      },
+    },
   },
   optimizeDeps: {
     include: ['pixi.js'],
