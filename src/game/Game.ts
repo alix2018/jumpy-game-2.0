@@ -183,7 +183,7 @@ export class Game {
           '/assets/sound_on.png',
           '/assets/pause.png',
           '/assets/play.png',
-          '/assets/settings-icon.png',
+          '/assets/home-icon.png',
         ]),
         this.loadSoundBuffer('/assets/luc-jump.m4a'),
         this.loadSoundBuffer('/assets/shannon-jump.m4a'),
@@ -482,7 +482,7 @@ export class Game {
     stage.addChild(this.soundToggleSprite);
 
     const settingsIconSize = 34;
-    this.settingsIconSprite = new Sprite(Texture.from('/assets/settings-icon.png'));
+    this.settingsIconSprite = new Sprite(Texture.from('/assets/home-icon.png'));
     this.settingsIconSprite.width = settingsIconSize;
     this.settingsIconSprite.height = settingsIconSize;
     this.settingsIconSprite.position.set(116, this.pauseIconY);

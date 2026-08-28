@@ -67,7 +67,7 @@ et rejoue
 ## To check
 - [x] Redirect to high score after save the date? And pre-select previous character selected (button: continue instead of play again?)
 - [x] Show leaderboard page after losing
-- Change settings to home icon
+- [x] Change settings to home icon
 
 - Add loader?
 - [x] Improve pre-fetch ts files
