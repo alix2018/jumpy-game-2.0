@@ -58,25 +58,22 @@ Text Screen Un Mariage Baxcus
 - [x] Page de base par défaut après save the date: choix du perso, le classement + titre avec lieu et date
 et rejoue
 - [x] Augmenter vitesse plus rapidement
-- [ ] Audios custom pour chaque perso
+- [x] Audios custom pour chaque perso
 - [x] baxcus.com avec blason familial: Baxcus wedding - Save the date
 - [x] Afficher top 5: nom des joueurs et leurs points
-- [ ] Ajouter ligne high score
+- [x] Ajouter ligne high score
 - [ ] Fixer les animations des personnages
 
-Plus valide:
-- [ ] Demander pseudo si pas encore sauvegardé après save the date et si la personne rafraîchit
-
 ## To check
-- Code on the url or to enter manually? (delete error screen?) => right now both
-- Redirect to high score after save the date? And pre-select previous character selected (button: continue instead of play again?)
-- Show leaderboard page after losing
-- Improve placeholder for leaderboard
-- Add real save the date
+- [x] Redirect to high score after save the date? And pre-select previous character selected (button: continue instead of play again?)
+- [x] Show leaderboard page after losing
+- Change settings to home icon
+
 - Add loader?
 - [x] Improve pre-fetch ts files
-- Change settings to home icon
-- Laisser le code dans l'URL
+- [x] Add real save the date
+- [x]Improve placeholder for leaderboard
+- [x] Laisser le code dans l'URL
 
 ## New
 - Pressing icons on safari mobile doesn't work

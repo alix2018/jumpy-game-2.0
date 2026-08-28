@@ -664,10 +664,14 @@ export class Game {
       if (Math.round(s.score) > 0) {
         void this.saveToLeaderboard(Math.round(s.score));
       }
-      s.score = 0;
-      s.currentSpeed = s.baseSpeed;
-      s.newMilestone = s.firstMilestone;
-      this.startGame();
+      if (this.saveTheDateShown) {
+        this.goToSettings();
+      } else {
+        s.score = 0;
+        s.currentSpeed = s.baseSpeed;
+        s.newMilestone = s.firstMilestone;
+        this.startGame();
+      }
     }
   }
 
@@ -851,7 +855,7 @@ export class Game {
   private pressUp(): void { this.state.isPress = false; }
 
   private showSettings(defaultChar: Character | null = null): void {
-    requestAnimationFrame(() => { this.loadGameAssets(); this.loadGameModules(); });
+    requestAnimationFrame(() => setTimeout(() => { this.loadGameAssets(); this.loadGameModules(); }, 0));
     this.settingsScreen = new SettingsScreen(
       this.app,
       {
@@ -919,14 +923,9 @@ export class Game {
 
   private launchFromSaveTheDate(): void {
     const char = localStorage.getItem('selectedCharacter') as Character | null;
-    const lang = (localStorage.getItem('language') as Language) ?? 'fr';
-    if (char) {
-      this.launchGame(char, lang);
-    } else {
-      this.saveTheDateScreen?.destroy();
-      this.saveTheDateScreen = null;
-      this.showSettings();
-    }
+    this.saveTheDateScreen?.destroy();
+    this.saveTheDateScreen = null;
+    this.showSettings(char);
   }
 
   private goToSettings(): void {
