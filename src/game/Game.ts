@@ -118,6 +118,7 @@ export class Game {
   private sessionHighScore = 0;
   private weddingTopScore = 0;
   private highScoreList: Array<{ pseudo: string; highScore: number }> = [];
+  private scoreSavePromise: Promise<void> = Promise.resolve();
   private settingsScreen: SettingsScreen | null = null;
   private saveTheDateScreen: SaveTheDateScreen | null = null;
   private accessScreen: AccessScreen | null = null;
@@ -740,7 +741,12 @@ export class Game {
     }, 600);
   }
 
-  private async saveToLeaderboard(score: number): Promise<void> {
+  private saveToLeaderboard(score: number): Promise<void> {
+    this.scoreSavePromise = this.scoreSavePromise.then(() => this.submitScore(score));
+    return this.scoreSavePromise;
+  }
+
+  private async submitScore(score: number): Promise<void> {
     const code = this.userCode;
     if (!code) return;
 
@@ -883,6 +889,8 @@ export class Game {
   private pressUp(): void { this.state.isPress = false; }
 
   private async showSettings(defaultChar: Character | null = null): Promise<void> {
+    await this.scoreSavePromise;
+
     requestAnimationFrame(() => setTimeout(() => { this.loadGameAssets(); this.loadGameModules(); }, 0));
     const { SettingsScreen } = await import('./SettingsScreen');
     this.settingsScreen = new SettingsScreen(
