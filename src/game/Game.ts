@@ -682,36 +682,35 @@ export class Game {
     this.runAnim.stop();
     for (const coin of this.state.coins) coin.stop();
 
-    const rect = this.app.canvas.getBoundingClientRect();
-    const confettiCanvas = document.createElement('canvas');
-    confettiCanvas.width = rect.width;
-    confettiCanvas.height = rect.height;
-    confettiCanvas.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:9999;`;
-    document.body.appendChild(confettiCanvas);
-
-    const myConfetti = this._confetti.create(confettiCanvas, { resize: false });
-
-    const count = 200;
-    const defaults = { origin: { y: 0.7 } };
-    const fire = (particleRatio: number, opts: object) => {
-      myConfetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
-    };
-
-    fire(0.25, { spread: 26, startVelocity: 55 });
-    fire(0.2, { spread: 60 });
-    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-    fire(0.1, { spread: 120, startVelocity: 45 });
-
     setTimeout(() => {
-      myConfetti.reset();
-      confettiCanvas.remove();
-      // COMMENT FOR TESTING PURPOSES
       this.saveTheDateShown = true;
       localStorage.setItem('saveTheDateShown', 'true');
       this.gameStarted = false;
       void this.showSaveTheDate();
-    }, 1500);
+
+      setTimeout(() => {
+        const rect = this.app.canvas.getBoundingClientRect();
+        const confettiCanvas = document.createElement('canvas');
+        confettiCanvas.width = rect.width;
+        confettiCanvas.height = rect.height;
+        confettiCanvas.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:9999;`;
+        document.body.appendChild(confettiCanvas);
+
+        const myConfetti = this._confetti.create(confettiCanvas, { resize: false });
+
+        const count = 200;
+        const defaults = { origin: { y: 0.7 } };
+        const fire = (particleRatio: number, opts: object) => {
+          myConfetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
+        };
+
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+      }, 100);
+    }, 600);
   }
 
   private async saveToLeaderboard(score: number): Promise<void> {
