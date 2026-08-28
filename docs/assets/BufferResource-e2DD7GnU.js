@@ -1,4 +1,4 @@
-import{z as _,B as y,D as c,F as S,H as g,J as m,E as I,K as p}from"./index-63oJFEdT.js";const M={name:"texture-bit",vertex:{header:`
+import{M as _,O as y,Q as c,U as S,W as g,X as m,q as I,Y as p}from"./index-mlQl9Faw.js";const O={name:"texture-bit",vertex:{header:`
 
         struct TextureUniforms {
             uTextureMatrix:mat3x3<f32>,
@@ -14,7 +14,7 @@ import{z as _,B as y,D as c,F as S,H as g,J as m,E as I,K as p}from"./index-63oJ
 
         `,main:`
             outColor = textureSample(uTexture, uSampler, vUV);
-        `}},O={name:"texture-bit",vertex:{header:`
+        `}},D={name:"texture-bit",vertex:{header:`
             uniform mat3 uTextureMatrix;
         `,main:`
             uv = (uTextureMatrix * vec3(uv, 1.0)).xy;
@@ -152,4 +152,4 @@ import{z as _,B as y,D as c,F as S,H as g,J as m,E as I,K as p}from"./index-63oJ
         data[offset + 1] = v[1];
         data[offset + 2] = v[2];
         data[offset + 3] = v[3];
-    `};class B extends I{constructor({buffer:t,offset:a,size:s}){super(),this.uid=p("buffer"),this._resourceType="bufferResource",this._touched=0,this._resourceId=p("resource"),this._bufferResource=!0,this.destroyed=!1,this.buffer=t,this.offset=a|0,this.size=s,this.buffer.on("change",this.onBufferChange,this)}onBufferChange(){this._resourceId=p("resource"),this.emit("change",this)}destroy(t=!1){this.destroyed=!0,t&&this.buffer.destroy(),this.emit("change",this),this.buffer=null,this.removeAllListeners()}}export{B,d as G,A as U,F as a,h as b,k as c,O as d,T as e,M as t,w as u};
+    `};class B extends I{constructor({buffer:t,offset:a,size:s}){super(),this.uid=p("buffer"),this._resourceType="bufferResource",this._touched=0,this._resourceId=p("resource"),this._bufferResource=!0,this.destroyed=!1,this.buffer=t,this.offset=a|0,this.size=s,this.buffer.on("change",this.onBufferChange,this)}onBufferChange(){this._resourceId=p("resource"),this.emit("change",this)}destroy(t=!1){this.destroyed=!0,t&&this.buffer.destroy(),this.emit("change",this),this.buffer=null,this.removeAllListeners()}}export{B,d as G,A as U,F as a,h as b,k as c,D as d,T as e,O as t,w as u};

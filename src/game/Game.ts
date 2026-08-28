@@ -11,11 +11,10 @@ import {
 import { createState, type GameState } from './state';
 import type { CoinManager } from './CoinManager';
 import type { PlatformManager } from './PlatformManager';
-import { SettingsScreen } from './SettingsScreen';
-import type { Character, Language } from './SettingsScreen';
+import type { SettingsScreen, Character, Language } from './SettingsScreen';
 import type { SaveTheDateScreen } from './SaveTheDateScreen';
-import { AccessScreen, type AccessResult } from './AccessScreen';
-import { ErrorScreen } from './ErrorScreen';
+import type { AccessScreen, AccessResult } from './AccessScreen';
+import type { ErrorScreen } from './ErrorScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
 import {
@@ -133,8 +132,12 @@ export class Game {
     container.appendChild(this.app.canvas);
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
-    await this.loadEssentialAssets();
-    await this.checkAccess();
+    void import('./SettingsScreen');
+    void import('./AccessScreen');
+    void import('./ErrorScreen');
+
+    const [, showScreen] = await Promise.all([this.loadEssentialAssets(), this.resolveAccess()]);
+    await showScreen();
 
     this.watchResize();
 
@@ -262,7 +265,7 @@ export class Game {
     source.start();
   }
 
-  private async checkAccess(): Promise<void> {
+  private async resolveAccess(): Promise<() => Promise<void>> {
     const query = new URLSearchParams(window.location.search);
     let query_parameter: 'c' | 'code' | null = null;
     if (query.has('c')) {
@@ -273,36 +276,30 @@ export class Game {
 
     if (query_parameter) {
       const result = await this.authenticate(query.get(query_parameter) ?? '');
-      if (result === 'success') {
-        this.showSettings();
-      } else {
-        this.showErrorScreen();
-      }
-      return;
+      return result === 'success' ? () => this.showSettings() : () => this.showErrorScreen();
     }
 
     const stored_code = sessionStorage.getItem('baxcus_login_code');
     if (stored_code) {
       const result = await this.authenticate(stored_code);
-      if (result === 'success') {
-        this.showSettings();
-        return;
-      }
-
-      this.showAccessScreen(result);
-      return;
+      return result === 'success'
+        ? () => this.showSettings()
+        : () => this.showAccessScreen(result);
     }
 
-    this.showAccessScreen();
+    return () => this.showAccessScreen();
   }
 
   private async authenticate(code: string): Promise<AccessResult> {
     const normalized_code = code.trim().toUpperCase();
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user`, {
+      const w = window as Window & { __earlyUserFetch?: Promise<Response> };
+      const earlyFetch = w.__earlyUserFetch;
+      w.__earlyUserFetch = undefined;
+      const response = await (earlyFetch ?? fetch(`${import.meta.env.VITE_API_BASE_URL}/user`, {
         headers: { Authorization: `Bearer ${normalized_code}` },
-      });
+      }));
       if (response.status === 401) {
         sessionStorage.removeItem('baxcus_login_code');
         return 'unauthorized';
@@ -328,7 +325,8 @@ export class Game {
     }
   }
 
-  private showAccessScreen(initial_result?: Exclude<AccessResult, 'success'>): void {
+  private async showAccessScreen(initial_result?: Exclude<AccessResult, 'success'>): Promise<void> {
+    const { AccessScreen } = await import('./AccessScreen');
     this.accessScreen = new AccessScreen(
       this.app,
       this.gameWidth,
@@ -338,7 +336,7 @@ export class Game {
         if (result === 'success') {
           this.accessScreen?.destroy();
           this.accessScreen = null;
-          this.showSettings();
+          void this.showSettings();
         }
         return result;
       },
@@ -346,7 +344,8 @@ export class Game {
     );
   }
 
-  private showErrorScreen(): void {
+  private async showErrorScreen(): Promise<void> {
+    const { ErrorScreen } = await import('./ErrorScreen');
     const fr = frTranslations as Record<string, string>;
     const en = enTranslations as Record<string, string>;
     this.errorScreen = new ErrorScreen(
@@ -854,8 +853,9 @@ export class Game {
   private pressDown(): void { this.state.isPress = true; }
   private pressUp(): void { this.state.isPress = false; }
 
-  private showSettings(defaultChar: Character | null = null): void {
+  private async showSettings(defaultChar: Character | null = null): Promise<void> {
     requestAnimationFrame(() => setTimeout(() => { this.loadGameAssets(); this.loadGameModules(); }, 0));
+    const { SettingsScreen } = await import('./SettingsScreen');
     this.settingsScreen = new SettingsScreen(
       this.app,
       {
@@ -925,7 +925,7 @@ export class Game {
     const char = localStorage.getItem('selectedCharacter') as Character | null;
     this.saveTheDateScreen?.destroy();
     this.saveTheDateScreen = null;
-    this.showSettings(char);
+    void this.showSettings(char);
   }
 
   private goToSettings(): void {
@@ -934,7 +934,7 @@ export class Game {
     this.runAnim.stop();
     for (const coin of this.state.coins) coin.stop();
     this.app.stage.removeChildren();
-    this.showSettings(this.selectedCharacter);
+    void this.showSettings(this.selectedCharacter);
   }
 
   private t(key: string): string {

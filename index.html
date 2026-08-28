@@ -16,6 +16,10 @@
     <meta property="og:image:width" content="1100">
     <meta property="og:image:height" content="1100">
     <meta property="og:locale" content="fr_FR"/>
+    <link rel="preload" href="/assets/background-settings.png" as="image">
+    <link rel="preload" href="/assets/background-settings-mobile.png" as="image">
+    <link rel="preload" href="/assets/luc-idle-resize.png" as="image">
+    <link rel="preload" href="/assets/shannon-idle-resize.png" as="image">
     <link rel="preload" href="/fonts/TypoWriter-Regular.otf" as="font" type="font/otf" crossorigin>
     <link rel="preload" href="/fonts/TypoWriter-Bold.otf" as="font" type="font/otf" crossorigin>
 <style>
@@ -106,6 +110,20 @@
     </style>
   </head>
   <body>
+    <script>
+      (function () {
+        var code = null;
+        var q = new URLSearchParams(location.search);
+        if (q.has('c')) code = q.get('c');
+        else if (q.has('code')) code = q.get('code');
+        else code = sessionStorage.getItem('baxcus_login_code');
+        if (code) {
+          window.__earlyUserFetch = fetch('%VITE_API_BASE_URL%/user', {
+            headers: { Authorization: 'Bearer ' + code.trim().toUpperCase() },
+          });
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
