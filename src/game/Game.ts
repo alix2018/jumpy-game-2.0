@@ -711,7 +711,7 @@ export class Game {
       localStorage.setItem('saveTheDateShown', 'true');
       this.gameStarted = false;
       void this.showSaveTheDate();
-    }, 2000);
+    }, 1500);
   }
 
   private async saveToLeaderboard(score: number): Promise<void> {
