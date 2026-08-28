@@ -826,7 +826,9 @@ export class Game {
     if (this.inputBound) return;
     this.inputBound = true;
     const canvas = this.app.canvas;
+    let lastTouchTime = 0;
     canvas.addEventListener('mousedown', (e) => {
+      if (Date.now() - lastTouchTime < 500) return;
       if (this.hitsSettings(e.clientX, e.clientY)) { this.goToSettings(); return; }
       if (this.hitsPause(e.clientX, e.clientY)) { if (Date.now() - this.focusGainedAt > 200) this.togglePause(); return; }
       if (this.hitsSound(e.clientX, e.clientY)) { this.toggleSound(); return; }
@@ -835,6 +837,7 @@ export class Game {
     canvas.addEventListener('mouseup', () => this.pressUp());
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      lastTouchTime = Date.now();
       const t = e.touches[0];
       if (t && this.hitsSettings(t.clientX, t.clientY)) { this.goToSettings(); return; }
       if (t && this.hitsPause(t.clientX, t.clientY)) { if (Date.now() - this.focusGainedAt > 200) this.togglePause(); return; }

@@ -68,15 +68,14 @@ et rejoue
 - [x] Redirect to high score after save the date? And pre-select previous character selected (button: continue instead of play again?)
 - [x] Show leaderboard page after losing
 - [x] Change settings to home icon
-
-- Add loader?
 - [x] Improve pre-fetch ts files
 - [x] Add real save the date
 - [x]Improve placeholder for leaderboard
 - [x] Laisser le code dans l'URL
 
 ## New
-- Pressing icons on safari mobile doesn't work
-- Smaller tablet (air tablet): bottom text overlap
-- Mode paysage sur tablet height too big (bigger v)
-- Sound doesn't work on Shannon's ipad, any browsers
+- Add loader?
+- [x] Pressing icons on safari mobile doesn't work
+- [ ] Smaller tablet (air tablet): bottom text overlap
+- [ ] Mode paysage sur tablet height too big (bigger v)
+- [x] Sound doesn't work on Shannon's ipad, any browsers
