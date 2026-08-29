@@ -142,6 +142,8 @@ export class SettingsScreen {
     this.container = new Container();
     const stored = localStorage.getItem('language');
     if (stored === 'en' || stored === 'fr') this.lang = stored;
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    if (urlLang === 'fr' || urlLang === 'en') this.lang = urlLang;
     if (defaultChar) this.char = defaultChar;
     app.stage.addChild(this.container);
     this.buildUI(W, H, onPlay);
@@ -170,7 +172,7 @@ export class SettingsScreen {
     bgSpr.height = H;
     c.addChild(bgSpr);
 
-    let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.05);
+    let y = isMobile ? Math.round(H * 0.06) : Math.round(H * 0.05);
 
     // ── Title sign ──
     const baseTitleH = isMobile ? xs(76) : xs(58);
@@ -333,7 +335,9 @@ export class SettingsScreen {
     // ── Character cards ──
     const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? isTablet
+        ? Math.min(Math.round(H * 0.19), maxCardW)
+        : Math.min(Math.floor((W - (isSmallScreen ? xs(310) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
@@ -451,7 +455,7 @@ export class SettingsScreen {
     const shadow = Math.max(xs(5), 3);
 
     const playY = isMobile
-      ? Math.round(H * (isSmallScreen ? 0.91 : 0.88)) - shadow - playH
+      ? Math.round(H * (isSmallScreen ? 0.91 : isTablet ? 0.91 : 0.88)) - shadow - playH
       : y + hintGapBefore;
 
     if (isMobile) {
@@ -610,7 +614,9 @@ export class SettingsScreen {
     // ── Character cards ──
     const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? isTablet
+        ? Math.min(Math.round(H * 0.19), maxCardW)
+        : Math.min(Math.floor((W - (isSmallScreen ? xs(310) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);

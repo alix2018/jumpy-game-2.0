@@ -70,12 +70,14 @@ et rejoue
 - [x] Change settings to home icon
 - [x] Improve pre-fetch ts files
 - [x] Add real save the date
-- [x]Improve placeholder for leaderboard
+- [x] Improve placeholder for leaderboard
 - [x] Laisser le code dans l'URL
 
 ## New
 - Add loader?
 - [x] Pressing icons on safari mobile doesn't work
+- [x] Sound doesn't work on Shannon's ipad, any browsers
 - [ ] Smaller tablet (air tablet): bottom text overlap
 - [ ] Mode paysage sur tablet height too big (bigger v)
-- [x] Sound doesn't work on Shannon's ipad, any browsers
+- [ ] Copier texte de lieu
+- [x] Génerer image background sans crochet
