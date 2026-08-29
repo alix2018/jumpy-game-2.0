@@ -19,7 +19,7 @@ export class SaveTheDateScreen {
     H: number,
     titleText: string,
     playAgainText: string,
-    bodyLines: Array<{ text?: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number; cards?: Array<{ icon: string; label: string; value: string }> }>,
+    bodyLines: Array<{ text?: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number; cards?: Array<{ icon: string; label: string; value: string; onClick?: () => void }> }>,
     onPlayAgain: () => void,
   ) {
     this.container = new Container();
@@ -54,7 +54,7 @@ export class SaveTheDateScreen {
     H: number,
     titleText: string,
     playAgainText: string,
-    bodyLines: Array<{ text?: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number; cards?: Array<{ icon: string; label: string; value: string }> }>,
+    bodyLines: Array<{ text?: string; icon?: string; extraSpacingAfter?: boolean; fixedSpacingAfter?: number; cards?: Array<{ icon: string; label: string; value: string; onClick?: () => void }> }>,
     onPlayAgain: () => void,
   ): void {
     const c = this.container;
@@ -118,7 +118,7 @@ export class SaveTheDateScreen {
     // Body text
     const paraFontSize = Math.max(isTablet ? 26 : isMobile ? 15 : 0, xs(14));
     const bulletFontSize = paraFontSize;
-    const paraGap = isMobile ? (isSmallScreen ? xs(0) : isTablet ? Math.round(H * 0.03) : xs(8)) : xs(20);
+    const paraGap = isMobile ? (isSmallScreen ? xs(0) : Math.round(H * 0.02)) : xs(20);
     const bulletGap = isMobile ? (isSmallScreen ? xs(7) : isTablet ? xs(14) : xs(4)) : xs(10);
 
     const paraStyle = new TextStyle({
@@ -147,7 +147,7 @@ export class SaveTheDateScreen {
       if (line.cards) {
         const maxCardH = renderInfoCards(c, line.cards, W, y, isMobile, isTablet, xs, isLargeMobile);
         y += maxCardH + (isLargeMobile ? xs(32) : paraGap);
-        if (isMobile && !isLargeMobile && !isTablet && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+        if (isSmallScreen && line.extraSpacingAfter) y += Math.round(H * 0.02);
         if (isMobile && !isLargeMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
       } else {
         const hasIcon = Boolean(line.icon);
@@ -167,14 +167,14 @@ export class SaveTheDateScreen {
           c.addChild(iconSpr);
           c.addChild(txt);
           y += txt.height + (isLargeMobile ? xs(26) : bulletGap);
-          if (isMobile && !isLargeMobile && !isTablet && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+          if (isSmallScreen && line.extraSpacingAfter) y += Math.round(H * 0.02);
           if (isMobile && !isLargeMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
         } else {
           txt.anchor.set(0.5, 0);
           txt.position.set(W / 2, y);
           c.addChild(txt);
           y += txt.height + (isLargeMobile ? xs(34) : paraGap);
-          if (isMobile && !isLargeMobile && !isTablet && line.extraSpacingAfter) y += Math.round(H * (isSmallScreen ? 0.02 : 0.04));
+          if (isSmallScreen && line.extraSpacingAfter) y += Math.round(H * 0.02);
           if (isMobile && !isLargeMobile && line.fixedSpacingAfter) y += line.fixedSpacingAfter;
         }
       }

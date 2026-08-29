@@ -74,10 +74,10 @@ et rejoue
 - [x] Laisser le code dans l'URL
 
 ## New
-- Add loader?
 - [x] Pressing icons on safari mobile doesn't work
 - [x] Sound doesn't work on Shannon's ipad, any browsers
-- [ ] Smaller tablet (air tablet): bottom text overlap
+- [x] Smaller tablet (air tablet): bottom text overlap
 - [ ] Mode paysage sur tablet height too big (bigger v)
-- [ ] Copier texte de lieu
+- [x] Copier texte de lieu => ouvrir un lien
+- [ ] Add loader
 - [x] Génerer image background sans crochet

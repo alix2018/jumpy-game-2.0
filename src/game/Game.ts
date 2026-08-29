@@ -938,7 +938,7 @@ export class Game {
       {
         cards: [
           { icon: '/assets/calendar-icon.png', label: tr['date'] ?? 'Date', value: tr['save_the_date_body_2'] ?? '' },
-          { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '' },
+          { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '', onClick: () => { window.open('https://maps.app.goo.gl/qo6rmvpCEhimQNx48', '_blank'); } },
         ],
         extraSpacingAfter: true,
       },

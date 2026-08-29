@@ -240,6 +240,22 @@ export class SettingsScreen {
       this._saveDateLocTxt.anchor.set(0, 0.5);
       this._saveDateLocTxt.position.set(extraIconSz + iconTextGap, 0);
       this._saveDateLocRow.addChild(this._saveDateLocTxt);
+      this._saveDateLocRow.eventMode = 'static';
+      this._saveDateLocRow.cursor = 'pointer';
+      const locUnderlineGfx = new Graphics();
+      this._saveDateLocRow.addChild(locUnderlineGfx);
+      this._saveDateLocRow.on('pointerover', () => {
+        if (!this._saveDateLocTxt) return;
+        locUnderlineGfx.clear();
+        locUnderlineGfx.rect(
+          extraIconSz + iconTextGap,
+          this._saveDateLocTxt.height / 2 + 1,
+          this._saveDateLocTxt.width,
+          1.5,
+        ).fill({ color: 0x5C3A1E });
+      });
+      this._saveDateLocRow.on('pointerout', () => { locUnderlineGfx.clear(); });
+      this._saveDateLocRow.on('pointerdown', () => { window.open('https://maps.app.goo.gl/qo6rmvpCEhimQNx48', '_blank'); });
       c.addChild(this._saveDateLocRow);
     }
 
