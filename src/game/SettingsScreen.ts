@@ -733,6 +733,7 @@ export class SettingsScreen {
       style: new TextStyle({
         fill: '#5C3A1E',
         fontFamily: 'TypoWriter',
+        fontWeight: 'bold',
         fontSize: infoFontSize,
         align: 'center',
         wordWrap: true,
