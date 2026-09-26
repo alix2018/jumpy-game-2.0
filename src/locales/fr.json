@@ -6,6 +6,7 @@
   "how_to_play_1": "Comment jouer: ",
   "how_to_play_2": "Touche ton écran ou appuie sur la barre espace… et surtout, ne tombe pas !",
   "play": "Jouer",
+  "relay": "Rejouer",
   "select_character": "Tu dois sélectionner un personnage pour pouvoir jouer",
   "lang_fr": "Français",
   "lang_en": "English",
@@ -20,7 +21,9 @@
   "location": "Lieu",
   "save_the_date_body_3": "Domein 't Eikennest Beerst, Diksmuide",
   "save_the_date_body_4": "Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées !",
+  "last_score": "🎯 Ton dernier score :",
   "leaderboard": "Meilleurs scores",
   "points": "points",
+  "play_again_info": "Rejoue pour battre ton score et pour défier les autres invités !",
   "code_error": "Tu n'as pas accès à ce contenu, utilise l'URL contenant le code qui t'a été envoyé․"
 }

@@ -692,7 +692,7 @@ export class Game {
         void this.saveToLeaderboard(Math.round(s.score));
       }
       if (this.saveTheDateShown) {
-        this.goToSettings();
+        this.goToSettings(Math.round(s.score));
       } else {
         s.score = 0;
         s.currentSpeed = s.baseSpeed;
@@ -737,7 +737,7 @@ export class Game {
         fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
         fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
         fire(0.1, { spread: 120, startVelocity: 45 });
-      }, 100);
+      }, 800);
     }, 600);
   }
 
@@ -888,7 +888,7 @@ export class Game {
   private pressDown(): void { this.state.isPress = true; }
   private pressUp(): void { this.state.isPress = false; }
 
-  private async showSettings(defaultChar: Character | null = null): Promise<void> {
+  private async showSettings(defaultChar: Character | null = null, userIsPlaying: boolean = false, lastScore: number = 0): Promise<void> {
     await this.scoreSavePromise;
 
     requestAnimationFrame(() => setTimeout(() => { this.loadGameAssets(); this.loadGameModules(); }, 0));
@@ -905,6 +905,8 @@ export class Game {
       this.saveTheDateShown,
       defaultChar,
       this.highScoreList,
+      userIsPlaying,
+      lastScore,
     );
   }
 
@@ -962,13 +964,13 @@ export class Game {
     void this.showSettings(char);
   }
 
-  private goToSettings(): void {
+  private goToSettings(lastScore: number = 0): void {
     this.gameStarted = false;
     this.isPaused = false;
     this.runAnim.stop();
     for (const coin of this.state.coins) coin.stop();
     this.app.stage.removeChildren();
-    void this.showSettings(this.selectedCharacter);
+    void this.showSettings(this.selectedCharacter, lastScore > 0, lastScore);
   }
 
   private t(key: string): string {

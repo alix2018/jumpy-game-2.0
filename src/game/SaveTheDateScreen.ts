@@ -118,7 +118,7 @@ export class SaveTheDateScreen {
     // Body text
     const paraFontSize = Math.max(isTablet ? 26 : isMobile ? 15 : 0, xs(14));
     const bulletFontSize = paraFontSize;
-    const paraGap = isMobile ? (isSmallScreen ? xs(0) : Math.round(H * 0.02)) : xs(20);
+    const paraGap = isMobile ? (isSmallScreen ? xs(0) : Math.round(H * 0.02)) : xs(10);
     const bulletGap = isMobile ? (isSmallScreen ? xs(7) : isTablet ? xs(14) : xs(4)) : xs(10);
 
     const paraStyle = new TextStyle({
