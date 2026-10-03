@@ -622,7 +622,7 @@ export class SettingsScreen {
         style: nameStyle,
       });
       nameTxt.anchor.set(0, 0.5);
-      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2 - 2);
+      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2 - 1);
       c.addChild(nameTxt);
 
       const scoreTxt = new Text({
@@ -630,7 +630,7 @@ export class SettingsScreen {
         style: scoreStyle,
       });
       scoreTxt.anchor.set(1, 0.5);
-      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2 - 2);
+      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2 - 1);
       c.addChild(scoreTxt);
     }
 
