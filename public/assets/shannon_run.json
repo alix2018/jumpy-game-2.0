@@ -130,23 +130,14 @@
   "animations": {
     "shannon_run": [
       "shannon_run_01.png",
-      "shannon_run_02.png",
       "shannon_run_03.png",
-      "shannon_run_04.png",
       "shannon_run_05.png",
-      "shannon_run_06.png",
       "shannon_run_07.png",
-      "shannon_run_08.png",
       "shannon_run_09.png",
-      "shannon_run_10.png",
       "shannon_run_11.png",
-      "shannon_run_12.png",
       "shannon_run_13.png",
-      "shannon_run_14.png",
       "shannon_run_15.png",
-      "shannon_run_16.png",
-      "shannon_run_17.png",
-      "shannon_run_18.png"
+      "shannon_run_17.png"
     ]
   },
   "meta": {
