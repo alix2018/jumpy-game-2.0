@@ -562,7 +562,7 @@ export class SettingsScreen {
     const rowH = Math.max(isTablet ? 28 : 20, xs(18));
     const rowGap = xs(3);
     const badgeSize = rowH;
-    const badgeGap = xs(5);
+    const badgeGap = xs(8);
     const innerW = boardW - frameW * 2;
     const colW = innerW - boardPadX * 2;
     const lbTitleFontSize = Math.max(isTablet ? 22 : 15, xs(15));
@@ -593,12 +593,6 @@ export class SettingsScreen {
     this._leaderboardTitleTxt.position.set(W / 2, y + frameW + boardPadY + Math.round(lbTitleH / 2));
     c.addChild(this._leaderboardTitleTxt);
 
-    const rankStyle = new TextStyle({
-      fill: '#ffffff',
-      fontFamily: 'TypoWriter',
-      fontSize: Math.max(isTablet ? 16 : 11, xs(10)),
-      fontWeight: 'bold',
-    });
     const nameStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'TypoWriter',
@@ -617,22 +611,18 @@ export class SettingsScreen {
       const entry = topScores[row] ?? null;
       const rowY = rowsStartY + row * (rowH + rowGap);
 
-      const badge = new Graphics();
-      badge.circle(badgeSize / 2, badgeSize / 2, badgeSize / 2).fill({ color: 0x4A7C3F });
-      badge.position.set(colInnerX, rowY);
-      c.addChild(badge);
-
-      const rankTxt = new Text({ text: String(row + 1), style: rankStyle });
-      rankTxt.anchor.set(0.5);
-      rankTxt.position.set(colInnerX + badgeSize / 2, rowY + badgeSize / 2);
-      c.addChild(rankTxt);
+      const rankSpr = new Sprite(Texture.from(`/assets/number-${row + 1}-green.png`));
+      rankSpr.width = badgeSize;
+      rankSpr.height = badgeSize;
+      rankSpr.position.set(colInnerX, rowY);
+      c.addChild(rankSpr);
 
       const nameTxt = new Text({
         text: entry ? entry.pseudo : '-',
         style: nameStyle,
       });
       nameTxt.anchor.set(0, 0.5);
-      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2);
+      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2 - 2);
       c.addChild(nameTxt);
 
       const scoreTxt = new Text({
@@ -640,7 +630,7 @@ export class SettingsScreen {
         style: scoreStyle,
       });
       scoreTxt.anchor.set(1, 0.5);
-      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2);
+      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2 - 2);
       c.addChild(scoreTxt);
     }
 

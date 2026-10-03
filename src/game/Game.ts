@@ -163,6 +163,11 @@ export class Game {
       '/assets/shannon-idle-resize.png',
       '/assets/calendar-icon.png',
       '/assets/location-icon.png',
+      '/assets/number-1-green.png',
+      '/assets/number-2-green.png',
+      '/assets/number-3-green.png',
+      '/assets/number-4-green.png',
+      '/assets/number-5-green.png',
     ]);
     // Load fonts via Assets so HTMLText can embed them in its SVG context
     await Assets.load([
