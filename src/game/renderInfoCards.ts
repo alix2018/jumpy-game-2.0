@@ -4,6 +4,7 @@ export interface InfoCard {
   icon: string;
   label: string;
   value: string;
+  onClick?: () => void;
 }
 
 export function renderInfoCards(
@@ -85,6 +86,21 @@ export function renderInfoCards(
 
     valueTxt.position.set(cardX + cardXOffset + cardPadX, cardY + cardPadY + rowH + labelValueGap);
     c.addChild(valueTxt);
+
+    if (cardData.onClick) {
+      card.eventMode = 'static';
+      card.cursor = 'pointer';
+      const underlineGfx = new Graphics();
+      underlineGfx.visible = false;
+      c.addChild(underlineGfx);
+      card.on('pointerover', () => {
+        underlineGfx.clear();
+        underlineGfx.rect(valueTxt.x, valueTxt.y + valueTxt.height, valueTxt.width, 1.5).fill({ color: 0x7A5C3A });
+        underlineGfx.visible = true;
+      });
+      card.on('pointerout', () => { underlineGfx.visible = false; });
+      card.on('pointerdown', cardData.onClick);
+    }
   }
 
   return stackVertically

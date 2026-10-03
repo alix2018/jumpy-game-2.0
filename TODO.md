@@ -35,7 +35,7 @@ _
 
 Préparez vos valises pour un week-end rempli d’amour, de rires et de célébration!
 - Date: 1 au 3 octobre 2027
-- ⁠Lieu: B&B Domaine ‘t Eikennest Beerst, Diskmuide
+- ⁠Lieu: B&B Domein ‘t Eikennest Beerst, Diskmuide
 Nous avons hâte de célébrer cette journée spéciale et de passer un week-end inoubliable entourés de nos personnes préférées!
 
 Remplissez votre nom ci-dessous pour continuer à jouer et rentrer dans la compétition avec nos autres invités.
@@ -58,11 +58,26 @@ Text Screen Un Mariage Baxcus
 - [x] Page de base par défaut après save the date: choix du perso, le classement + titre avec lieu et date
 et rejoue
 - [x] Augmenter vitesse plus rapidement
-- [ ] Audios custom pour chaque perso
+- [x] Audios custom pour chaque perso
 - [x] baxcus.com avec blason familial: Baxcus wedding - Save the date
 - [x] Afficher top 5: nom des joueurs et leurs points
-- [ ] Ajouter ligne high score
+- [x] Ajouter ligne high score
 - [ ] Fixer les animations des personnages
 
-Plus valide:
-- [ ] Demander pseudo si pas encore sauvegardé après save the date et si la personne rafraîchit
+## To check
+- [x] Redirect to high score after save the date? And pre-select previous character selected (button: continue instead of play again?)
+- [x] Show leaderboard page after losing
+- [x] Change settings to home icon
+- [x] Improve pre-fetch ts files
+- [x] Add real save the date
+- [x] Improve placeholder for leaderboard
+- [x] Laisser le code dans l'URL
+
+## New
+- [x] Pressing icons on safari mobile doesn't work
+- [x] Sound doesn't work on Shannon's ipad, any browsers
+- [x] Smaller tablet (air tablet): bottom text overlap
+- [ ] Mode paysage sur tablet height too big (bigger v)
+- [x] Copier texte de lieu => ouvrir un lien
+- [ ] Add loader
+- [x] Génerer image background sans crochet

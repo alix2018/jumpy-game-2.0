@@ -103,7 +103,7 @@ export class SettingsScreen {
 
   private sign!: Graphics;
   private titleTxt!: Text;
-  private _signParams!: { padX: number; h: number; r: number; y: number; borderW: number; W: number; titleH?: number; fixedW?: number };
+  private _signParams!: { padX: number; h: number; fullH: number; baseH: number; padV: number; r: number; y: number; borderW: number; W: number; titleH?: number; fixedW?: number };
 
   private langLbl: Text | null = null;
   private _rulesTxt: HTMLText | null = null;
@@ -113,6 +113,8 @@ export class SettingsScreen {
   private _saveDateCalRow: Container | null = null;
   private _saveDateLocRow: Container | null = null;
   private _leaderboardTitleTxt: Text | null = null;
+  private _playAgainInfoTxt: Text | null = null;
+  private _scoreTxt: Text | null = null;
   private _howCont: Container | null = null;
   private _howTxt1: Text | null = null;
   private _howTxt2: Text | null = null;
@@ -128,6 +130,8 @@ export class SettingsScreen {
   private _W = 0;
   private _tipParams = { padX: 0, padY: 0, r: 0 };
   private _hintY = 0;
+  private userIsPlaying = false;
+  private lastScore = 0;
 
   constructor(
     app: Application,
@@ -137,10 +141,17 @@ export class SettingsScreen {
     onPlay: (char: Character, lang: Language) => void,
     private readonly saveTheDateShown: boolean = false,
     defaultChar: Character | null = null,
+    private readonly highScoreList: Array<{ pseudo: string; highScore: number }> = [],
+    userIsPlaying: boolean = false,
+    lastScore: number = 0,
   ) {
     this.container = new Container();
+    this.userIsPlaying = saveTheDateShown ? userIsPlaying : false;
+    this.lastScore = lastScore;
     const stored = localStorage.getItem('language');
     if (stored === 'en' || stored === 'fr') this.lang = stored;
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    if (urlLang === 'fr' || urlLang === 'en') this.lang = urlLang;
     if (defaultChar) this.char = defaultChar;
     app.stage.addChild(this.container);
     this.buildUI(W, H, onPlay);
@@ -169,7 +180,7 @@ export class SettingsScreen {
     bgSpr.height = H;
     c.addChild(bgSpr);
 
-    let y = isMobile ? Math.round(H * 0.08) : Math.round(H * 0.05);
+    let y = isMobile ? Math.round(H * 0.06) : Math.round(H * 0.03);
 
     // ── Title sign ──
     const baseTitleH = isMobile ? xs(76) : xs(58);
@@ -179,8 +190,8 @@ export class SettingsScreen {
 
     const extraIconSz = this.saveTheDateShown ? Math.max(isTablet ? 22 : 16, xs(16)) : 0;
     const extraLineH = this.saveTheDateShown ? extraIconSz + xs(2) : 0;
-    const extraRowGap = this.saveTheDateShown ? xs(7) : 0;
-    const signExtraH = this.saveTheDateShown ? extraLineH * 2 + extraRowGap + xs(5) : 0;
+    const extraRowGap = this.saveTheDateShown ? (isMobile ? xs(7) : xs(3)) : 0;
+    const signExtraH = this.saveTheDateShown ? extraLineH * 2 + extraRowGap + (isMobile ? xs(5) : xs(2)) : 0;
     const signH = baseTitleH + signExtraH;
     this.titleTxt = new Text({
       text: '',
@@ -190,14 +201,32 @@ export class SettingsScreen {
         fontSize: Math.max(isTablet ? 32 : isMobile ? 18 : 0, xs(26)),
         fontWeight: 'bold',
         letterSpacing: xs(0),
+        align: 'center',
       }),
     });
     this.titleTxt.anchor.set(0.5);
+    this.titleTxt.text = this.t('title');
+    const signPadV = Math.max(baseTitleH - this.titleTxt.height, xs(8));
+    this.titleTxt.text = '';
 
-    this._signParams = { padX: signPadX, h: signH, r: signR, y, borderW: signBorderW, W, titleH: baseTitleH };
+    this._signParams = { padX: signPadX, h: signH, fullH: signH, baseH: baseTitleH, padV: signPadV, r: signR, y, borderW: signBorderW, W, titleH: baseTitleH };
+    this._scoreTxt = new Text({
+      text: '',
+      style: new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'TypoWriter',
+        fontWeight: 'bold',
+        fontSize: Math.max(isTablet ? 40 : isMobile ? 24 : 0, xs(34)),
+        align: 'center',
+      }),
+    });
+    this._scoreTxt.anchor.set(0.5);
+    this._scoreTxt.visible = false;
+
     this.sign = new Graphics();
     c.addChild(this.sign);
     c.addChild(this.titleTxt);
+    c.addChild(this._scoreTxt);
 
     if (this.saveTheDateShown) {
       const signTitleY = y;
@@ -208,7 +237,7 @@ export class SettingsScreen {
         fontSize: Math.max(isTablet ? 18 : 13, xs(14)),
         fontWeight: 'bold',
       });
-      const line1CenterY = signTitleY + baseTitleH - xs(8) + extraLineH / 2;
+      const line1CenterY = signTitleY + baseTitleH - (isMobile ? xs(8) : xs(12)) + extraLineH / 2;
       const line2CenterY = line1CenterY + extraLineH + extraRowGap;
 
       this._saveDateCalRow = new Container();
@@ -237,10 +266,26 @@ export class SettingsScreen {
       this._saveDateLocTxt.anchor.set(0, 0.5);
       this._saveDateLocTxt.position.set(extraIconSz + iconTextGap, 0);
       this._saveDateLocRow.addChild(this._saveDateLocTxt);
+      this._saveDateLocRow.eventMode = 'static';
+      this._saveDateLocRow.cursor = 'pointer';
+      const locUnderlineGfx = new Graphics();
+      this._saveDateLocRow.addChild(locUnderlineGfx);
+      this._saveDateLocRow.on('pointerover', () => {
+        if (!this._saveDateLocTxt) return;
+        locUnderlineGfx.clear();
+        locUnderlineGfx.rect(
+          extraIconSz + iconTextGap,
+          this._saveDateLocTxt.height / 2 + 1,
+          this._saveDateLocTxt.width,
+          1.5,
+        ).fill({ color: 0x5C3A1E });
+      });
+      this._saveDateLocRow.on('pointerout', () => { locUnderlineGfx.clear(); });
+      this._saveDateLocRow.on('pointerdown', () => { window.open('https://maps.app.goo.gl/qo6rmvpCEhimQNx48', '_blank'); });
       c.addChild(this._saveDateLocRow);
     }
 
-    y += signH + (isMobile ? (isTablet ? 20 : 14) : xs(20));
+    y += signH + (isMobile ? (isTablet ? 20 : (isSmallScreen ? 14 : Math.round(H * 0.025))) : xs(20));
 
     if (this.saveTheDateShown) {
       this.buildRevealedSection(c, W, H, y, xs, isMobile, isTablet, isSmallScreen, onPlay);
@@ -319,7 +364,7 @@ export class SettingsScreen {
     this._rulesTxt.position.set(W / 2, y);
     c.addChild(this._rulesTxt);
 
-    y += this._rulesTxt.height + (isMobile ? (isSmallScreen ? 8 : isTablet ? 24 : 14) : xs(16));
+    y += this._rulesTxt.height + (isMobile ? (isSmallScreen ? 8 : isTablet ? 24 : Math.round(H * 0.04)) : xs(16));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -332,7 +377,9 @@ export class SettingsScreen {
     // ── Character cards ──
     const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? isTablet
+        ? Math.min(Math.round(H * 0.19), maxCardW)
+        : Math.min(Math.floor((W - (isSmallScreen ? xs(310) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
@@ -421,7 +468,7 @@ export class SettingsScreen {
     const tipPadY = xs(7) + (isMobile ? 2 : 0);
     this._W = W;
     this._tipParams = { padX: tipPadX, padY: tipPadY, r: cornerR };
-    const hintGapBefore = isMobile ? (isSmallScreen ? xs(14) : xs(28)) : xs(40);
+    const hintGapBefore = isMobile ? (isSmallScreen ? xs(14) : xs(28)) : xs(58);
     const hintGapAfter = isMobile ? xs(10) : xs(4);
 
     const tooltipContainer = new Container();
@@ -450,7 +497,7 @@ export class SettingsScreen {
     const shadow = Math.max(xs(5), 3);
 
     const playY = isMobile
-      ? Math.round(H * (isSmallScreen ? 0.91 : 0.88)) - shadow - playH
+      ? Math.round(H * (isSmallScreen ? 0.91 : isTablet ? 0.91 : 0.88)) - shadow - playH
       : y + hintGapBefore;
 
     if (isMobile) {
@@ -506,13 +553,7 @@ export class SettingsScreen {
     });
 
     // ── Leaderboard ──
-    const topScores: Array<{ pseudo: string; highScore: number }> = [
-      { pseudo: 'Shannon', highScore: 4200 },
-      { pseudo: 'Luc',     highScore: 4200 },
-      { pseudo: 'Stephanie', highScore: 3800 },
-      { pseudo: 'Evan',    highScore: 1000 },
-      { pseudo: 'Ana',     highScore: 550 },
-    ];
+    const topScores = this.highScoreList;
     const boardW = Math.min(isTablet ? 450 : isMobile ? 270 : 350, W - xs(24));
     const boardX = Math.round((W - boardW) / 2);
     const frameW = xs(2);
@@ -521,7 +562,7 @@ export class SettingsScreen {
     const rowH = Math.max(isTablet ? 28 : 20, xs(18));
     const rowGap = xs(3);
     const badgeSize = rowH;
-    const badgeGap = xs(5);
+    const badgeGap = xs(8);
     const innerW = boardW - frameW * 2;
     const colW = innerW - boardPadX * 2;
     const lbTitleFontSize = Math.max(isTablet ? 22 : 15, xs(15));
@@ -552,12 +593,6 @@ export class SettingsScreen {
     this._leaderboardTitleTxt.position.set(W / 2, y + frameW + boardPadY + Math.round(lbTitleH / 2));
     c.addChild(this._leaderboardTitleTxt);
 
-    const rankStyle = new TextStyle({
-      fill: '#ffffff',
-      fontFamily: 'TypoWriter',
-      fontSize: Math.max(isTablet ? 16 : 11, xs(10)),
-      fontWeight: 'bold',
-    });
     const nameStyle = new TextStyle({
       fill: '#5C3A1E',
       fontFamily: 'TypoWriter',
@@ -576,34 +611,30 @@ export class SettingsScreen {
       const entry = topScores[row] ?? null;
       const rowY = rowsStartY + row * (rowH + rowGap);
 
-      const badge = new Graphics();
-      badge.circle(badgeSize / 2, badgeSize / 2, badgeSize / 2).fill({ color: 0x4A7C3F });
-      badge.position.set(colInnerX, rowY);
-      c.addChild(badge);
-
-      const rankTxt = new Text({ text: String(row + 1), style: rankStyle });
-      rankTxt.anchor.set(0.5);
-      rankTxt.position.set(colInnerX + badgeSize / 2, rowY + badgeSize / 2);
-      c.addChild(rankTxt);
+      const rankSpr = new Sprite(Texture.from(`/assets/number-${row + 1}-green.png`));
+      rankSpr.width = badgeSize;
+      rankSpr.height = badgeSize;
+      rankSpr.position.set(colInnerX, rowY);
+      c.addChild(rankSpr);
 
       const nameTxt = new Text({
-        text: entry ? entry.pseudo : '- -',
+        text: entry ? entry.pseudo : '-',
         style: nameStyle,
       });
       nameTxt.anchor.set(0, 0.5);
-      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2);
+      nameTxt.position.set(colInnerX + badgeSize + badgeGap, rowY + rowH / 2 - 2);
       c.addChild(nameTxt);
 
       const scoreTxt = new Text({
-        text: entry ? `${entry.highScore} ${this.t('points')}` : '',
+        text: entry ? `${entry.highScore} ${this.t('points')}` : '-',
         style: scoreStyle,
       });
       scoreTxt.anchor.set(1, 0.5);
-      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2);
+      scoreTxt.position.set(colInnerX + colW - xs(2), rowY + rowH / 2 - 2);
       c.addChild(scoreTxt);
     }
 
-    y += boardH + (isMobile ? xs(28) : xs(12));
+    y += boardH + (isMobile ? (isSmallScreen ? xs(28) : Math.round(H * 0.04)) : xs(12));
 
     // ── Character label ──
     this.charLbl = new Text({ text: '', style: secStyle });
@@ -615,7 +646,9 @@ export class SettingsScreen {
     // ── Character cards ──
     const maxCardW = Math.floor((W - xs(60)) / 2);
     const cardW = isMobile
-      ? Math.min(Math.floor((W - (isSmallScreen ? xs(310) : isTablet ? xs(360) : xs(200))) / 2), maxCardW)
+      ? isTablet
+        ? Math.min(Math.round(H * 0.19), maxCardW)
+        : Math.min(Math.floor((W - (isSmallScreen ? xs(310) : xs(200))) / 2), maxCardW)
       : Math.min(Math.max(xs(130), 80), maxCardW);
     const cardH = Math.round(cardW * 1.08);
     const cardGap = xs(36);
@@ -670,15 +703,36 @@ export class SettingsScreen {
     this._W = W;
     this._tipParams = { padX: tipPadX, padY: tipPadY, r: cornerR };
 
-    // ── Play button ──
+    // ── Play again info text + button ──
     const playH = Math.max(isSmallScreen ? 44 : isTablet ? 84 : 54, xs(isSmallScreen ? 44 : 54));
     const playW = Math.min(Math.max(isTablet ? 300 : 200, xs(200)), W - xs(60));
     const shadow = Math.max(xs(5), 3);
+    const infoWrapW = isMobile ? W * 0.92 : W * 0.90;
+    const infoFontSize = Math.max(isTablet ? 22 : 13, xs(13));
+    const infoGap = isMobile ? Math.max(xs(24), 20) : xs(8);
+    const hintGapBefore = isMobile ? (isSmallScreen ? xs(14) : xs(28)) : xs(40);
     const hintGapAfter = isMobile ? xs(10) : xs(4);
 
+    // Desktop: same playY as standard layout. Mobile: pinned near bottom.
     const playY = isMobile
-      ? Math.round(H * (isSmallScreen ? 0.91 : 0.88)) - shadow - playH
-      : y + xs(20);
+      ? Math.round(H * (isSmallScreen ? 0.93 : 0.91)) - shadow - playH
+      : y + xs(44);
+
+    this._playAgainInfoTxt = new Text({
+      text: this.t('play_again_info'),
+      style: new TextStyle({
+        fill: '#5C3A1E',
+        fontFamily: 'TypoWriter',
+        fontWeight: 'bold',
+        fontSize: infoFontSize,
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: infoWrapW,
+      }),
+    });
+    this._playAgainInfoTxt.anchor.set(0.5, 1);
+    this._playAgainInfoTxt.position.set(W / 2, playY - infoGap);
+    c.addChild(this._playAgainInfoTxt);
 
     this._hintY = playY + playH + shadow + hintGapAfter;
 
@@ -724,18 +778,45 @@ export class SettingsScreen {
 
   private updateSign(): void {
     const { padX, h, r, y, borderW, W, titleH, fixedW } = this._signParams;
-    const w = fixedW !== undefined ? fixedW : Math.min(this.titleTxt.width + padX * 2, W - borderW * 2);
+    const contentW = this._scoreTxt?.visible
+      ? Math.max(this.titleTxt.width, this._scoreTxt.width)
+      : this.titleTxt.width;
+    const w = fixedW !== undefined ? fixedW : Math.min(contentW + padX * 2, W - borderW * 2);
     const x = Math.round((W - w) / 2);
     this.sign.clear();
     this.sign.roundRect(borderW, borderW, w, h, r).fill({ color: 0xBCA882, alpha: 0.5 });
     this.sign.roundRect(0, 0, w, h, r).fill({ color: 0xF5E6C0 });
     this.sign.roundRect(0, 0, w, h, r).stroke({ color: 0xBCA882, width: borderW });
     this.sign.position.set(x, y);
-    this.titleTxt.position.set(W / 2, y + Math.round((titleH ?? h) / 2));
+    if (this._scoreTxt?.visible) {
+      const lineGap = Math.round(this._signParams.padV * 0.3);
+      const blockH = this.titleTxt.height + lineGap + this._scoreTxt.height;
+      const blockTop = y + Math.round((h - blockH) / 2);
+      this.titleTxt.position.set(W / 2, blockTop + Math.round(this.titleTxt.height / 2));
+      this._scoreTxt.position.set(W / 2, blockTop + this.titleTxt.height + lineGap + Math.round(this._scoreTxt.height / 2));
+    } else {
+      this.titleTxt.position.set(W / 2, y + Math.round((titleH ?? h) / 2));
+    }
   }
 
   private refresh(): void {
-    this.titleTxt.text = this.t('title');
+    if (this.saveTheDateShown && this.userIsPlaying) {
+      this.titleTxt.text = this.t('last_score');
+      if (this._scoreTxt) {
+        this._scoreTxt.text = `${this.lastScore} ${this.t('points')}`;
+        this._scoreTxt.visible = true;
+      }
+      const lineGap = Math.round(this._signParams.padV * 0.3);
+      const blockH = this.titleTxt.height + lineGap + (this._scoreTxt?.height ?? 0);
+      const newH = blockH + this._signParams.padV;
+      this._signParams.h = newH;
+      this._signParams.titleH = newH;
+    } else {
+      this._signParams.h = this._signParams.fullH;
+      this._signParams.titleH = this._signParams.baseH;
+      this.titleTxt.text = this.t('title');
+      if (this._scoreTxt) this._scoreTxt.visible = false;
+    }
     this.updateSign();
     this.tooltip.txt.text = this.t('select_character');
     this.redrawTooltip();
@@ -749,13 +830,18 @@ export class SettingsScreen {
     if (this._saveDateCalTxt && this._saveDateCalRow) {
       this._saveDateCalTxt.text = this.t('save_the_date_body_2');
       this._saveDateCalRow.x = Math.round(this._W / 2 - this._saveDateCalRow.width / 2);
+      this._saveDateCalRow.visible = !this.userIsPlaying;
     }
     if (this._saveDateLocTxt && this._saveDateLocRow) {
       this._saveDateLocTxt.text = this.t('save_the_date_body_3');
       this._saveDateLocRow.x = Math.round(this._W / 2 - this._saveDateLocRow.width / 2);
+      this._saveDateLocRow.visible = !this.userIsPlaying;
     }
     if (this._leaderboardTitleTxt) this._leaderboardTitleTxt.text = this.t('leaderboard');
-    this.playTxt.text = this.t('play');
+    if (this._playAgainInfoTxt) {
+      this._playAgainInfoTxt.visible = this.saveTheDateShown && !this.userIsPlaying;
+    }
+    this.playTxt.text = this.saveTheDateShown ? this.t('relay') : this.t('play');
     if (this.frBtn) this.frBtn.selected = this.lang === 'fr';
     if (this.enBtn) this.enBtn.selected = this.lang === 'en';
     this.lucCard.selected = this.char === 'luc';

@@ -1,4 +1,3 @@
-import confetti from 'canvas-confetti';
 import {
   Application,
   Assets,
@@ -10,12 +9,12 @@ import {
   TilingSprite,
 } from 'pixi.js';
 import { createState, type GameState } from './state';
-import { CoinManager } from './CoinManager';
-import { PlatformManager } from './PlatformManager';
-import { hitPlatform } from './Collisions';
-import { SettingsScreen } from './SettingsScreen';
-import type { Character, Language } from './SettingsScreen';
-import { SaveTheDateScreen } from './SaveTheDateScreen';
+import type { CoinManager } from './CoinManager';
+import type { PlatformManager } from './PlatformManager';
+import type { SettingsScreen, Character, Language } from './SettingsScreen';
+import type { SaveTheDateScreen } from './SaveTheDateScreen';
+import type { AccessScreen, AccessResult } from './AccessScreen';
+import type { ErrorScreen } from './ErrorScreen';
 import frTranslations from '../locales/fr.json';
 import enTranslations from '../locales/en.json';
 import {
@@ -32,6 +31,19 @@ import {
   FALL_DEATH_Y,
   SAVE_THE_DATE_SCORE_THRESHOLD,
 } from './constants';
+
+interface SoundEffect {
+  buffer: AudioBuffer;
+  playback_rate: number;
+}
+
+interface PlaybackAudioSession {
+   type: 'auto' | 'playback';
+}
+
+interface NavigatorWithAudioSession extends Navigator {
+   audioSession?: PlaybackAudioSession;
+}
 
 export class Game {
   private app!: Application;
@@ -53,10 +65,13 @@ export class Game {
   private runAnim!: AnimatedSprite;
   private textScore!: Text;
   private textHighScore!: Text;
+  private textWeddingHighScore!: Text;
   private platformPool!: Sprite[];
 
-  private jumpSounds!: Record<Character, HTMLAudioElement>;
-  private fallSounds!: Record<Character, HTMLAudioElement>;
+  private audioContext: AudioContext | null = null;
+  private audioGain: GainNode | null = null;
+  private jumpSounds!: Record<Character, SoundEffect>;
+  private fallSounds!: Record<Character, SoundEffect>;
   private fallSoundPlayed = false;
   private lastDisplayedScore = -1;
   private lastDisplayedHighScore = -1;
@@ -66,6 +81,20 @@ export class Game {
   private soundOffTexture!: Texture;
   private soundOnTexture!: Texture;
   private soundIconY!: number;
+
+  private gameAssetsPromise: Promise<void> | null = null;
+  private gameModulesPromise: Promise<void> | null = null;
+  private soundRawDataPromise: Promise<ArrayBuffer[]> | null = null;
+  private soundsDecoded = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _CoinManagerCtor!: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _PlatformManagerCtor!: any;
+  private _hitPlatform!: (player: Sprite, platform: Sprite) => boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _confetti!: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _SaveTheDateScreenCtor!: any;
 
   private isPaused = false;
 
@@ -77,14 +106,23 @@ export class Game {
   private settingsIconSprite!: Sprite;
   private inputBound = false;
   private focusBound = false;
+  private focusGainedAt = 0;
 
   private selectedCharacter: Character = 'shannon';
   private selectedLanguage: Language = 'fr';
   private gameStarted = false;
   private saveTheDateShown = localStorage.getItem('saveTheDateShown') === 'true';
   private confettiTriggered = false;
+  private userCode: string | null = null;
+  private userPseudo = '';
+  private sessionHighScore = 0;
+  private weddingTopScore = 0;
+  private highScoreList: Array<{ pseudo: string; highScore: number }> = [];
+  private scoreSavePromise: Promise<void> = Promise.resolve();
   private settingsScreen: SettingsScreen | null = null;
   private saveTheDateScreen: SaveTheDateScreen | null = null;
+  private accessScreen: AccessScreen | null = null;
+  private errorScreen: ErrorScreen | null = null;
 
   async init(container: HTMLElement): Promise<void> {
     this.isPortrait = window.innerHeight > window.innerWidth;
@@ -105,52 +143,249 @@ export class Game {
     container.appendChild(this.app.canvas);
     this.app.canvas.style.cssText = `touch-action: none; cursor: inherit; width: min(100%, calc(100vh * ${this.gameWidth} / ${this.gameHeight})); height: auto;`;
 
-    await this.loadAssets();
-    this.showSettings();
+    void import('./SettingsScreen');
+    void import('./AccessScreen');
+    void import('./ErrorScreen');
+
+    const [, showScreen] = await Promise.all([this.loadEssentialAssets(), this.resolveAccess()]);
+    await showScreen();
+
     this.watchResize();
 
     this.app.ticker.add((ticker) => this.tick(ticker.deltaTime));
   }
 
-  private async loadAssets(): Promise<void> {
+  private async loadEssentialAssets(): Promise<void> {
     await Assets.load([
       '/assets/background-settings.png',
       '/assets/background-settings-mobile.png',
-      '/assets/background-save-the-date-overlay.png',
-      '/assets/background-save-the-date-mobile-overlay.png',
-      '/assets/background-game.png',
-      // '/assets/water.png',
-      '/assets/tilex1.png',
-      '/assets/tilesx2.png',
-      '/assets/tilesx3.png',
-      '/assets/tilesx4.png',
-      '/assets/tilesx5.png',
-      '/assets/shannon-jump-resize.png',
-      '/assets/shannon-fall.png',
-      '/assets/shannon_run.json',
-      '/assets/shannon-idle-resize.png',
-      '/assets/luc-jump-resize.png',
-      '/assets/luc-fall.png',
-      '/assets/luc_run.json',
       '/assets/luc-idle-resize.png',
-      '/assets/luc-jump.png',
-      '/assets/coins_anim.json',
-      '/assets/sound_off.png',
-      '/assets/sound_on.png',
-      '/assets/pause.png',
-      '/assets/play.png',
-      '/assets/settings-icon.png',
+      '/assets/shannon-idle-resize.png',
       '/assets/calendar-icon.png',
       '/assets/location-icon.png',
+      '/assets/number-1-green.png',
+      '/assets/number-2-green.png',
+      '/assets/number-3-green.png',
+      '/assets/number-4-green.png',
+      '/assets/number-5-green.png',
     ]);
     // Load fonts via Assets so HTMLText can embed them in its SVG context
     await Assets.load([
       { src: '/fonts/TypoWriter-Regular.otf', data: { family: 'TypoWriter', weights: ['normal'] } },
       { src: '/fonts/TypoWriter-Bold.otf', data: { family: 'TypoWriter', weights: ['bold'] } },
     ]);
-    const makeAudio = (src: string, rate = 1) => { const a = new Audio(src); a.volume = 0.07; a.playbackRate = rate; return a; };
-    this.jumpSounds = { luc: makeAudio('/assets/luc-jump.m4a'), shannon: makeAudio('/assets/shannon-jump.m4a') };
-    this.fallSounds = { luc: makeAudio('/assets/luc-fall.m4a', 1), shannon: makeAudio('/assets/shannon-fall.m4a', 1.4) };
+  }
+
+  private loadGameAssets(): Promise<void> {
+    if (this.gameAssetsPromise) return this.gameAssetsPromise;
+    this.gameAssetsPromise = (async () => {
+      void this.fetchSoundData();
+      await Assets.load([
+        '/assets/background-save-the-date-overlay.png',
+        '/assets/background-save-the-date-mobile-overlay.png',
+        '/assets/background-game.png',
+        // '/assets/water.png',
+        '/assets/tilex1.png',
+        '/assets/tilesx2.png',
+        '/assets/tilesx3.png',
+        '/assets/tilesx4.png',
+        '/assets/tilesx5.png',
+        '/assets/shannon-jump-resize.png',
+        '/assets/shannon-fall.png',
+        '/assets/shannon_run.json',
+        '/assets/luc-jump-resize.png',
+        '/assets/luc-fall.png',
+        '/assets/luc_run.json',
+        '/assets/luc-jump.png',
+        '/assets/coins_anim.json',
+        '/assets/sound_off.png',
+        '/assets/sound_on.png',
+        '/assets/pause.png',
+        '/assets/play.png',
+        '/assets/home-icon.png',
+      ]);
+    })();
+    return this.gameAssetsPromise;
+  }
+
+  private fetchSoundData(): Promise<ArrayBuffer[]> {
+    if (this.soundRawDataPromise) return this.soundRawDataPromise;
+    this.soundRawDataPromise = Promise.all([
+      fetch('/assets/luc-jump.m4a').then(r => r.arrayBuffer()),
+      fetch('/assets/shannon-jump.m4a').then(r => r.arrayBuffer()),
+      fetch('/assets/luc-fall.m4a').then(r => r.arrayBuffer()),
+      fetch('/assets/shannon-fall.m4a').then(r => r.arrayBuffer()),
+    ]);
+    return this.soundRawDataPromise;
+  }
+
+  private async decodeSounds(): Promise<void> {
+    if (this.soundsDecoded) return;
+    this.soundsDecoded = true;
+    const ctx = this.getAudioContext();
+    const [luc_jump_data, shannon_jump_data, luc_fall_data, shannon_fall_data] = await this.fetchSoundData();
+    const [luc_jump, shannon_jump, luc_fall, shannon_fall] = await Promise.all([
+      ctx.decodeAudioData(luc_jump_data),
+      ctx.decodeAudioData(shannon_jump_data),
+      ctx.decodeAudioData(luc_fall_data),
+      ctx.decodeAudioData(shannon_fall_data),
+    ]);
+    this.jumpSounds = {
+      luc: { buffer: luc_jump, playback_rate: 1 },
+      shannon: { buffer: shannon_jump, playback_rate: 1 },
+    };
+    this.fallSounds = {
+      luc: { buffer: luc_fall, playback_rate: 1 },
+      shannon: { buffer: shannon_fall, playback_rate: 1.4 },
+    };
+  }
+
+  private getAudioContext(): AudioContext {
+    if (!this.audioContext) {
+      const audio_navigator = navigator as NavigatorWithAudioSession;
+      if (audio_navigator.audioSession) {
+         audio_navigator.audioSession.type = 'playback';
+      }
+
+      this.audioContext = new AudioContext();
+      this.audioGain = this.audioContext.createGain();
+      this.audioGain.gain.value = 0.07;
+      this.audioGain.connect(this.audioContext.destination);
+    }
+    return this.audioContext;
+  }
+
+  private loadGameModules(): Promise<void> {
+    if (this.gameModulesPromise) return this.gameModulesPromise;
+    this.gameModulesPromise = (async () => {
+      const [{ CoinManager }, { PlatformManager }, { hitPlatform }, { default: confetti }, { SaveTheDateScreen }] = await Promise.all([
+        import('./CoinManager'),
+        import('./PlatformManager'),
+        import('./Collisions'),
+        import('canvas-confetti'),
+        import('./SaveTheDateScreen'),
+      ]);
+      this._CoinManagerCtor = CoinManager;
+      this._PlatformManagerCtor = PlatformManager;
+      this._hitPlatform = hitPlatform;
+      this._confetti = confetti;
+      this._SaveTheDateScreenCtor = SaveTheDateScreen;
+    })();
+    return this.gameModulesPromise;
+  }
+
+  private playSound(effect: SoundEffect): void {
+    const context = this.getAudioContext();
+    if (context.state !== 'running') {
+      void context.resume().then(() => {
+         if (context.state === 'running') {
+            this.startSound(effect);
+         }
+      });
+      return;
+    }
+
+    this.startSound(effect);
+  }
+
+  private startSound(effect: SoundEffect): void {
+    if (!this.audioGain) return;
+
+    const source = this.getAudioContext().createBufferSource();
+    source.buffer = effect.buffer;
+    source.playbackRate.value = effect.playback_rate;
+    source.connect(this.audioGain);
+    source.start();
+  }
+
+  private async resolveAccess(): Promise<() => Promise<void>> {
+    const query = new URLSearchParams(window.location.search);
+    let query_parameter: 'c' | 'code' | null = null;
+    if (query.has('c')) {
+      query_parameter = 'c';
+    } else if (query.has('code')) {
+      query_parameter = 'code';
+    }
+
+    if (query_parameter) {
+      const result = await this.authenticate(query.get(query_parameter) ?? '');
+      return result === 'success' ? () => this.showSettings() : () => this.showErrorScreen();
+    }
+
+    const stored_code = sessionStorage.getItem('baxcus_login_code');
+    if (stored_code) {
+      const result = await this.authenticate(stored_code);
+      return result === 'success'
+        ? () => this.showSettings()
+        : () => this.showAccessScreen(result);
+    }
+
+    return () => this.showAccessScreen();
+  }
+
+  private async authenticate(code: string): Promise<AccessResult> {
+    const normalized_code = code.trim().toUpperCase();
+
+    try {
+      const w = window as Window & { __earlyUserFetch?: Promise<Response> };
+      const earlyFetch = w.__earlyUserFetch;
+      w.__earlyUserFetch = undefined;
+      const response = await (earlyFetch ?? fetch(`${import.meta.env.VITE_API_BASE_URL}/user`, {
+        headers: { Authorization: `Bearer ${normalized_code}` },
+      }));
+      if (response.status === 401) {
+        sessionStorage.removeItem('baxcus_login_code');
+        return 'unauthorized';
+      }
+      if (!response.ok) {
+        return 'unavailable';
+      }
+
+      const data = await response.json() as {
+        pseudo: string;
+        highScore: number;
+        highScoreList?: Array<{ pseudo: string; highScore: number }>;
+      };
+      this.userCode = normalized_code;
+      this.userPseudo = data.pseudo;
+      this.sessionHighScore = Number(data.highScore) || 0;
+      this.highScoreList = data.highScoreList ?? [];
+      this.weddingTopScore = this.highScoreList[0]?.highScore ?? this.sessionHighScore;
+      sessionStorage.setItem('baxcus_login_code', normalized_code);
+      return 'success';
+    } catch {
+      return 'unavailable';
+    }
+  }
+
+  private async showAccessScreen(initial_result?: Exclude<AccessResult, 'success'>): Promise<void> {
+    const { AccessScreen } = await import('./AccessScreen');
+    this.accessScreen = new AccessScreen(
+      this.app,
+      this.gameWidth,
+      this.gameHeight,
+      async (code) => {
+        const result = await this.authenticate(code);
+        if (result === 'success') {
+          this.accessScreen?.destroy();
+          this.accessScreen = null;
+          void this.showSettings();
+        }
+        return result;
+      },
+      initial_result,
+    );
+  }
+
+  private async showErrorScreen(): Promise<void> {
+    const { ErrorScreen } = await import('./ErrorScreen');
+    const fr = frTranslations as Record<string, string>;
+    const en = enTranslations as Record<string, string>;
+    this.errorScreen = new ErrorScreen(
+      this.app, this.gameWidth, this.gameHeight,
+      fr['code_error'] ?? 'Accès refusé',
+      en['code_error'] ?? 'Access denied',
+    );
   }
 
   private buildScene(): void {
@@ -221,22 +456,37 @@ export class Game {
     this.runAnim = new AnimatedSprite(runSheet.animations[`${ch}_run`]);
     stage.addChild(this.runAnim);
 
-    const fontSize = Math.max(14, Math.round(28 * this.scaleX));
+    const fontSize = Math.max(11, Math.round(18 * this.scaleX));
     const style = new TextStyle({
-      dropShadow: { angle: 0.5, blur: 1, color: '#424242', distance: 1 },
       fill: '#1d1d1d',
       fontFamily: 'TypoWriter',
       fontSize,
+      fontWeight: 'bold',
     });
-    this.textScore = new Text({ text: `${this.t('score')}: 0`, style });
-    this.textScore.anchor.set(1, 0);
-    this.textScore.position.set(this.gameWidth - 20, 20);
-    stage.addChild(this.textScore);
+    const lineH = fontSize + 10;
+    this.textWeddingHighScore = new Text({ text: `${this.t('total_high_score')} ${this.weddingTopScore}`, style });
+    this.textWeddingHighScore.anchor.set(1, 0);
+    this.textWeddingHighScore.position.set(this.gameWidth - 20, 20);
+    stage.addChild(this.textWeddingHighScore);
 
-    this.textHighScore = new Text({ text: `${this.t('high_score')}: 0`, style });
+    this.textHighScore = new Text({ text: `${this.t('high_score')}: ${this.sessionHighScore}`, style });
     this.textHighScore.anchor.set(1, 0);
-    this.textHighScore.position.set(this.gameWidth - 20, 20 + fontSize + 10);
+    this.textHighScore.position.set(this.gameWidth - 20, 20 + lineH);
     stage.addChild(this.textHighScore);
+
+    const scoreFontSize = this.isPortrait ? Math.max(32, Math.round(64 * this.scaleX)) : Math.max(28, Math.round(52 * this.scaleX));
+    this.textScore = new Text({
+      text: '0',
+      style: new TextStyle({
+        fill: '#1d1d1d',
+        fontFamily: 'TypoWriter',
+        fontSize: scoreFontSize,
+        fontWeight: 'bold',
+      }),
+    });
+    this.textScore.anchor.set(0.5, 0);
+    this.textScore.position.set(this.gameWidth / 2, this.isPortrait ? 20 + lineH * 2 + 4 : 15);
+    stage.addChild(this.textScore);
 
     this.pauseTexture = Texture.from('/assets/pause.png');
     this.playTexture = Texture.from('/assets/play.png');
@@ -264,7 +514,7 @@ export class Game {
     stage.addChild(this.soundToggleSprite);
 
     const settingsIconSize = 34;
-    this.settingsIconSprite = new Sprite(Texture.from('/assets/settings-icon.png'));
+    this.settingsIconSprite = new Sprite(Texture.from('/assets/home-icon.png'));
     this.settingsIconSprite.width = settingsIconSize;
     this.settingsIconSprite.height = settingsIconSize;
     this.settingsIconSprite.position.set(116, this.pauseIconY);
@@ -272,8 +522,8 @@ export class Game {
     this.settingsIconSprite.cursor = 'pointer';
     stage.addChild(this.settingsIconSprite);
 
-    this.coins = new CoinManager(this.state);
-    this.platforms = new PlatformManager(
+    this.coins = new this._CoinManagerCtor(this.state);
+    this.platforms = new this._PlatformManagerCtor(
       this.state,
       this.coins,
       this.gameWidth,
@@ -372,8 +622,7 @@ export class Game {
         this.fallSprite.visible = false;
         s.air = true;
         if (this.soundEnabled) {
-          this.jumpSounds[this.selectedCharacter].currentTime = 0;
-          this.jumpSounds[this.selectedCharacter].play();
+          this.playSound(this.jumpSounds[this.selectedCharacter]);
         }
       } else {
         this.jumpInitiated = false;
@@ -423,19 +672,19 @@ export class Game {
     const roundedScore = Math.round(s.score);
     if (roundedScore !== this.lastDisplayedScore) {
       this.lastDisplayedScore = roundedScore;
-      this.textScore.text = `${this.t('score')}: ${roundedScore}`;
+      this.textScore.text = this.saveTheDateShown
+        ? String(roundedScore)
+        : `${Math.min(roundedScore, SAVE_THE_DATE_SCORE_THRESHOLD)}/${SAVE_THE_DATE_SCORE_THRESHOLD}`;
     }
-    const roundedHighScore = Math.round(s.highScore);
-    if (roundedHighScore !== this.lastDisplayedHighScore) {
-      this.lastDisplayedHighScore = roundedHighScore;
-      this.textHighScore.text = `${this.t('high_score')}: ${roundedHighScore}`;
+    if (this.sessionHighScore !== this.lastDisplayedHighScore) {
+      this.lastDisplayedHighScore = this.sessionHighScore;
+      this.textHighScore.text = `${this.t('high_score')} ${this.sessionHighScore}`;
     }
 
     if (!this.fallSoundPlayed && this.jumpSprite.y + this.jumpSprite.height > this.gameHeight) {
       this.fallSoundPlayed = true;
       if (this.soundEnabled) {
-        this.fallSounds[this.selectedCharacter].currentTime = 0;
-        this.fallSounds[this.selectedCharacter].play();
+        this.playSound(this.fallSounds[this.selectedCharacter]);
       }
     }
 
@@ -444,71 +693,114 @@ export class Game {
     }
 
     if (player.y + player.height > this.gameHeight + FALL_DEATH_Y) {
-      if (s.score > s.highScore) {
-        s.highScore = Math.round(s.score);
-        localStorage.setItem('highScore', String(s.highScore));
+      if (Math.round(s.score) > 0) {
+        void this.saveToLeaderboard(Math.round(s.score));
       }
-      if (this.saveTheDateShown && Math.round(s.score) > 0) {
-        this.saveToLeaderboard(Math.round(s.score));
+      if (this.saveTheDateShown) {
+        this.goToSettings(Math.round(s.score));
+      } else {
+        s.score = 0;
+        s.currentSpeed = s.baseSpeed;
+        s.newMilestone = s.firstMilestone;
+        this.startGame();
       }
-      s.score = 0;
-      s.currentSpeed = s.baseSpeed;
-      s.newMilestone = s.firstMilestone;
-      this.startGame();
     }
   }
 
   private triggerConfettiAndSaveTheDate(): void {
     this.confettiTriggered = true;
     this.isPaused = true;
+    void this.saveToLeaderboard(Math.round(this.state.score));
     this.pauseToggleSprite.texture = this.playTexture;
     this.runAnim.stop();
     for (const coin of this.state.coins) coin.stop();
 
-    const rect = this.app.canvas.getBoundingClientRect();
-    const confettiCanvas = document.createElement('canvas');
-    confettiCanvas.width = rect.width;
-    confettiCanvas.height = rect.height;
-    confettiCanvas.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:9999;`;
-    document.body.appendChild(confettiCanvas);
-
-    const myConfetti = confetti.create(confettiCanvas, { resize: false });
-
-    const count = 200;
-    const defaults = { origin: { y: 0.7 } };
-    const fire = (particleRatio: number, opts: object) => {
-      myConfetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
-    };
-
-    fire(0.25, { spread: 26, startVelocity: 55 });
-    fire(0.2, { spread: 60 });
-    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-    fire(0.1, { spread: 120, startVelocity: 45 });
-
     setTimeout(() => {
-      myConfetti.reset();
-      confettiCanvas.remove();
-      // COMMENT FOR TESTING PURPOSES
       this.saveTheDateShown = true;
       localStorage.setItem('saveTheDateShown', 'true');
       this.gameStarted = false;
-      this.showSaveTheDate();
-    }, 2000);
+      void this.showSaveTheDate();
+
+      setTimeout(() => {
+        const rect = this.app.canvas.getBoundingClientRect();
+        const confettiCanvas = document.createElement('canvas');
+        confettiCanvas.width = rect.width;
+        confettiCanvas.height = rect.height;
+        confettiCanvas.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:9999;`;
+        document.body.appendChild(confettiCanvas);
+
+        const myConfetti = this._confetti.create(confettiCanvas, { resize: false });
+
+        const count = 200;
+        const defaults = { origin: { y: 0.7 } };
+        const fire = (particleRatio: number, opts: object) => {
+          myConfetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
+        };
+
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+      }, 800);
+    }, 600);
   }
 
-  private saveToLeaderboard(score: number): void {
-    const entries: Array<{ name: string; score: number }> = JSON.parse(localStorage.getItem('topScores') ?? '[]');
-    entries.push({ name: this.selectedCharacter, score });
-    entries.sort((a, b) => b.score - a.score);
-    localStorage.setItem('topScores', JSON.stringify(entries.slice(0, 6)));
+  private saveToLeaderboard(score: number): Promise<void> {
+    this.scoreSavePromise = this.scoreSavePromise.then(() => this.submitScore(score));
+    return this.scoreSavePromise;
+  }
+
+  private async submitScore(score: number): Promise<void> {
+    const code = this.userCode;
+    if (!code) return;
+
+    try {
+      const scoreHash = await this.createScoreHash(code, score);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/score`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${code}`,
+          'Content-Type': 'application/json',
+          'X-Score-Hash': scoreHash,
+        },
+        body: JSON.stringify({ score }),
+      });
+      if (!res.ok) return;
+
+      const data = await res.json() as {
+        pseudo: string;
+        highScore: number;
+        highScoreList: Array<{ pseudo: string; highScore: number }>;
+      };
+      this.highScoreList = data.highScoreList ?? [];
+      if (data.highScore > this.sessionHighScore) {
+        this.sessionHighScore = data.highScore;
+        this.lastDisplayedHighScore = -1;
+      }
+      const newTopScore = this.highScoreList[0]?.highScore ?? data.highScore;
+      if (newTopScore > this.weddingTopScore) {
+        this.weddingTopScore = newTopScore;
+        if (this.textWeddingHighScore) {
+          this.textWeddingHighScore.text = `${this.t('total_high_score')} ${this.weddingTopScore}`;
+        }
+      }
+    } catch {
+      // Score persistence must not interrupt the game.
+    }
+  }
+
+  private async createScoreHash(code: string, score: number): Promise<string> {
+    const input = `${import.meta.env.VITE_SCORE_HASH_SALT}:${code.trim().toUpperCase()}:${score}`;
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private checkGround(): boolean {
     if (this.state.vy < 0) return false;
     const { stackOnScreen } = this.state;
     for (let i = 0; i < Math.min(stackOnScreen.length, 2); i++) {
-      if (hitPlatform(this.jumpSprite, stackOnScreen[i])) {
+      if (this._hitPlatform(this.jumpSprite, stackOnScreen[i])) {
         this.state.currentPlatform = stackOnScreen[i];
         return true;
       }
@@ -562,18 +854,21 @@ export class Game {
     if (this.inputBound) return;
     this.inputBound = true;
     const canvas = this.app.canvas;
+    let lastTouchTime = 0;
     canvas.addEventListener('mousedown', (e) => {
+      if (Date.now() - lastTouchTime < 500) return;
       if (this.hitsSettings(e.clientX, e.clientY)) { this.goToSettings(); return; }
-      if (this.hitsPause(e.clientX, e.clientY)) { this.togglePause(); return; }
+      if (this.hitsPause(e.clientX, e.clientY)) { if (Date.now() - this.focusGainedAt > 200) this.togglePause(); return; }
       if (this.hitsSound(e.clientX, e.clientY)) { this.toggleSound(); return; }
       if (!this.isPaused) this.pressDown();
     });
     canvas.addEventListener('mouseup', () => this.pressUp());
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      lastTouchTime = Date.now();
       const t = e.touches[0];
       if (t && this.hitsSettings(t.clientX, t.clientY)) { this.goToSettings(); return; }
-      if (t && this.hitsPause(t.clientX, t.clientY)) { this.togglePause(); return; }
+      if (t && this.hitsPause(t.clientX, t.clientY)) { if (Date.now() - this.focusGainedAt > 200) this.togglePause(); return; }
       if (t && this.hitsSound(t.clientX, t.clientY)) { this.toggleSound(); return; }
       if (!this.isPaused) this.pressDown();
     }, { passive: false });
@@ -598,7 +893,11 @@ export class Game {
   private pressDown(): void { this.state.isPress = true; }
   private pressUp(): void { this.state.isPress = false; }
 
-  private showSettings(defaultChar: Character | null = null): void {
+  private async showSettings(defaultChar: Character | null = null, userIsPlaying: boolean = false, lastScore: number = 0): Promise<void> {
+    await this.scoreSavePromise;
+
+    requestAnimationFrame(() => setTimeout(() => { this.loadGameAssets(); this.loadGameModules(); }, 0));
+    const { SettingsScreen } = await import('./SettingsScreen');
     this.settingsScreen = new SettingsScreen(
       this.app,
       {
@@ -607,13 +906,20 @@ export class Game {
       },
       this.gameWidth,
       this.gameHeight,
-      (char, lang) => this.launchGame(char, lang),
+      (char, lang) => { void this.launchGame(char, lang); },
       this.saveTheDateShown,
       defaultChar,
+      this.highScoreList,
+      userIsPlaying,
+      lastScore,
     );
   }
 
-  private launchGame(char: Character, lang: Language): void {
+  private async launchGame(char: Character, lang: Language): Promise<void> {
+    await this.getAudioContext().resume();
+
+    await Promise.all([this.loadGameAssets(), this.loadGameModules(), this.decodeSounds()]);
+
     this.settingsScreen?.destroy();
     this.settingsScreen = null;
     this.saveTheDateScreen?.destroy();
@@ -630,7 +936,8 @@ export class Game {
     this.gameStarted = true;
   }
 
-  private showSaveTheDate(): void {
+  private async showSaveTheDate(): Promise<void> {
+    await this.loadGameModules();
     const lang = (localStorage.getItem('language') as Language) ?? this.selectedLanguage;
     const tr = (lang === 'fr' ? frTranslations : enTranslations) as Record<string, string>;
     const bodyLines = [
@@ -638,13 +945,13 @@ export class Game {
       {
         cards: [
           { icon: '/assets/calendar-icon.png', label: tr['date'] ?? 'Date', value: tr['save_the_date_body_2'] ?? '' },
-          { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '' },
+          { icon: '/assets/location-icon.png', label: tr['location'] ?? 'Location', value: tr['save_the_date_body_3'] ?? '', onClick: () => { window.open('https://maps.app.goo.gl/qo6rmvpCEhimQNx48', '_blank'); } },
         ],
         extraSpacingAfter: true,
       },
       { text: tr['save_the_date_body_4'] ?? '' },
     ].filter(item => Boolean(item.text) || Boolean(item.cards));
-    this.saveTheDateScreen = new SaveTheDateScreen(
+    this.saveTheDateScreen = new this._SaveTheDateScreenCtor(
       this.app,
       this.gameWidth,
       this.gameHeight,
@@ -657,23 +964,18 @@ export class Game {
 
   private launchFromSaveTheDate(): void {
     const char = localStorage.getItem('selectedCharacter') as Character | null;
-    const lang = (localStorage.getItem('language') as Language) ?? 'fr';
-    if (char) {
-      this.launchGame(char, lang);
-    } else {
-      this.saveTheDateScreen?.destroy();
-      this.saveTheDateScreen = null;
-      this.showSettings();
-    }
+    this.saveTheDateScreen?.destroy();
+    this.saveTheDateScreen = null;
+    void this.showSettings(char);
   }
 
-  private goToSettings(): void {
+  private goToSettings(lastScore: number = 0): void {
     this.gameStarted = false;
     this.isPaused = false;
     this.runAnim.stop();
     for (const coin of this.state.coins) coin.stop();
     this.app.stage.removeChildren();
-    this.showSettings(this.selectedCharacter);
+    void this.showSettings(this.selectedCharacter, lastScore > 0, lastScore);
   }
 
   private t(key: string): string {
@@ -685,7 +987,7 @@ export class Game {
     if (this.focusBound) return;
     this.focusBound = true;
     const pause = () => { if (!this.isPaused) this.togglePause(); };
-    const resume = () => { if (this.isPaused) this.togglePause(); };
+    const resume = () => { if (this.isPaused) { this.focusGainedAt = Date.now(); this.togglePause(); } };
     document.addEventListener('visibilitychange', () => { document.hidden ? pause() : resume(); });
     window.addEventListener('blur', pause);
     window.addEventListener('focus', resume);

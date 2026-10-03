@@ -8,10 +8,16 @@ importers:
 
   .:
     dependencies:
+      canvas-confetti:
+        specifier: ^1.9.4
+        version: 1.9.4
       pixi.js:
         specifier: ^8.0.0
         version: 8.18.1
     devDependencies:
+      '@types/canvas-confetti':
+        specifier: ^1.9.0
+        version: 1.9.0
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.39
@@ -303,6 +309,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@types/canvas-confetti@1.9.0':
+    resolution: {integrity: sha512-aBGj/dULrimR1XDZLtG9JwxX1b4HPRF6CX9Yfwh3NvstZEm1ZL7RBnel4keCPSqs1ANRu1u2Aoz9R+VmtjYuTg==}
+
   '@types/earcut@3.0.0':
     resolution: {integrity: sha512-k/9fOUGO39yd2sCjrbAJvGDEQvRwRnQIZlBz43roGwUZo5SHAmyVvSFyaVVZkicRVCaDXPKlbxrUcBuJoSWunQ==}
 
@@ -318,6 +327,9 @@ packages:
   '@xmldom/xmldom@0.8.13':
     resolution: {integrity: sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==}
     engines: {node: '>=10.0.0'}
+
+  canvas-confetti@1.9.4:
+    resolution: {integrity: sha512-yxQbJkAVrFXWNbTUjPqjF7G+g6pDotOUHGbkZq2NELZUMDpiJ85rIEazVb8GTaAptNW2miJAXbs1BtioA251Pw==}
 
   earcut@3.0.2:
     resolution: {integrity: sha512-X7hshQbLyMJ/3RPhyObLARM2sNxxmRALLKx1+NVFFnQ9gKzmCrxm9+uLIAdBcvc8FNLpctqlQ2V6AE92Ol9UDQ==}
@@ -562,6 +574,8 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.2':
     optional: true
 
+  '@types/canvas-confetti@1.9.0': {}
+
   '@types/earcut@3.0.0': {}
 
   '@types/estree@1.0.8': {}
@@ -573,6 +587,8 @@ snapshots:
   '@webgpu/types@0.1.69': {}
 
   '@xmldom/xmldom@0.8.13': {}
+
+  canvas-confetti@1.9.4: {}
 
   earcut@3.0.2: {}
 

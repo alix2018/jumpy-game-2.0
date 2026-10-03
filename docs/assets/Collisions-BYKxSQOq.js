@@ -1,0 +1,1 @@
+function c(t,h){const i=t.x+t.width/2,n=h.x+h.width/2,d=t.width/2-8,w=h.width/2;if(Math.abs(i-n)>=d+w)return!1;const s=t.y+t.height;return s>=h.y&&s<h.y+h.height/2}function o(t,h){const i=t.x+t.width/2-(h.x+h.width/2),n=t.y+t.height/2-(h.y+h.height/2);return Math.abs(i)<t.width/2+26&&Math.abs(n)<t.height/2+26}export{o as hitCoin,c as hitPlatform};

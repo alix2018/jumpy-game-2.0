@@ -23,6 +23,7 @@ export const SPEED_INCREMENT = 0.4;
 
 export const SAVE_THE_DATE_SCORE_THRESHOLD = 75;
 // FOR TESTING PURPOSES
+// export const SAVE_THE_DATE_SCORE_THRESHOLD = 10;
 // export const SAVE_THE_DATE_SCORE_THRESHOLD = 1;
 
 
